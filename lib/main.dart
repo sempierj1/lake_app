@@ -30,7 +30,7 @@ Future<bool> checkFirstRun() async
   return run;
 }
 //TEST VARIABLES
-bool sent = true;
+bool sent = false;
 int message = 0;
 
 class LakeApp extends StatelessWidget {

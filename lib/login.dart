@@ -5,10 +5,11 @@ import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
 import 'dart:async';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller1 = new TextEditingController();
-bool check;
+bool check = false;
 
 class TabbedAppBarSample extends StatelessWidget {
   @override
@@ -64,6 +65,15 @@ setFirstRun() async
   prefs.setBool('firstRun', false);
 }
 
+storeInfo() async
+{
+  final storage = new FlutterSecureStorage();
+  String user = _controller.text;
+  String pass = _controller1.text;
+  storage.write(key: "username", value: user);
+  storage.write(key: "password", value: pass);
+}
+
 class ChoiceCard extends StatelessWidget {
   const ChoiceCard({ Key key, this.choice }) : super(key: key);
 
@@ -95,10 +105,11 @@ class ChoiceCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 32.0),
                     child: new Text('Login'),
                     onPressed: () async {
-                      bool check = await checkForm();
+                      await checkForm();
                       print(check);
                       if (check) {
                         await setFirstRun();
+                        await storeInfo();
                       }
                       else {
                         showDialog(
@@ -175,10 +186,7 @@ class ChoiceCard extends StatelessWidget {
     {
       print("THREE");
      //Error Message Here
-    check = false;
+
     }
-  return check;
-  
-
-
-}
+    return check;
+  }
