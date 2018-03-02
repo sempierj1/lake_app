@@ -10,6 +10,7 @@ dependencies:
   cupertino_icons: ^0.1.0
   shared_preferences: ^0.2.4+1
   flutter_secure_storage: "^1.0.0"
+  google_qr: "^0.1.0"
 
 dev_dependencies:
   flutter_test:

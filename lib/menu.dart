@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_qr/google_qr.dart';
 
 final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller1 = new TextEditingController();
@@ -15,7 +16,6 @@ String email;
 class TabbedAppBarMenu extends StatelessWidget  {
   @override
   Widget build(BuildContext context) {
-    getEmail();
     return new MaterialApp(
       home: new DefaultTabController(
         length: choices.length,
@@ -57,7 +57,7 @@ const List<Choice> choices = const <Choice>[
   //const Choice(title: 'Login', icon: Icons.account_circle),
   const Choice(title: 'Check-In', icon: Icons.contacts),
   const Choice(title: 'Status', icon: Icons.beach_access),
-  const Choice(title: 'Calendar', icon: Icons.calendar_today),
+  const Choice(title: 'Events', icon: Icons.event),
   const Choice(title: 'Profile', icon: Icons.account_circle),
   //const Choice(title: 'Calendar', icon: Icons.calendar_today),
   //const Choice(title: 'Check-In', icon: Icons.directions_bus),
@@ -92,44 +92,36 @@ class ChoiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (choice.title == 'Profile') {
-      return new Form(
-          child: new ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              children: <Widget>[
-                new Text(
-                  email,
-                ),
-                new RaisedButton(
-                onPressed: () async
-                {
-                  await deleteCred();
-                  runApp(new LoginApp());
-                },
-                child: new Text('Logout'),
-                ),
-              ]
-          )
+      final TextStyle textStyle = Theme
+          .of(context)
+          .textTheme
+          .display1;
+      return new Card(
+        color: Colors.white,
+        child: new Center(
+            child: new ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                children: <Widget>[
+                  new Text(
+                    email,
+                  ),
+                  new RaisedButton(
+                    onPressed: () async
+                    {
+                      await deleteCred();
+                      runApp(new LoginApp());
+                    },
+                    child: new Text('Logout'),
+                  ),
+                ]
+            )
+        ),
       );
     }
-
-
-    final TextStyle textStyle = Theme
-        .of(context)
-        .textTheme
-        .display1;
-    return new Card(
-      color: Colors.white,
-      child: new Center(
-        child: new Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            new Icon(choice.icon, size: 128.0, color: textStyle.color),
-            new Text(choice.title, style: textStyle),
-          ],
-        ),
-      ),
-    );
+    else
+      {
+        return new Container(width: 0.0, height: 0.0);
+      }
   }
 }
 

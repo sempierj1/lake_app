@@ -40,7 +40,7 @@ Future<bool> checkFirstRun() async
 Future<bool> checkInfo() async
 {
   final storage = new FlutterSecureStorage();
-  String user = await (storage.read(key: "username")?? null);
+  String user = await (storage.read(key: "username") ?? null);
   if (user != null) {
     return true;
   }
