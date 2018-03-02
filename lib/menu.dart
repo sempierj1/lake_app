@@ -8,11 +8,13 @@ import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_qr/google_qr.dart';
 import 'userinfo.dart';
+import 'qrHandler.dart';
 
 final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller1 = new TextEditingController();
 bool check = false;
 EmailHandler email = new EmailHandler();
+QRHandler qr;
 
 class TabbedAppBarMenu extends StatelessWidget  {
   @override
@@ -114,6 +116,12 @@ class ChoiceCard extends StatelessWidget {
             )
         ),
       );
+    }
+    else if(choice.title == "Check-In")
+    {
+      qr = new QRHandler();
+      //CREATE CANVAS
+      return new Text(qr.getQR().toString());
     }
     else
       {

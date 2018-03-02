@@ -149,7 +149,7 @@ class _LogonWidgetState extends State<LogonWidget>
         onPressed: () {
           runApp(new LoginApp());
         },
-        child: new Text('Submit'),)
+        child: new Text('Login'),)
       ],
     );
   }
@@ -165,7 +165,8 @@ class _LogonWidgetState extends State<LogonWidget>
       var request = new MultipartRequest("POST", uri);
       request.fields['email'] = email;
       StreamedResponse response = await request.send();
-      response.stream.transform(utf8.decoder).listen(((value){
+      await for(var value in response.stream.transform(utf8.decoder))
+      {
         if(value.toString().length == 1)
           {
             sent = true;
@@ -174,7 +175,7 @@ class _LogonWidgetState extends State<LogonWidget>
           {
             sent = false;
           }
-      }));
+      };
     }catch(exception)
     {
       print(exception);

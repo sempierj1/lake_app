@@ -6,10 +6,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'serverHandle.dart';
 
 final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller1 = new TextEditingController();
-bool check = false;
+ServerHandle check;
 
 class TabbedAppBarSample extends StatelessWidget {
   @override
@@ -105,9 +106,9 @@ class ChoiceCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 32.0),
                     child: new Text('Login'),
                     onPressed: () async {
-                      await checkForm();
-                      print(check);
-                      if (check) {
+                      check = new ServerHandle(_controller.text, _controller1.text);
+                      await check.checkLogin();
+                      if (check.getVerified()) {
                         await setFirstRun();
                         await storeInfo();
                         runApp(new LakeApp());
@@ -158,36 +159,3 @@ class ChoiceCard extends StatelessWidget {
     );
   }
 }
-
-  Future<bool> checkForm() async
-  {
-    String email = _controller.text;
-    String pass = _controller1.text;
-
-    var url = 'https://mediahomecraft.ddns.net/lake/login.php';
-    var uri = Uri.parse(url);
-    try 
-    {
-      var request = new MultipartRequest("POST", uri);
-      request.fields['email'] = email;
-      request.fields['password'] = pass;
-      StreamedResponse response = await request.send();
-      response.stream.transform(utf8.decoder).listen(((value) {
-        if (value.toString() == "VALID")  {
-          print("ONE");
-          check = true;
-        }
-        else {
-          print("TWO");
-          check = false;
-        }
-      }));
-
-    }catch(exception)
-    {
-      print("THREE");
-     //Error Message Here
-
-    }
-    return check;
-  }
