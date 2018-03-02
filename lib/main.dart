@@ -145,6 +145,11 @@ class _LogonWidgetState extends State<LogonWidget>
           },
           child: new Text('Submit'),
         ),
+        new RaisedButton(
+        onPressed: () {
+          runApp(new LoginApp());
+        },
+        child: new Text('Submit'),)
       ],
     );
   }

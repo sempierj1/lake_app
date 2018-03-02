@@ -7,15 +7,17 @@ import 'main.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_qr/google_qr.dart';
+import 'userinfo.dart';
 
 final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller1 = new TextEditingController();
 bool check = false;
-String email;
+EmailHandler email = new EmailHandler();
 
 class TabbedAppBarMenu extends StatelessWidget  {
   @override
   Widget build(BuildContext context) {
+    email.setEmail();
     return new MaterialApp(
       home: new DefaultTabController(
         length: choices.length,
@@ -65,11 +67,6 @@ const List<Choice> choices = const <Choice>[
   //const Choice(title: 'WALK', icon: Icons.directions_walk),
 ];
 
-void getEmail() async
-{
-  email = await getInfo();
-}
-
 void deleteCred() async
 {
   final storage = new FlutterSecureStorage();
@@ -103,7 +100,7 @@ class ChoiceCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 children: <Widget>[
                   new Text(
-                    email,
+                    email.getEmail(),
                   ),
                   new RaisedButton(
                     onPressed: () async
