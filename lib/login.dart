@@ -110,6 +110,7 @@ class ChoiceCard extends StatelessWidget {
                       if (check) {
                         await setFirstRun();
                         await storeInfo();
+                        runApp(new LakeApp());
                       }
                       else {
                         showDialog(

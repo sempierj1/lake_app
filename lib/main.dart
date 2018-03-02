@@ -5,6 +5,8 @@ import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart';
 import 'dart:async';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'menu.dart';
 
 //test
 void main()
@@ -14,9 +16,14 @@ void main()
 
 void runCheck() async{
   bool check = await checkFirstRun();
+  bool check2 = await checkInfo();
   if(check)
   {
     runApp(new MyApp());
+  }
+  else if(!check && !check2)
+  {
+    runApp(new LoginApp());
   }
   else
   {
@@ -29,14 +36,34 @@ Future<bool> checkFirstRun() async
   bool run = (prefs.getBool('firstRun') ?? true);
   return run;
 }
+
+Future<bool> checkInfo() async
+{
+  final storage = new FlutterSecureStorage();
+  String user = await (storage.read(key: "username")?? null);
+  if (user != null) {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
 //TEST VARIABLES
 bool sent = false;
 int message = 0;
 
-class LakeApp extends StatelessWidget {
+class LoginApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new TabbedAppBarSample();
+  }
+}
+
+class LakeApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new TabbedAppBarMenu();
   }
 }
 
@@ -98,7 +125,7 @@ class _LogonWidgetState extends State<LogonWidget>
                     new FlatButton(
                       child: new Text('Continue'),
                       onPressed:(){
-                        runApp(new LakeApp());
+                        runApp(new LoginApp());
                       }
                     )
                   ]
