@@ -9,17 +9,22 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_qr/google_qr.dart';
 import 'userinfo.dart';
 import 'qrHandler.dart';
+//import 'dart:ui';
+import 'dart:typed_data';
 
 final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller1 = new TextEditingController();
 bool check = false;
 EmailHandler email = new EmailHandler();
-QRHandler qr;
+String qr;
+//final QRHandler qr = new QRHandler();
+
 
 class TabbedAppBarMenu extends StatelessWidget  {
   @override
   Widget build(BuildContext context) {
     email.setEmail();
+    getQR();
     return new MaterialApp(
       home: new DefaultTabController(
         length: choices.length,
@@ -91,10 +96,6 @@ class ChoiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (choice.title == 'Profile') {
-      final TextStyle textStyle = Theme
-          .of(context)
-          .textTheme
-          .display1;
       return new Card(
         color: Colors.white,
         child: new Center(
@@ -119,9 +120,8 @@ class ChoiceCard extends StatelessWidget {
     }
     else if(choice.title == "Check-In")
     {
-      qr = new QRHandler();
-      //CREATE CANVAS
-      return new Text(qr.getQR().toString());
+      Uint8List bytes = BASE64.decode(qr);
+      return new Image.memory(bytes);
     }
     else
       {
@@ -129,36 +129,16 @@ class ChoiceCard extends StatelessWidget {
       }
   }
 }
-
-Future<bool> checkForm() async
+getQR()async
 {
-  String email = _controller.text;
-  String pass = _controller1.text;
-
-  var url = 'https://mediahomecraft.ddns.net/lake/login.php';
-  var uri = Uri.parse(url);
-  try
-  {
-    var request = new MultipartRequest("POST", uri);
-    request.fields['email'] = email;
-    request.fields['password'] = pass;
-    StreamedResponse response = await request.send();
-    response.stream.transform(utf8.decoder).listen(((value) {
-      if (value.toString() == "VALID")  {
-        print("ONE");
-        check = true;
-      }
-      else {
-        print("TWO");
-        check = false;
-      }
-    }));
-
-  }catch(exception)
-  {
-    print("THREE");
-    //Error Message Here
-
-  }
-  return check;
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  qr = await prefs.getString('qr');
+  if(qr == null)
+    {
+      qr = "";
+    }
+  print(qr);
 }
+
+
+
