@@ -9,14 +9,16 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_qr/google_qr.dart';
 import 'userinfo.dart';
 import 'qrHandler.dart';
-//import 'dart:ui';
+import 'dart:ui' as ui;
 import 'dart:typed_data';
+import 'package:zoomable_image/zoomable_image.dart';
 
 final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller1 = new TextEditingController();
 bool check = false;
 EmailHandler email = new EmailHandler();
-String qr;
+String qr = "";
+final double devicePixelRatio = ui.window.devicePixelRatio;
 //final QRHandler qr = new QRHandler();
 
 
@@ -120,8 +122,45 @@ class ChoiceCard extends StatelessWidget {
     }
     else if(choice.title == "Check-In")
     {
-      Uint8List bytes = BASE64.decode(qr);
-      return new Image.memory(bytes);
+      if(qr == "")
+        {
+          return new ListView(
+           children: <Widget>[
+            new Container(
+            padding: const EdgeInsets.symmetric(horizontal: 125.0),
+            child: new RaisedButton(
+                onPressed: ()
+                {
+                  runApp(new LakeApp());
+                },
+                child: new Text('Reload')
+            ),
+          )]);
+        }
+        else {
+        Uint8List bytes = BASE64.decode(qr);
+        Image myQR = new Image.memory(bytes);
+        return new Card(
+            color: Colors.white,
+            child: new Center(
+              child: new ListView(
+                  children: <Widget>[
+                    myQR,
+                    new Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 125.0),
+                      child: new RaisedButton(
+                          onPressed: () {
+                            runApp(new LakeApp());
+                          },
+                          child: new Text('Reload')
+                      ),
+                    )
+                  ]
+              ),
+            )
+        );
+      }
+
     }
     else
       {
@@ -137,7 +176,6 @@ getQR()async
     {
       qr = "";
     }
-  print(qr);
 }
 
 
