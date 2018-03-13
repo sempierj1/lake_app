@@ -17,6 +17,8 @@ final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller1 = new TextEditingController();
 bool check = false;
 EmailHandler email = new EmailHandler();
+List weather = null;
+
 String qr = "";
 final double devicePixelRatio = ui.window.devicePixelRatio;
 //final QRHandler qr = new QRHandler();
@@ -27,6 +29,7 @@ class TabbedAppBarMenu extends StatelessWidget  {
   Widget build(BuildContext context) {
     email.setEmail();
     getQR();
+    getWeather();
     return new MaterialApp(
       home: new DefaultTabController(
         length: choices.length,
@@ -162,6 +165,39 @@ class ChoiceCard extends StatelessWidget {
       }
 
     }
+    else if(choice.title == "Status") {
+      if (weather == null) {
+        return new ListView(
+            children: <Widget>[
+              new Container(
+                padding: const EdgeInsets.symmetric(horizontal: 125.0),
+                child: new RaisedButton(
+                    onPressed: () async{
+                      weather = await email.getWeather();
+                    },
+                    child: new Text('Reload')
+                ),
+              )
+            ]);
+      }
+      else {
+        return new Card(
+            color: Colors.white,
+            child: new Center(
+              child: new ListView(
+                  children: <Widget>[
+                    new Text(weather[0]),
+                    new Text(weather[1]),
+                    new Text(weather[2]),
+                    new Text(weather[4]),
+                    new Text(weather[5]),
+                    new Text(weather[3]),
+                  ]
+              ),
+            )
+        );
+      }
+    }    
     else
       {
         return new Container(width: 0.0, height: 0.0);
@@ -176,6 +212,10 @@ getQR()async
     {
       qr = "";
     }
+}
+getWeather()async
+{
+  weather = await email.getWeather();
 }
 
 
