@@ -18,7 +18,9 @@ final TextEditingController _controller1 = new TextEditingController();
 bool check = false;
 EmailHandler email = new EmailHandler();
 List weather = null;
-
+double widthApp;
+double heightApp;
+double fontSize = 30.0;
 String qr = "";
 final double devicePixelRatio = ui.window.devicePixelRatio;
 //final QRHandler qr = new QRHandler();
@@ -27,6 +29,7 @@ final double devicePixelRatio = ui.window.devicePixelRatio;
 class TabbedAppBarMenu extends StatelessWidget  {
   @override
   Widget build(BuildContext context) {
+
     email.setEmail();
     getQR();
     getWeather();
@@ -100,6 +103,9 @@ class ChoiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    widthApp = MediaQuery.of(context).size.width;
+    heightApp = MediaQuery.of(context).size.height;
+    fontSize = (widthApp / 18).round() * 1.0;
     if (choice.title == 'Profile') {
       return new Card(
         color: Colors.white,
@@ -143,24 +149,8 @@ class ChoiceCard extends StatelessWidget {
         else {
         Uint8List bytes = BASE64.decode(qr);
         Image myQR = new Image.memory(bytes);
-        return new Card(
-            color: Colors.white,
-            child: new Center(
-              child: new ListView(
-                  children: <Widget>[
-                    myQR,
-                    new Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 125.0),
-                      child: new RaisedButton(
-                          onPressed: () {
-                            runApp(new LakeApp());
-                          },
-                          child: new Text('Reload')
-                      ),
-                    )
-                  ]
-              ),
-            )
+        return new Center(
+              child: myQR,
         );
       }
 
@@ -181,21 +171,100 @@ class ChoiceCard extends StatelessWidget {
             ]);
       }
       else {
+        print(weather);
+        String weatherImg;
+        String weatherTxt;
+        switch(weather[0].toString())
+        {
+            case "Clouds":
+              weatherImg = 'assets/Cloud.png';
+              weatherTxt = "It is currently cloudy and ";
+              break;
+
+             case "Thunderstorm":
+              weatherImg = 'assets/Thunder.png';
+              weatherTxt = "It is currently storming and ";
+              break;
+
+          case "Drizzle":
+            weatherImg = 'assets/Rain.png';
+            weatherTxt = "It is currently drizzling and ";
+            break;
+
+          case "Rain":
+            weatherImg = 'assets/Rain.png';
+            weatherTxt = "It is currently raining and ";
+            break;
+
+          case "Snow":
+            weatherImg = 'assets/Snow.png';
+            weatherTxt = "It is currently snowing and ";
+            break;
+
+          case "Clear":
+            weatherImg = 'assets/Sun.png';
+            weatherTxt = "It is currently sunny and ";
+            break;
+
+            default:
+              weatherImg = "";
+              break;
+        }
+
         return new Card(
             color: Colors.white,
-            child: new Center(
+              //child: new Container(
               child: new ListView(
-                  children: <Widget>[
-                    new Text(weather[0]),
-                    new Text(weather[1]),
-                    new Text(weather[2]),
-                    new Text(weather[4]),
-                    new Text(weather[5]),
-                    new Text(weather[3]),
-                  ]
-              ),
-            )
-        );
+                children: [
+                   new Text(weather[2].round().toString() + "\u00b0" + "F",
+                     style: new TextStyle(fontSize: 70.0)
+                  ),
+
+                  new Image.asset(weatherImg,
+                    height:heightApp/3.0,
+                    width:widthApp/3.0,
+                    fit: BoxFit.cover,
+                  ),
+                  new Text(weatherTxt + weather[2].round().toString() + "\u00b0" + " with winds of " + weather[3].round().toString() + " mph. The beach is currently"
+                      " closed.",
+                      style: new TextStyle(fontSize: fontSize),
+                      textAlign: TextAlign.center,
+                  )
+                ]
+              )
+                 /*   alignment: Alignment.topCenter,
+                    height: 200.0,
+                    width: 250.0,
+                    decoration: new BoxDecoration(
+                      image: new DecorationImage(
+                        image: new AssetImage('assets/Cloud.png'),
+                        fit: BoxFit.contain,
+                      )
+                    ),
+                    child: new RichText(
+                      text: new TextSpan(
+                        style: new TextStyle(
+                          fontSize: 80.0,
+                          color: Colors.lightBlue,
+                        ),
+                        children: <TextSpan>[
+                          new TextSpan(text: weather[2].round().toString() + "\u00b0" + "F" + "\u000a"),
+                          new TextSpan(text: weather[3].round().toString()),
+                        ]
+                        )
+                      )
+
+
+                        //weather[2].round().toString() + "\u00b0" + "F",
+                          //style: new TextStyle(fontSize: 80.0)
+                    */
+
+              );
+                    //new Text(weather[0].toString()),
+                    //new Text(weather[1].toString()),
+                    //new Text(weather[2].toString()),
+                    //new Text(weather[4].toString()),
+
       }
     }    
     else
