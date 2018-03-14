@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:google_qr/google_qr.dart';
 import 'userinfo.dart';
 import 'qrHandler.dart';
 import 'dart:ui' as ui;
@@ -119,7 +118,7 @@ class ChoiceCard extends StatelessWidget {
                   new RaisedButton(
                     onPressed: () async
                     {
-                      await deleteCred();
+                      deleteCred();
                       runApp(new LoginApp());
                     },
                     child: new Text('Logout'),
@@ -216,16 +215,12 @@ class ChoiceCard extends StatelessWidget {
               //child: new Container(
               child: new ListView(
                 children: [
-                   new Text(weather[2].round().toString() + "\u00b0" + "F",
-                     style: new TextStyle(fontSize: 70.0)
-                  ),
-
                   new Image.asset(weatherImg,
                     height:heightApp/3.0,
                     width:widthApp/3.0,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                   ),
-                  new Text(weatherTxt + weather[2].round().toString() + "\u00b0" + " with winds of " + weather[3].round().toString() + " mph. The beach is currently"
+                  new Text("\u000a" + weatherTxt + weather[2].round().toString() + "\u00b0" + "F with winds of " + weather[3].round().toString() + " mph. " + "\u000a\u000a" + "The beach is currently"
                       " closed.",
                       style: new TextStyle(fontSize: fontSize),
                       textAlign: TextAlign.center,
@@ -276,7 +271,7 @@ class ChoiceCard extends StatelessWidget {
 getQR()async
 {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  qr = await prefs.getString('qr');
+  qr = prefs.getString('qr');
   if(qr == null)
     {
       qr = "";

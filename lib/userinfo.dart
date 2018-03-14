@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:google_qr/google_qr.dart';
+
 
 class EmailHandler {
   String email;

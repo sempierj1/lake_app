@@ -30,7 +30,7 @@ class ServerHandle
     await for(var value in response.stream.transform(utf8.decoder))
     {
     if (value.toString() == "VALID")  {
-     await getQR();
+     getQR();
     verified = true;
     }
     else {
@@ -76,7 +76,7 @@ class ServerHandle
       _base64 = value1.toString();
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString("qr", _base64);
+    prefs.setString("qr", _base64);
   }
 
 

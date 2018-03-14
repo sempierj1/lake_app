@@ -1,4 +1,3 @@
-import 'package:google_qr/google_qr.dart';
 import 'qr.dart';
 import 'userinfo.dart';
 import 'dart:async';
@@ -10,9 +9,8 @@ class QRHandler
 {
   EmailHandler email = new EmailHandler();
   QrCode qr = new QrCode(10, 2);
-  QRHandler()
-  {
-  }
+  QRHandler();
+
   makeQR()async
   {
     await email.setEmail();
