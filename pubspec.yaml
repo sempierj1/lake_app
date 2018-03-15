@@ -13,6 +13,7 @@ dependencies:
   google_qr: "^0.1.0"
   bot: ^0.28.0
   zoomable_image: "^1.1.2"
+  web_socket_channel: "^1.0.7"
 
 dev_dependencies:
   flutter_test:

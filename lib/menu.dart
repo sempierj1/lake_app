@@ -7,16 +7,20 @@ import 'main.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'userinfo.dart';
-import 'qrHandler.dart';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'package:zoomable_image/zoomable_image.dart';
+import 'eventsHandler.dart';
+import 'package:http/http.dart' as http;
 
 final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller1 = new TextEditingController();
 bool check = false;
 EmailHandler email = new EmailHandler();
+EventsListHandler eventsListHandler = new EventsListHandler();
+
 List weather = null;
+List events = null;
 double widthApp;
 double heightApp;
 double fontSize = 30.0;
@@ -32,6 +36,7 @@ class TabbedAppBarMenu extends StatelessWidget  {
     email.setEmail();
     getQR();
     getWeather();
+    getEvents();
     return new MaterialApp(
       home: new DefaultTabController(
         length: choices.length,
@@ -86,6 +91,7 @@ void deleteCred() async
   final storage = new FlutterSecureStorage();
   await storage.delete(key: "username");
   await storage.delete(key: "password");
+  await storage.delete(key: "qr");
 }
 Future<String> getInfo() async
 {
@@ -170,7 +176,6 @@ class ChoiceCard extends StatelessWidget {
             ]);
       }
       else {
-        print(weather);
         String weatherImg;
         String weatherTxt;
         switch(weather[0].toString())
@@ -227,41 +232,36 @@ class ChoiceCard extends StatelessWidget {
                   )
                 ]
               )
-                 /*   alignment: Alignment.topCenter,
-                    height: 200.0,
-                    width: 250.0,
-                    decoration: new BoxDecoration(
-                      image: new DecorationImage(
-                        image: new AssetImage('assets/Cloud.png'),
-                        fit: BoxFit.contain,
-                      )
-                    ),
-                    child: new RichText(
-                      text: new TextSpan(
-                        style: new TextStyle(
-                          fontSize: 80.0,
-                          color: Colors.lightBlue,
-                        ),
-                        children: <TextSpan>[
-                          new TextSpan(text: weather[2].round().toString() + "\u00b0" + "F" + "\u000a"),
-                          new TextSpan(text: weather[3].round().toString()),
-                        ]
-                        )
-                      )
-
-
-                        //weather[2].round().toString() + "\u00b0" + "F",
-                          //style: new TextStyle(fontSize: 80.0)
-                    */
-
               );
-                    //new Text(weather[0].toString()),
-                    //new Text(weather[1].toString()),
-                    //new Text(weather[2].toString()),
-                    //new Text(weather[4].toString()),
-
       }
-    }    
+    }
+    else if(choice.title == "Events") {
+      if (events == null) {
+        return new ListView(
+            children: <Widget>[
+              new Container(
+                padding: const EdgeInsets.symmetric(horizontal: 125.0),
+                child: new RaisedButton(
+                    onPressed: () async {
+                      events = await eventsListHandler.getEvents();
+                    },
+                    child: new Text('Reload')
+                ),
+              )
+            ]);
+      }
+      else {
+        return new ListView.builder(
+            itemBuilder: (BuildContext context, int index) => new ExpansionTile(leading: new Text(events[index]['name']),
+             title: new Text((events[index]['eventDate']).toString().substring(5,10)), children: <Widget>[
+               new Text((events[index]['description'])),
+            ],),
+            itemCount: events.length,
+          //new EventsPage(),
+
+        );
+      }
+    }
     else
       {
         return new Container(width: 0.0, height: 0.0);
@@ -277,10 +277,78 @@ getQR()async
       qr = "";
     }
 }
+
 getWeather()async
 {
   weather = await email.getWeather();
 }
 
+getEvents()async
+{
+  events = await eventsListHandler.getEvents();
 
+}
+/*
+class EventsPage extends StatefulWidget {
+  EventsPageState createState() => new EventsPageState();
+}
 
+class EventsPageState extends State<EventsPage> {
+  Future<http.Response> _response;
+
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  void _refresh() {
+    setState(() {
+      _response = http.get(
+          'mediahomecraft.ddns.net/lake/getEvents.php'
+      );
+    });
+  }
+
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("Events"),
+      ),
+      floatingActionButton: new FloatingActionButton(
+        child: new Icon(Icons.refresh),
+        onPressed: _refresh,
+      ),
+      body: new Center(
+          child: new FutureBuilder(
+              future: _response,
+              builder: (BuildContext context, AsyncSnapshot<http.Response> response) {
+                if (!response.hasData)
+                  return new Text('Loading...');
+                else if (response.data.statusCode != 200) {
+                  return new Text('Could not connect to database.');
+                } else {
+                  Map<String, dynamic> json = JSON.decode(response.data.body);
+                  if (json['cod'] == 200) {
+                    print("HERE");
+                    return new Event(json);
+                  }
+                  else
+                    return new Text('Database service error: $json.');
+                }
+              }
+          )
+      ),
+    );
+  }
+}
+class Event extends StatelessWidget {
+  final Map<String, dynamic> data;
+  Event(this.data);
+  Widget build(BuildContext context) {
+    String name = data[0]['name'];
+    return new Text(
+        name,
+      style: Theme.of(context).textTheme.display4,
+    );
+  }
+}*/

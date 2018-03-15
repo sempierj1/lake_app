@@ -14,6 +14,10 @@ class ServerHandle
   String _base64;
   ServerHandle(String e, String psw)
   {
+    if(e.substring(e.length-1,e.length) == " ")
+      {
+        e = e.substring(0, e.length-1);
+      }
     email = e;
     pass = psw;
   }
@@ -30,7 +34,7 @@ class ServerHandle
     await for(var value in response.stream.transform(utf8.decoder))
     {
     if (value.toString() == "VALID")  {
-     getQR();
+     await getQR();
     verified = true;
     }
     else {
