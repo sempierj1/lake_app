@@ -22,11 +22,17 @@ void runCheck() async{
   bool check2 = await checkInfo();
   if(check)
   {
-    runApp(new MyApp());
+    runApp(new MaterialApp(
+      home: new FirstScreen(),
+      routes: <String, WidgetBuilder>{
+        '/screen1': (BuildContext context) => new FirstScreen(),
+        '/screen2': (BuildContext context) => new EnterEmail()
+      },
+    ));
   }
   else if(!check && !check2)
   {
-    runApp(new LoginApp());
+
   }
   else
   {
@@ -67,6 +73,13 @@ class LakeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new TabbedAppBarMenu();
+  }
+}
+
+class StartApp extends StatelessWidget{
+  @override
+  Widget build(BuildContext context){
+    return new FirstScreen();
   }
 }
 
@@ -190,3 +203,70 @@ class _LogonWidgetState extends State<LogonWidget>
 }
 
 
+class FirstScreen extends StatelessWidget{
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold( // 1
+      appBar: new AppBar( //2
+        title: new Text("Getting Started", style: new TextStyle(fontFamily: 'Helvetica Neue', fontSize: 20.0)),
+
+      ),
+      body: new Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            new Row(
+            children: <Widget> [
+              new Flexible(
+                child: new Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+            new Text('\n\nWelcome to the Lake Parsippany Phone App',
+                style: new TextStyle(fontFamily: 'Roboto', fontSize: 30.0, color: Colors.black),
+                textAlign: TextAlign.center),
+          ],),),],),
+          new Row(
+          children: <Widget>[
+            new FlatButton(onPressed:(){ // 4
+            button1(context); // 5
+    } ,     child: new Text("Get Started", style: new TextStyle(fontFamily: 'Roboto', color:Colors.lightBlue, fontSize: 15.0), textAlign: TextAlign.center,),),])])
+    );
+  }
+}
+
+class EnterEmail extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("Enter Email"),
+
+      ),
+      body: new Center(
+        child: new Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            new RaisedButton(onPressed:(){
+              button2(context);
+            } ,child: new Text("Submit", style: new TextStyle(fontFamily: 'Helvetica Neue', color: Colors.lightBlue)),)
+          ],
+        ),
+      ) ,
+    );
+
+  }
+}
+
+void button1(BuildContext context){
+  print("Button 1"); //1
+  Navigator.of(context).pushNamed('/screen2'); //2
+}
+
+void button2(BuildContext context){
+  print("Button 2"); //3
+  Navigator.of(context).pop(true);//4
+}

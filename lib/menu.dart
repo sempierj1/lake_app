@@ -251,6 +251,7 @@ class ChoiceCard extends StatelessWidget {
             ]);
       }
       else {
+        //MAYBE USE CARDS? CHECK EXAMPLE
         return new ListView.builder(
             itemBuilder: (BuildContext context, int index) => new ExpansionTile(leading: new Text((events[index]['eventDate']).toString().substring(5,10)),
              title: new Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -276,7 +277,7 @@ class ChoiceCard extends StatelessWidget {
               ],),
             itemCount: events.length,
           //new EventsPage(),
-//test
+
         );
       }
     }

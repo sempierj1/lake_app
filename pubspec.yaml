@@ -40,6 +40,11 @@ flutter:
     - assets/SunRain.png
     - assets/Thunder.png
     - assets/Cloud.png
+
+  fonts:
+    - family: Roboto
+      fonts:
+       - asset: assets/fonts/Roboto/Roboto-Regular.ttf
   # To add assets to your application, add an assets section, like this:
   # assets:
   #  - images/a_dot_burr.jpeg
