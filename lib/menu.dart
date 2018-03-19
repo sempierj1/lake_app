@@ -252,10 +252,28 @@ class ChoiceCard extends StatelessWidget {
       }
       else {
         return new ListView.builder(
-            itemBuilder: (BuildContext context, int index) => new ExpansionTile(leading: new Text(events[index]['name']),
-             title: new Text((events[index]['eventDate']).toString().substring(5,10)), children: <Widget>[
-               new Text((events[index]['description'])),
-            ],),
+            itemBuilder: (BuildContext context, int index) => new ExpansionTile(leading: new Text((events[index]['eventDate']).toString().substring(5,10)),
+             title: new Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                     children:[
+                       new Text((events[index]['name']).toString(), textAlign: TextAlign.left,),
+                       new RichText(
+                         text: new TextSpan(text: (events[index]['isCost']).toString(), style: new TextStyle(color: Colors.green)),
+                         ),]
+                       //new Text("RSVP", style: new TextStyle(color:Colors.red), textAlign: TextAlign.right),
+
+                   ),
+
+                 /*children: <TextSpan>[
+                   new TextSpan(),
+                   new TextSpan(text:("\$" + (events[index]['price']).toString()), style: new TextStyle(color: Colors.green)),
+                   new TextSpan(text: "RSVP", style: new TextStyle(color:Colors.red)),
+                   new TextSpan(text:((events[index]['description']))),
+*/
+              children: <Widget>[
+                new Text((events[index]['description'])),
+                new Text("\n"),
+                new Text("This event is " + (events[index]['price']).toString(), textAlign: TextAlign.left,),
+              ],),
             itemCount: events.length,
           //new EventsPage(),
 
@@ -286,6 +304,13 @@ getWeather()async
 getEvents()async
 {
   events = await eventsListHandler.getEvents();
+  for(int i = 0; i < events.length; i++)
+    {
+      if(events[i]['price'] != '0')
+        {
+
+        }
+    }
 
 }
 /*
