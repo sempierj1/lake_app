@@ -276,7 +276,7 @@ class ChoiceCard extends StatelessWidget {
               ],),
             itemCount: events.length,
           //new EventsPage(),
-
+//test
         );
       }
     }
