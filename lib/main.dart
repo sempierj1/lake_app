@@ -5,17 +5,28 @@ import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart';
 import 'dart:async';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'menu.dart';
 
+
+
+//test
 void main()
 {
+  
   runCheck();
 }
 
 void runCheck() async{
   bool check = await checkFirstRun();
+  bool check2 = await checkInfo();
   if(check)
   {
     runApp(new MyApp());
+  }
+  else if(!check && !check2)
+  {
+    runApp(new LoginApp());
   }
   else
   {
@@ -28,14 +39,34 @@ Future<bool> checkFirstRun() async
   bool run = (prefs.getBool('firstRun') ?? true);
   return run;
 }
+
+Future<bool> checkInfo() async
+{
+  final storage = new FlutterSecureStorage();
+  String user = await (storage.read(key: "username") ?? null);
+  if (user != null) {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
 //TEST VARIABLES
-bool sent = true;
+bool sent = false;
 int message = 0;
+
+class LoginApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new TabbedAppBarSample();
+  }
+}
 
 class LakeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new TabbedAppBarSample();
+    return new TabbedAppBarMenu();
   }
 }
 
@@ -97,7 +128,7 @@ class _LogonWidgetState extends State<LogonWidget>
                     new FlatButton(
                       child: new Text('Continue'),
                       onPressed:(){
-                        runApp(new LakeApp());
+                        runApp(new LoginApp());
                       }
                     )
                   ]
@@ -117,6 +148,11 @@ class _LogonWidgetState extends State<LogonWidget>
           },
           child: new Text('Submit'),
         ),
+        new RaisedButton(
+        onPressed: () {
+          runApp(new LoginApp());
+        },
+        child: new Text('Login'),)
       ],
     );
   }
@@ -132,7 +168,8 @@ class _LogonWidgetState extends State<LogonWidget>
       var request = new MultipartRequest("POST", uri);
       request.fields['email'] = email;
       StreamedResponse response = await request.send();
-      response.stream.transform(utf8.decoder).listen(((value){
+      await for(var value in response.stream.transform(utf8.decoder))
+      {
         if(value.toString().length == 1)
           {
             sent = true;
@@ -141,7 +178,7 @@ class _LogonWidgetState extends State<LogonWidget>
           {
             sent = false;
           }
-      }));
+      };
     }catch(exception)
     {
       print(exception);

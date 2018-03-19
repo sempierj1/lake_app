@@ -10,6 +10,10 @@ dependencies:
   cupertino_icons: ^0.1.0
   shared_preferences: ^0.2.4+1
   flutter_secure_storage: "^1.0.0"
+  google_qr: "^0.1.0"
+  bot: ^0.28.0
+  zoomable_image: "^1.1.2"
+  web_socket_channel: "^1.0.7"
 
 dev_dependencies:
   flutter_test:
@@ -27,6 +31,15 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  assets:
+    - assets/Partly.png
+    - assets/Rain.png
+    - assets/Snow.png
+    - assets/SnowRain.png
+    - assets/Sun.png
+    - assets/SunRain.png
+    - assets/Thunder.png
+    - assets/Cloud.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #  - images/a_dot_burr.jpeg
