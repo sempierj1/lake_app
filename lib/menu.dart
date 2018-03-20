@@ -19,8 +19,8 @@ bool check = false;
 EmailHandler email = new EmailHandler();
 EventsListHandler eventsListHandler = new EventsListHandler();
 
-List weather = null;
-List events = null;
+List weather;
+List events;
 double widthApp;
 double heightApp;
 double fontSize = 30.0;
@@ -28,11 +28,99 @@ String qr = "";
 final double devicePixelRatio = ui.window.devicePixelRatio;
 //final QRHandler qr = new QRHandler();
 
+class LoadingState extends StatefulWidget{
+
+  LoadingState({Key key, this.title}) : super(key: key);
+
+  final String title;
+
+  @override
+  Loading createState() => new Loading();
+}
+class Loading extends State<LoadingState> {
+
+ void initState()
+  {
+      email.setEmail();
+      getQR();
+      getWeather();
+      getEvents();
+      //new Future.delayed(new Duration(seconds: 5), _menu);
+  }
+
+  Future _menu() async{
+    Navigator.popAndPushNamed(context, "/screen1");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold( // 1
+      appBar: new AppBar( //2
+        title: new Text("Loading",
+            style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0)),
+
+      ),
+      body: new Container(
+        child: new Stack(
+          children: <Widget>[
+            new Container(
+              alignment: AlignmentDirectional.center,
+              decoration: new BoxDecoration(
+                color: Colors.white,
+              ),
+              child: new Container(
+                decoration: new BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: new BorderRadius.circular(10.0)
+                ),
+                width: 300.0,
+                height: 200.0,
+                alignment: AlignmentDirectional.center,
+                child: new Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    new Center(
+                      child: new SizedBox(
+                        height: 50.0,
+                        width: 50.0,
+                        child: new CircularProgressIndicator(
+                          value: null,
+                          strokeWidth: 7.0,
+                        ),
+                      ),
+                    ),
+                    new Container(
+                      margin: const EdgeInsets.only(top: 25.0),
+                      child: new Center(
+                        child: new Text(
+                          "Finishing a Few Things",
+                          style: new TextStyle(
+                              color: Colors.lightBlue
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),);
+  }
+}
+
+/*lass MenuApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new TabbedAppBarMenu();
+  }
+}*/
 
 class TabbedAppBarMenu extends StatelessWidget  {
   @override
   Widget build(BuildContext context) {
-
     email.setEmail();
     getQR();
     getWeather();
