@@ -50,6 +50,10 @@ flutter:
       fonts:
        - asset: assets/fonts/Raleway/Raleway-Regular.ttf
        - asset: assets/fonts/Raleway/Raleway-Thin.ttf
+       - asset: assets/fonts/Raleway/Raleway-Bold.ttf
+    - family: Alert
+      fonts:
+      - asset: assets/fonts/Raleway/Raleway-Bold.ttf
   # To add assets to your application, add an assets section, like this:
   # assets:
   #  - images/a_dot_burr.jpeg

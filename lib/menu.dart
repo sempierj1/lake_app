@@ -119,6 +119,7 @@ class Loading extends State<LoadingState> {
 }*/
 
 class TabbedAppBarMenu extends StatelessWidget  {
+
   @override
   Widget build(BuildContext context) {
     email.setEmail();
@@ -130,9 +131,10 @@ class TabbedAppBarMenu extends StatelessWidget  {
         length: choices.length,
         child: new Scaffold(
           appBar: new AppBar(
-            title: const Text('Lake Application'),
+            centerTitle: true,
+            title: new Text('Lake Parsippany', textAlign: TextAlign.center, style: new TextStyle(fontFamily: "Roboto"),),
             bottom: new TabBar(
-              isScrollable: true,
+              //isScrollable: true,
               tabs: choices.map((Choice choice) {
                 return new Tab(
                   text: choice.title,
@@ -145,7 +147,7 @@ class TabbedAppBarMenu extends StatelessWidget  {
             children: choices.map((Choice choice) {
               return new Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: new ChoiceCard(choice: choice),
+                child: new ChoiceState(choice: choice),
               );
             }).toList(),
           ),
@@ -165,7 +167,7 @@ class Choice {
 const List<Choice> choices = const <Choice>[
   //const Choice(title: 'Login', icon: Icons.account_circle),
   const Choice(title: 'Check-In', icon: Icons.contacts),
-  const Choice(title: 'Status', icon: Icons.beach_access),
+  const Choice(title: 'Weather', icon: Icons.beach_access),
   const Choice(title: 'Events', icon: Icons.event),
   const Choice(title: 'Profile', icon: Icons.account_circle),
   //const Choice(title: 'Calendar', icon: Icons.calendar_today),
@@ -187,11 +189,20 @@ Future<String> getInfo() async
   String user = await storage.read(key: "username");
   return user;
 }
+class ChoiceState extends StatefulWidget{
+  ChoiceState({Key key, this.choice});
+  final Choice choice;
 
-class ChoiceCard extends StatelessWidget {
-  const ChoiceCard({ Key key, this.choice }) : super(key: key);
+  @override
+  createState() => new ChoiceCard(choice: choice);
+}
+
+class ChoiceCard extends State<ChoiceState> {
+  ChoiceCard({ Key key, this.choice });
 
   final Choice choice;
+  final _saved = new Set<String>();
+
 
 
   @override
@@ -248,7 +259,7 @@ class ChoiceCard extends StatelessWidget {
       }
 
     }
-    else if(choice.title == "Status") {
+    else if(choice.title == "Weather") {
       if (weather == null) {
         return new ListView(
             children: <Widget>[
@@ -266,36 +277,44 @@ class ChoiceCard extends StatelessWidget {
       else {
         String weatherImg;
         String weatherTxt;
+        Color barColor;
+        String alertText;
+        //CHECK SERVER FOR BEACH STATUS OR ON PULL WITH WEATHER
+        bool open = true;
+        if(open)
+          {
+            barColor = Colors.green;
+            alertText = "Open";
+          }
+        else
+          {
+            barColor = Colors.red;
+            alertText = "Closed";
+          }
+
         switch(weather[0].toString())
         {
             case "Clouds":
               weatherImg = 'assets/Cloud.png';
-              weatherTxt = "It is currently cloudy and ";
               break;
 
              case "Thunderstorm":
               weatherImg = 'assets/Thunder.png';
-              weatherTxt = "It is currently storming and ";
               break;
 
           case "Drizzle":
             weatherImg = 'assets/Rain.png';
-            weatherTxt = "It is currently drizzling and ";
             break;
 
           case "Rain":
             weatherImg = 'assets/Rain.png';
-            weatherTxt = "It is currently raining and ";
             break;
-
           case "Snow":
             weatherImg = 'assets/Snow.png';
-            weatherTxt = "It is currently snowing and ";
             break;
 
           case "Clear":
             weatherImg = 'assets/Sun.png';
-            weatherTxt = "It is currently sunny and ";
             break;
 
             default:
@@ -308,19 +327,45 @@ class ChoiceCard extends StatelessWidget {
               //child: new Container(
               child: new ListView(
                 children: [
+                      new Container(
+                         width: widthApp,
+                         height: 45.0,
+                         color: barColor,
+                         child: new Center(
+                             child: new Text(alertText, textAlign: TextAlign.center, style: new TextStyle(fontSize: fontSize, fontFamily: "Alert")),),
+                  ),
                   new Image.asset(weatherImg,
                     height:heightApp/3.0,
                     width:widthApp/3.0,
                     fit: BoxFit.contain,
                   ),
-                  new Text("\u000a" + weatherTxt + weather[2].round().toString() + "\u00b0" + "F with winds of " + weather[3].round().toString() + " mph. " + "\u000a\u000a" + "The beach is currently"
-                      " closed.",
-                      style: new TextStyle(fontSize: fontSize),
-                      textAlign: TextAlign.center,
-                  )
+                  new Container(
+                    padding: new EdgeInsets.only(top: heightApp/20.0),
+                    alignment: Alignment.center,
+                    child: new Row(
+                    children: <Widget>[
+                      new Expanded(
+                        child: new Center(
+                          child: new Text("Temp:\n" + weather[2].round().toString() + "\u00b0" + "F",
+                            style: new TextStyle(fontSize: 45.0, fontFamily: "Raleway"),
+                            textAlign: TextAlign.center,
+                          )
+                        )
+                      ),
+                      new Expanded(
+                      child: new Center(
+                        child: new Text("Wind:\n" + weather[3].round().toString() + " mph",
+                          style: new TextStyle(fontSize: 45.0, fontFamily: "Raleway"),
+                          textAlign: TextAlign.center,
+                      )
+                      ),)
+                    ],
+                  ),),
+
                 ]
               )
               );
+        // with winds of " + weather[3].round().toString() + " mph. " + "\u000a\u000a
       }
     }
     else if(choice.title == "Events") {
@@ -340,29 +385,79 @@ class ChoiceCard extends StatelessWidget {
       }
       else {
         //MAYBE USE CARDS? CHECK EXAMPLE
+
         return new ListView.builder(
-            itemBuilder: (BuildContext context, int index) => new ExpansionTile(leading: new Text((events[index]['eventDate']).toString().substring(5,10)),
-             title: new Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                     children:[
-                       new Text((events[index]['name']).toString(), textAlign: TextAlign.left,),
-                       new RichText(
-                         text: new TextSpan(text: (events[index]['isCost']).toString(), style: new TextStyle(color: Colors.green)),
-                         ),]
-                       //new Text("RSVP", style: new TextStyle(color:Colors.red), textAlign: TextAlign.right),
+            itemBuilder: (BuildContext context, int index) {
+              return new GestureDetector(
+                onLongPress: () {
+                  setState(() {
+                    if (_saved.contains((events[index]['name']))) {
+                      _saved.remove(events[index]['name']);
+                      print("Remove");
+                    }
+                    else {
+                      _saved.add(events[index]['name']);
+                      print("Add");
+                    }
+                  });
+                },
+                child:
+                new Card(
+                child: new Column(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      new ExpansionTile(
+                    leading: new Text((events[index]['eventDate']).toString().substring(5,10)),
+                    title: new Text((events[index]['name']).toString(), textAlign: TextAlign.left,),
+                    trailing: new Icon(_saved.contains(events[index]['name']) ? Icons.favorite : Icons.favorite_border,
+                    color: _saved.contains(events[index]['name']) ? Colors.red : null),
+                      children: <Widget>[
+                        new Container(
+                        padding: new EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+                        child: new Text((events[index]['description'])),
+              ),
 
-                   ),
+                      ],
+              ),],),),);},
+                      /*new ListTile(
+                        leading: new Text((events[index]['eventDate']).toString().substring(5,10)),
+                        title: new Text((events[index]['name']).toString(), textAlign: TextAlign.left,),
+                        subtitle:  new Text((events[index]['price']).toString() + "\n\n", textAlign: TextAlign.center,),
+                        trailing:  new Icon(_saved.contains(events[index]['name']) ? Icons.favorite : Icons.favorite_border,
+                            color: _saved.contains(events[index]['name']) ? Colors.red : null),
 
-                 /*children: <TextSpan>[
+                      ),
+
+                      new Text((events[index]['description'])),
+
+                    ],)
+                  //new Text("RSVP", style: new TextStyle(color:Colors.red), textAlign: TextAlign.right),
+
+                );
+            }, => new ExpansionTile(leading:  new Icon(_saved.contains(events[index]['name']) ? Icons.favorite : Icons.favorite_border,
+                  color: _saved.contains(events[index]['name']) ? Colors.red : null),
+                title: new Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children:[
+                      new Text((events[index]['eventDate']).toString().substring(5,10)),
+                      new Text((events[index]['name']).toString(), textAlign: TextAlign.left,),
+                      new RichText(
+                        text: new TextSpan(text: (events[index]['isCost']).toString(), style: new TextStyle(color: Colors.green)),
+                      ),]
+                  //new Text("RSVP", style: new TextStyle(color:Colors.red), textAlign: TextAlign.right),
+
+                ),
+
+                /*children: <TextSpan>[
                    new TextSpan(),
                    new TextSpan(text:("\$" + (events[index]['price']).toString()), style: new TextStyle(color: Colors.green)),
                    new TextSpan(text: "RSVP", style: new TextStyle(color:Colors.red)),
                    new TextSpan(text:((events[index]['description']))),
 */
-              children: <Widget>[
-                new Text((events[index]['description'])),
-                new Text("\n"),
-                new Text("This event is " + (events[index]['price']).toString(), textAlign: TextAlign.left,),
-              ],),
+                children: <Widget>[
+                  new Text((events[index]['description'])),
+                  new Text("\n"),
+                  new Text("This event is " + (events[index]['price']).toString() + "\n\n", textAlign: TextAlign.left,),
+                ],)
+            },*/
             itemCount: events.length,
           //new EventsPage(),
 
