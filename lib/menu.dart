@@ -45,11 +45,15 @@ class Loading extends State<LoadingState> {
       getQR();
       getWeather();
       getEvents();
-      //new Future.delayed(new Duration(seconds: 5), _menu);
+      new Future.delayed(new Duration(milliseconds: 500), _menu);
   }
 
   Future _menu() async{
-    Navigator.popAndPushNamed(context, "/screen1");
+   if(qr != null && events != null && weather != null) {
+     Navigator.popAndPushNamed(context, "/screen1");
+   }
+   else
+     new Future.delayed(new Duration(seconds: 1), _menu);
   }
 
   @override
@@ -94,7 +98,7 @@ class Loading extends State<LoadingState> {
                       margin: const EdgeInsets.only(top: 25.0),
                       child: new Center(
                         child: new Text(
-                          "Finishing a Few Things",
+                          "Loading",
                           style: new TextStyle(
                               color: Colors.lightBlue
                           ),
@@ -488,14 +492,6 @@ getWeather()async
 getEvents()async
 {
   events = await eventsListHandler.getEvents();
-  for(int i = 0; i < events.length; i++)
-    {
-      if(events[i]['price'] != '0')
-        {
-
-        }
-    }
-
 }
 /*
 class EventsPage extends StatefulWidget {

@@ -37,7 +37,7 @@ void runCheck() async{
   else
   {
     runApp(new MaterialApp(
-      home: new TabbedAppBarMenu(),
+      home: new LoadingState(),
       routes: <String, WidgetBuilder>{
         '/screen1': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen2': (BuildContext context) => new LoadingState(),
