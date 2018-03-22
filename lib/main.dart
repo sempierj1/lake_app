@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'login.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'menu.dart';
 import 'serverHandle.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
+
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
+final GoogleSignIn _googleSignIn = new GoogleSignIn();
 TextEditingController _controller = new TextEditingController();
 TextEditingController _controller2 = new TextEditingController();
-ServerHandle login;
+ServerHandle qr;
 //test
 void main()
 {
@@ -65,15 +69,9 @@ Future<bool> checkFirstRun() async
   }
 }*/
 //TEST VARIABLES
-bool sent = false;
+bool sent = true;
 int message = 0;
 
-class LoginApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return new TabbedAppBarSample();
-  }
-}
 
 class MenuApp extends StatelessWidget{
   @override
@@ -246,7 +244,7 @@ class FirstScreen extends StatelessWidget{
                 children: <Widget>[
                 new Text("Used the App Before?", style: new TextStyle(fontFamily: 'Raleway', fontSize: 15.0, color: Colors.grey), textAlign: TextAlign.center,),
                 new FlatButton(
-                    onPressed:(){ // 4
+                    onPressed:() async{ // 4
                       Navigator.pushNamed(context, "/screen3"); // 5
               } ,     child: new Text("Login", style: new TextStyle(fontFamily: 'Roboto', color: Colors.lightBlue, fontSize: 15.0),),),],),),])
     );
@@ -302,11 +300,31 @@ class EnterEmail extends StatelessWidget {
                 alignment: Alignment.bottomCenter,
                 child: new FlatButton(
             onPressed: () async {
-              await sendEmail();
+              sent = true;
+              await resetPassword().catchError((e){
+                sent = false;
+              });
               if(sent)
                 {
                   setPrefs();
-                  Navigator.pushNamed(context, "/screen3");
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    child: new AlertDialog(
+                        title: new Text('Password Reset Email Sent'),
+                        content: new Text(
+                            'Please Follow the Instructions in the Email then Click Continue'),
+                        actions: <Widget>[
+                          new FlatButton(
+                              child: new Text('Continue'),
+                              onPressed:(){
+                                Navigator.pop(context);
+                                Navigator.pushNamed(context, "/screen3");
+                              }
+                          )
+                        ]
+                    ),
+                  );
                 }
               else
                 {
@@ -417,12 +435,37 @@ class Login extends StatelessWidget {
                     alignment: Alignment.bottomCenter,
                     child: new FlatButton(
                         onPressed: () async {
-                          login = new ServerHandle(_controller.text, _controller2.text);
-                          await login.checkLogin();
-                          if (login.getVerified()) {
-                            await setFirstRun();
-                            await storeInfo();
-                            Navigator.pushNamed(context, "/screen4");
+                          //login = new ServerHandle(_controller.text, _controller2.text);
+                          await _handleSignIn(context)
+                          .then((FirebaseUser user){
+                            if(user != null)
+                              {
+                                Navigator.pushNamed(context, "/screen4");
+                              }
+                              else
+                                {
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    child: new AlertDialog(
+                                        title: new Text('Login Failed'),
+                                        content: new Text(
+                                            'Login Credentials Are Case Sensitive'),
+                                        actions: <Widget>[
+                                          new FlatButton(
+                                              child: new Text('Try Again'),
+                                              onPressed:(){
+                                                _controller2.text = "";
+                                                Navigator.pop(context);
+                                              }
+                                          )
+                                        ]
+                                    ),
+                                  );
+                                }
+                          })
+                          .catchError((e) => print(e));
+                          //await login.checkLogin();
                             /*runApp(new MaterialApp(
                               home: new TabbedAppBarMenu(),
                               routes: <String, WidgetBuilder>{
@@ -430,47 +473,14 @@ class Login extends StatelessWidget {
                                 '/screen2': (BuildContext context) => new LoadingState(),
                               },
                             ));*/
-                          }
-                          else
-                          {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              child: new AlertDialog(
-                                  title: new Text('Login Failed'),
-                                  content: new Text(
-                                      'Login Credentials Are Case Sensitive'),
-                                  actions: <Widget>[
-                                    new FlatButton(
-                                        child: new Text('Try Again'),
-                                        onPressed:(){
-                                          _controller2.text = "";
-                                          Navigator.pop(context);
-                                        }
-                                    )
-                                  ]
-                              ),
-                            );
-                          }
+
+
 
                         }, child: new Text("Submit", style: new TextStyle(fontFamily: 'Roboto', color:Colors.lightBlue, fontSize: 15.0), textAlign: TextAlign.center,)
                     ),),],),])
     );
   }
-  setFirstRun() async
-  {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('firstRun', false);
-  }
 
-  storeInfo() async
-  {
-    final storage = new FlutterSecureStorage();
-    String user = _controller.text;
-    String pass = _controller2.text;
-    storage.write(key: "username", value: user);
-    storage.write(key: "password", value: pass);
-  }
 }
 
 
@@ -488,7 +498,7 @@ class Loading extends State<LoadScreen> {
   void initState()
   {
     email.setEmail();
-    getQR();
+    getInfo();
     getWeather();
     getEvents();
     new Future.delayed(new Duration(seconds: 5), _menu);
@@ -555,4 +565,39 @@ class Loading extends State<LoadScreen> {
         ),
       ),);
   }
+}
+
+Future resetPassword() async
+{
+  await _auth.sendPasswordResetEmail(email: _controller.text).catchError((e){
+    sent = false;
+  });
+}
+
+Future<FirebaseUser> _handleSignIn(BuildContext context) async {
+  FirebaseUser user = await _auth.signInWithEmailAndPassword(
+    email: _controller.text,
+    password: _controller2.text,
+  );
+  if(user != null) {
+    await setFirstRun();
+    await storeInfo();
+    qr = new ServerHandle(_controller.text);
+  }
+  return user;
+}
+
+setFirstRun() async
+{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setBool('firstRun', false);
+}
+
+storeInfo() async
+{
+  final storage = new FlutterSecureStorage();
+  String user = _controller.text;
+  String pass = _controller2.text;
+  storage.write(key: "username", value: user);
+  storage.write(key: "password", value: pass);
 }

@@ -12,14 +12,14 @@ class ServerHandle
   String email;
   String pass;
   String _base64;
-  ServerHandle(String e, String psw)
+  ServerHandle(String e)
   {
     if(e.substring(e.length-1,e.length) == " ")
       {
         e = e.substring(0, e.length-1);
       }
     email = e;
-    pass = psw;
+    //pass = psw;
   }
 
   checkLogin()async

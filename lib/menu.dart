@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'dart:convert';
-import 'package:http/http.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'userinfo.dart';
 import 'dart:ui' as ui;
-import 'dart:typed_data';
-import 'package:zoomable_image/zoomable_image.dart';
 import 'eventsHandler.dart';
-import 'package:http/http.dart' as http;
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
+final FirebaseAuth _auth = FirebaseAuth.instance;
+FirebaseUser _user;
 final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller1 = new TextEditingController();
 bool check = false;
 EmailHandler email = new EmailHandler();
 EventsListHandler eventsListHandler = new EventsListHandler();
-
+String qr = "";
 List weather;
 List events;
 double widthApp;
 double heightApp;
 double fontSize = 30.0;
-String qr = "";
+final mainReference = FirebaseDatabase.instance.reference();
+
 final double devicePixelRatio = ui.window.devicePixelRatio;
 //final QRHandler qr = new QRHandler();
 
@@ -39,10 +39,19 @@ class LoadingState extends StatefulWidget{
 }
 class Loading extends State<LoadingState> {
 
+  Loading(){
+    mainReference.onValue.listen(_firstGrab);
+  }
+  _firstGrab(Event event)
+  {
+    print(event.snapshot);
+  }
+
+  
  void initState()
   {
+      _handleSignIn();
       email.setEmail();
-      getQR();
       getWeather();
       getEvents();
       new Future.delayed(new Duration(milliseconds: 500), _menu);
@@ -127,7 +136,7 @@ class TabbedAppBarMenu extends StatelessWidget  {
   @override
   Widget build(BuildContext context) {
     email.setEmail();
-    getQR();
+    getInfo();
     getWeather();
     getEvents();
     return new MaterialApp(
@@ -191,6 +200,7 @@ Future<String> getInfo() async
 {
   final storage = new FlutterSecureStorage();
   String user = await storage.read(key: "username");
+  qr = user;
   return user;
 }
 class ChoiceState extends StatefulWidget{
@@ -228,7 +238,7 @@ class ChoiceCard extends State<ChoiceState> {
                     onPressed: () async
                     {
                       deleteCred();
-                      runApp(new LoginApp());
+                      //runApp(new LoginApp());
                     },
                     child: new Text('Logout'),
                   ),
@@ -248,17 +258,15 @@ class ChoiceCard extends State<ChoiceState> {
             child: new RaisedButton(
                 onPressed: ()
                 {
-                  runApp(new LakeApp());
+                  runApp(new MenuApp());
                 },
                 child: new Text('Reload')
             ),
           )]);
         }
         else {
-        Uint8List bytes = BASE64.decode(qr);
-        Image myQR = new Image.memory(bytes);
         return new Center(
-              child: myQR,
+              child: new QrImage(data: qr, size: widthApp / 2),
         );
       }
 
@@ -322,7 +330,7 @@ class ChoiceCard extends State<ChoiceState> {
             break;
 
             default:
-              weatherImg = "";
+              weatherImg = "assets/Sun.png";
               break;
         }
 
@@ -474,15 +482,6 @@ class ChoiceCard extends State<ChoiceState> {
       }
   }
 }
-getQR()async
-{
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  qr = prefs.getString('qr');
-  if(qr == null)
-    {
-      qr = "";
-    }
-}
 
 getWeather()async
 {
@@ -492,6 +491,18 @@ getWeather()async
 getEvents()async
 {
   events = await eventsListHandler.getEvents();
+}
+
+Future _handleSignIn() async {
+  final storage = new FlutterSecureStorage();
+  String uName = await storage.read(key: "username");
+  String pass = await storage.read(key:"password");
+  FirebaseUser user = await _auth.signInWithEmailAndPassword(
+    email: uName,
+    password: pass
+  );
+  print(mainReference.equalTo(user.uid));
+  return user;
 }
 /*
 class EventsPage extends StatefulWidget {
