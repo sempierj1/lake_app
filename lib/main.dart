@@ -12,7 +12,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
-final GoogleSignIn _googleSignIn = new GoogleSignIn();
 TextEditingController _controller = new TextEditingController();
 TextEditingController _controller2 = new TextEditingController();
 ServerHandle qr;
