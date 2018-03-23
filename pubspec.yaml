@@ -14,7 +14,8 @@ dependencies:
   firebase_auth: "^0.5.1"
   qr_flutter: "^1.0.0"
   pub_mediator: "^1.0.1"
-
+  camera: "^0.1.1"
+  path_provider: "^0.4.0"
 
 
 
@@ -38,6 +39,7 @@ flutter:
     - assets/SunRain.png
     - assets/Thunder.png
     - assets/Cloud.png
+    - assets/nouser.png
 
   fonts:
     - family: Roboto

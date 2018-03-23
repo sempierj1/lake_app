@@ -7,7 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'menu.dart';
 import 'serverHandle.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'cameraHandler.dart';
 
 
 
@@ -34,6 +34,9 @@ void runCheck() async{
         '/screen2': (BuildContext context) => new EnterEmail(),
         '/screen3': (BuildContext context) => new Login(),
         '/screen4': (BuildContext context) => new LoadScreen(),
+        '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
+        '/screen6': (BuildContext context) => new LoadingState(),
+        '/screen7': (BuildContext context) => new CameraExampleHome(),
       },
     ));
   }
@@ -44,6 +47,7 @@ void runCheck() async{
       routes: <String, WidgetBuilder>{
         '/screen1': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen2': (BuildContext context) => new LoadingState(),
+        '/screen3': (BuildContext context) => new CameraExampleHome(),
       },
     ));
   }
@@ -215,7 +219,7 @@ class FirstScreen extends StatelessWidget{
         title: new Text("Getting Started", style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0)),
 
       ),
-      body: new ListView(
+      body: new Column(
           children: <Widget>[
             new Row(
             children: <Widget> [

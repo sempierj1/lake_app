@@ -9,10 +9,11 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'cameraHandler.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 FirebaseUser _user;
-
+List family;
 
 bool check = false;
 EmailHandler email = new EmailHandler();
@@ -23,7 +24,8 @@ List events;
 double widthApp;
 double heightApp;
 double fontSize = 30.0;
-final mainReference = FirebaseDatabase.instance.reference();
+final mainReference = FirebaseDatabase.instance.reference().child("users");
+DataSnapshot snapshot;
 
 final double devicePixelRatio = ui.window.devicePixelRatio;
 //final QRHandler qr = new QRHandler();
@@ -39,12 +41,14 @@ class LoadingState extends StatefulWidget{
 }
 class Loading extends State<LoadingState> {
 
-  Loading(){
-    mainReference.onValue.listen(_firstGrab);
+  Loading() {
+
   }
   _firstGrab(Event event)
   {
-    print(event.snapshot);
+    setState(() {
+      print(event.snapshot);
+    });
   }
 
   
@@ -453,33 +457,86 @@ class ChoiceCard extends State<ChoiceState> {
       }
     }
     else if(choice.title == 'Profile') {
-      return new Card(
-        color: Colors.white,
-        child: new Center(
-            child: new ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      List<Widget> children = new List.generate(family.length, (int i) => new FamilyWidget(i));
+      return new Column(
                 children: <Widget>[
-                  new Text(
-                    email.getEmail(),
+                  new Row(
+                    children: <Widget>[
+                      new Expanded(
+                          child: new Column(
+                              children: <Widget>[
+                                new Center(
+                                    child: new CircleAvatar(backgroundImage: new AssetImage("/assets/nouser.png"), radius: widthApp / 7,),
+                                  ),
+                                new FlatButton(onPressed: (){
+                                  Navigator.popAndPushNamed(context, '/screen3');
+                                }, child: new Text("Add Picture", style: new TextStyle(fontFamily: 'Roboto', color:Colors.lightBlue, fontSize: 20.0), textAlign: TextAlign.center,))
+                            ]
+                        ),
+                         ),
+                      new Expanded(
+                        child: new Column(
+                          children: <Widget>[
+                            new Text(_user.displayName, style: new TextStyle(fontFamily: 'Roboto', fontSize: fontSize)),
+                            new Text(snapshot.value[_user.displayName]['email'], style: new TextStyle(fontFamily: 'Roboto', fontSize: fontSize*.75)),
+                            new Text(snapshot.value[_user.displayName]['type'] + " Membership", style: new TextStyle(fontFamily: 'Roboto', fontSize: fontSize*.75)),
+                            new Text("Guest Badges - " + snapshot.value[_user.displayName]['guests'].toString(), style: new TextStyle(fontFamily: 'Roboto', fontSize: fontSize*.75)),
+                          ]
+                      ),
+                      ),
+                    ],
                   ),
-                  new RaisedButton(
-                    onPressed: () async
-                    {
-                      deleteCred();
-                      //runApp(new LoginApp());
-                    },
-                    child: new Text('Logout'),
-                  ),
-                ]
-            )
-        ),
-      );
+                new Row(
+                  children: <Widget>[
+                    new Container(
+                      height: heightApp / 10,
+                    )
+                  ],
+                ),
+                new Column(
+                 children: children
+                ),
+                  new Align(
+                    heightFactor: 3.2,
+                  alignment: Alignment.bottomCenter,
+                  child: new FlatButton(onPressed: (){
+                  }, child: new Text("Sign-Out", style: new TextStyle(fontFamily: 'Roboto', color:Colors.lightBlue, fontSize: 20.0), textAlign: TextAlign.center,))
+                  )
+                ],
+    );
     }
     else
       {
         return new Container(width: 0.0, height: 0.0);
       }
   }
+}
+
+class FamilyWidget extends StatelessWidget{
+  final int index;
+
+  FamilyWidget(this.index);
+
+  @override
+  Widget build(BuildContext context)
+  {
+    return new Row(
+      children: <Widget>[
+        new Expanded(
+          child: new Container(
+        padding: new EdgeInsets.only(left: 5.0),
+          child: new Text(family[index], style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0)),
+    ),),
+         new Align(
+          alignment: Alignment.bottomRight,
+          child: new FlatButton(onPressed: (){
+          }, child: new Text("Invite", style: new TextStyle(fontFamily: 'Roboto', color:Colors.lightBlue, fontSize: 20.0), textAlign: TextAlign.center,))
+         )
+      ],
+    );
+
+  }
+
 }
 
 getWeather()async
@@ -500,7 +557,10 @@ Future _handleSignIn() async {
     email: uName,
     password: pass
   );
-  print(mainReference.equalTo(user.uid));
+  snapshot = await mainReference.once();
+  family = snapshot.value[user.displayName]['family'];
+  //print(mainReference.equalTo(user.uid));
+  _user = user;
   return user;
 }
 /*
