@@ -12,8 +12,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 FirebaseUser _user;
-final TextEditingController _controller = new TextEditingController();
-final TextEditingController _controller1 = new TextEditingController();
+
+
 bool check = false;
 EmailHandler email = new EmailHandler();
 EventsListHandler eventsListHandler = new EventsListHandler();
@@ -224,30 +224,7 @@ class ChoiceCard extends State<ChoiceState> {
     widthApp = MediaQuery.of(context).size.width;
     heightApp = MediaQuery.of(context).size.height;
     fontSize = (widthApp / 18).round() * 1.0;
-    if (choice.title == 'Profile') {
-      return new Card(
-        color: Colors.white,
-        child: new Center(
-            child: new ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                children: <Widget>[
-                  new Text(
-                    email.getEmail(),
-                  ),
-                  new RaisedButton(
-                    onPressed: () async
-                    {
-                      deleteCred();
-                      //runApp(new LoginApp());
-                    },
-                    child: new Text('Logout'),
-                  ),
-                ]
-            )
-        ),
-      );
-    }
-    else if(choice.title == "Check-In")
+    if(choice.title == "Check-In")
     {
       if(qr == "")
         {
@@ -288,7 +265,6 @@ class ChoiceCard extends State<ChoiceState> {
       }
       else {
         String weatherImg;
-        String weatherTxt;
         Color barColor;
         String alertText;
         //CHECK SERVER FOR BEACH STATUS OR ON PULL WITH WEATHER
@@ -475,6 +451,29 @@ class ChoiceCard extends State<ChoiceState> {
 
         );
       }
+    }
+    else if(choice.title == 'Profile') {
+      return new Card(
+        color: Colors.white,
+        child: new Center(
+            child: new ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                children: <Widget>[
+                  new Text(
+                    email.getEmail(),
+                  ),
+                  new RaisedButton(
+                    onPressed: () async
+                    {
+                      deleteCred();
+                      //runApp(new LoginApp());
+                    },
+                    child: new Text('Logout'),
+                  ),
+                ]
+            )
+        ),
+      );
     }
     else
       {

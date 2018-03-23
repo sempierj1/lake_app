@@ -1,10 +1,7 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
-import 'dart:async';
-import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 
 class ServerHandle
 {
@@ -34,7 +31,7 @@ class ServerHandle
     await for(var value in response.stream.transform(utf8.decoder))
     {
     if (value.toString() == "VALID")  {
-     await getQR();
+     getQR();
     verified = true;
     }
     else {
