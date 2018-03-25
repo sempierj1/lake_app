@@ -262,13 +262,6 @@ class ChoiceCard extends StatelessWidget {
                        //new Text("RSVP", style: new TextStyle(color:Colors.red), textAlign: TextAlign.right),
 
                    ),
-
-                 /*children: <TextSpan>[
-                   new TextSpan(),
-                   new TextSpan(text:("\$" + (events[index]['price']).toString()), style: new TextStyle(color: Colors.green)),
-                   new TextSpan(text: "RSVP", style: new TextStyle(color:Colors.red)),
-                   new TextSpan(text:((events[index]['description']))),
-*/
               children: <Widget>[
                 new Text((events[index]['description'])),
                 new Text("\n"),
@@ -313,67 +306,3 @@ getEvents()async
     }
 
 }
-/*
-class EventsPage extends StatefulWidget {
-  EventsPageState createState() => new EventsPageState();
-}
-
-class EventsPageState extends State<EventsPage> {
-  Future<http.Response> _response;
-
-  void initState() {
-    super.initState();
-    _refresh();
-  }
-
-  void _refresh() {
-    setState(() {
-      _response = http.get(
-          'mediahomecraft.ddns.net/lake/getEvents.php'
-      );
-    });
-  }
-
-  Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text("Events"),
-      ),
-      floatingActionButton: new FloatingActionButton(
-        child: new Icon(Icons.refresh),
-        onPressed: _refresh,
-      ),
-      body: new Center(
-          child: new FutureBuilder(
-              future: _response,
-              builder: (BuildContext context, AsyncSnapshot<http.Response> response) {
-                if (!response.hasData)
-                  return new Text('Loading...');
-                else if (response.data.statusCode != 200) {
-                  return new Text('Could not connect to database.');
-                } else {
-                  Map<String, dynamic> json = JSON.decode(response.data.body);
-                  if (json['cod'] == 200) {
-                    print("HERE");
-                    return new Event(json);
-                  }
-                  else
-                    return new Text('Database service error: $json.');
-                }
-              }
-          )
-      ),
-    );
-  }
-}
-class Event extends StatelessWidget {
-  final Map<String, dynamic> data;
-  Event(this.data);
-  Widget build(BuildContext context) {
-    String name = data[0]['name'];
-    return new Text(
-        name,
-      style: Theme.of(context).textTheme.display4,
-    );
-  }
-}*/
