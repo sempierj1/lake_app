@@ -36,7 +36,7 @@ void runCheck() async{
         '/screen4': (BuildContext context) => new LoadScreen(),
         '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen6': (BuildContext context) => new LoadingState(),
-        '/screen7': (BuildContext context) => new CameraExampleHome(),
+        '/screen7': (BuildContext context) => new CameraState(),
       },
     ));
   }
@@ -45,9 +45,13 @@ void runCheck() async{
     runApp(new MaterialApp(
       home: new LoadingState(),
       routes: <String, WidgetBuilder>{
-        '/screen1': (BuildContext context) => new TabbedAppBarMenu(),
-        '/screen2': (BuildContext context) => new LoadingState(),
-        '/screen3': (BuildContext context) => new CameraExampleHome(),
+        '/screen1': (BuildContext context) => new FirstScreen(),
+        '/screen2': (BuildContext context) => new EnterEmail(),
+        '/screen3': (BuildContext context) => new Login(),
+        '/screen4': (BuildContext context) => new LoadScreen(),
+        '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
+        '/screen6': (BuildContext context) => new LoadingState(),
+        '/screen7': (BuildContext context) => new CameraState(),
       },
     ));
   }
@@ -443,7 +447,7 @@ class Login extends StatelessWidget {
                           .then((FirebaseUser user){
                             if(user != null)
                               {
-                                Navigator.pushNamed(context, "/screen4");
+                                Navigator.pushNamed(context, "/screen6");
                               }
                               else
                                 {
@@ -508,7 +512,7 @@ class Loading extends State<LoadScreen> {
   }
 
   Future _menu() async{
-      runApp(new MenuApp());
+      Navigator.popAndPushNamed(context, '/screen5');
   }
 
   @override
@@ -578,15 +582,23 @@ Future resetPassword() async
 }
 
 Future<FirebaseUser> _handleSignIn(BuildContext context) async {
-  FirebaseUser user = await _auth.signInWithEmailAndPassword(
-    email: _controller.text,
-    password: _controller2.text,
-  );
+  FirebaseUser user;
+  try {
+      user = await _auth.signInWithEmailAndPassword(
+      email: _controller.text,
+      password: _controller2.text,
+    );
+  }catch(e)
+  {
+    print(e);
+  }
+
   if(user != null) {
     await setFirstRun();
     await storeInfo();
     qr = new ServerHandle(_controller.text);
   }
+  print(user);
   return user;
 }
 

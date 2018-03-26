@@ -9,7 +9,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'cameraHandler.dart';
+import 'package:camera/camera.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 FirebaseUser _user;
@@ -26,9 +26,50 @@ double heightApp;
 double fontSize = 30.0;
 final mainReference = FirebaseDatabase.instance.reference().child("users");
 DataSnapshot snapshot;
-
+List<CameraDescription> cameras;
 final double devicePixelRatio = ui.window.devicePixelRatio;
 //final QRHandler qr = new QRHandler();
+
+class CameraState extends StatefulWidget{
+  CameraState({Key key, this.title}) : super(key: key);
+
+  final String title;
+
+  @override
+  _CameraState createState() => new _CameraState();
+}
+
+class _CameraState extends State<CameraState>{
+  CameraController controller;
+
+  @override
+  void initState(){
+    super.initState();
+    controller = new CameraController(cameras[1], ResolutionPreset.medium);
+    controller.initialize().then((_){
+      if(!mounted){
+        return;
+      }
+      setState((){});
+    });
+  }
+
+  @override
+  void dispose(){
+    controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context){
+    if(!controller.value.initialized){
+      return new Container();
+    }
+    return new AspectRatio(aspectRatio:
+    controller.value.aspectRatio,
+    child: new CameraPreview(controller));
+  }
+}
 
 class LoadingState extends StatefulWidget{
 
@@ -44,17 +85,11 @@ class Loading extends State<LoadingState> {
   Loading() {
 
   }
-  _firstGrab(Event event)
-  {
-    setState(() {
-      print(event.snapshot);
-    });
-  }
 
-  
  void initState()
   {
       _handleSignIn();
+      getCameras();
       email.setEmail();
       getWeather();
       getEvents();
@@ -62,8 +97,8 @@ class Loading extends State<LoadingState> {
   }
 
   Future _menu() async{
-   if(qr != null && events != null && weather != null) {
-     Navigator.popAndPushNamed(context, "/screen1");
+   if(qr != null && events != null && weather != null && cameras != null) {
+     Navigator.popAndPushNamed(context, "/screen5");
    }
    else
      new Future.delayed(new Duration(seconds: 1), _menu);
@@ -239,7 +274,7 @@ class ChoiceCard extends State<ChoiceState> {
             child: new RaisedButton(
                 onPressed: ()
                 {
-                  runApp(new MenuApp());
+                  //runApp(new MenuApp());
                 },
                 child: new Text('Reload')
             ),
@@ -469,7 +504,9 @@ class ChoiceCard extends State<ChoiceState> {
                                     child: new CircleAvatar(backgroundImage: new AssetImage("/assets/nouser.png"), radius: widthApp / 7,),
                                   ),
                                 new FlatButton(onPressed: (){
-                                  Navigator.popAndPushNamed(context, '/screen3');
+                                  Navigator.push(context,
+                                      new MaterialPageRoute(builder: (context) => new CameraState()),);
+                                  //Navigator.pushNamed(context, '/screen7');
                                 }, child: new Text("Add Picture", style: new TextStyle(fontFamily: 'Roboto', color:Colors.lightBlue, fontSize: 20.0), textAlign: TextAlign.center,))
                             ]
                         ),
@@ -562,6 +599,10 @@ Future _handleSignIn() async {
   //print(mainReference.equalTo(user.uid));
   _user = user;
   return user;
+}
+
+Future<Null> getCameras() async {
+  cameras = await availableCameras();
 }
 /*
 class EventsPage extends StatefulWidget {

@@ -2,7 +2,6 @@ import 'package:camera/camera.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
 
 
@@ -167,7 +166,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome> {
 
 List<CameraDescription> cameras;
 
-Future<Null> main() async {
+Future<Null> getCameras() async {
   cameras = await availableCameras();
-  runApp(new MaterialApp(home: new CameraExampleHome()));
 }
