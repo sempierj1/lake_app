@@ -7,8 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'menu.dart';
 import 'serverHandle.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'cameraHandler.dart';
-
+import 'menuCamera.dart';
 
 
 final FirebaseAuth _auth = FirebaseAuth.instance;

@@ -10,11 +10,14 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:camera/camera.dart';
+import 'menuCamera.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 FirebaseUser _user;
 List family;
-
+String appDocPath;
 bool check = false;
 EmailHandler email = new EmailHandler();
 EventsListHandler eventsListHandler = new EventsListHandler();
@@ -26,50 +29,13 @@ double heightApp;
 double fontSize = 30.0;
 final mainReference = FirebaseDatabase.instance.reference().child("users");
 DataSnapshot snapshot;
-List<CameraDescription> cameras;
+bool imageExists = true;
+Image profilePic;
+
 final double devicePixelRatio = ui.window.devicePixelRatio;
 //final QRHandler qr = new QRHandler();
 
-class CameraState extends StatefulWidget{
-  CameraState({Key key, this.title}) : super(key: key);
 
-  final String title;
-
-  @override
-  _CameraState createState() => new _CameraState();
-}
-
-class _CameraState extends State<CameraState>{
-  CameraController controller;
-
-  @override
-  void initState(){
-    super.initState();
-    controller = new CameraController(cameras[1], ResolutionPreset.medium);
-    controller.initialize().then((_){
-      if(!mounted){
-        return;
-      }
-      setState((){});
-    });
-  }
-
-  @override
-  void dispose(){
-    controller?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context){
-    if(!controller.value.initialized){
-      return new Container();
-    }
-    return new AspectRatio(aspectRatio:
-    controller.value.aspectRatio,
-    child: new CameraPreview(controller));
-  }
-}
 
 class LoadingState extends StatefulWidget{
 
@@ -93,11 +59,13 @@ class Loading extends State<LoadingState> {
       email.setEmail();
       getWeather();
       getEvents();
+      getPath();
+
       new Future.delayed(new Duration(milliseconds: 500), _menu);
   }
 
   Future _menu() async{
-   if(qr != null && events != null && weather != null && cameras != null) {
+   if(qr != null && events != null && weather != null && cameras != null && appDocPath != null) {
      Navigator.popAndPushNamed(context, "/screen5");
    }
    else
@@ -260,11 +228,13 @@ class ChoiceCard extends State<ChoiceState> {
 
   @override
   Widget build(BuildContext context) {
+
     widthApp = MediaQuery.of(context).size.width;
     heightApp = MediaQuery.of(context).size.height;
     fontSize = (widthApp / 18).round() * 1.0;
     if(choice.title == "Check-In")
     {
+      print("CHECK IN");
       if(qr == "")
         {
           return new ListView(
@@ -288,6 +258,7 @@ class ChoiceCard extends State<ChoiceState> {
 
     }
     else if(choice.title == "Weather") {
+      print("Weather");
       if (weather == null) {
         return new ListView(
             children: <Widget>[
@@ -396,6 +367,7 @@ class ChoiceCard extends State<ChoiceState> {
       }
     }
     else if(choice.title == "Events") {
+      print("Events");
       if (events == null) {
         return new ListView(
             children: <Widget>[
@@ -492,6 +464,7 @@ class ChoiceCard extends State<ChoiceState> {
       }
     }
     else if(choice.title == 'Profile') {
+      print("Profile");
       List<Widget> children = new List.generate(family.length, (int i) => new FamilyWidget(i));
       return new Column(
                 children: <Widget>[
@@ -501,7 +474,7 @@ class ChoiceCard extends State<ChoiceState> {
                           child: new Column(
                               children: <Widget>[
                                 new Center(
-                                    child: new CircleAvatar(backgroundImage: new AssetImage("/assets/nouser.png"), radius: widthApp / 7,),
+                                    child: new CircleAvatar(backgroundImage: new FileImage(new File(appDocPath)), radius: widthApp / 7,),
                                   ),
                                 new FlatButton(onPressed: (){
                                   Navigator.push(context,
@@ -601,8 +574,17 @@ Future _handleSignIn() async {
   return user;
 }
 
-Future<Null> getCameras() async {
-  cameras = await availableCameras();
+Future getPath() async
+{
+  Directory appDocDir = await getApplicationDocumentsDirectory();
+  appDocPath = appDocDir.path;
+  try {
+    profilePic = new Image.file(new File(appDocPath + "/pictures/profile.jpg"));
+    appDocPath = appDocPath + "/profile.jpg";
+  }catch(e){
+    appDocPath = appDocPath + "/assets/nouser.png";
+    imageExists = false;
+  }
 }
 /*
 class EventsPage extends StatefulWidget {
