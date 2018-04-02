@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 
 
@@ -21,7 +22,18 @@ class CameraState extends StatefulWidget{
 }
 
 class _CameraState extends State<CameraState>{
-  CameraController controller;
+  File imageFile;
+
+  getImage()async
+  {
+    var _fileName = await ImagePicker.pickImage(source: ImageSource.camera);
+    setState((){
+      imageFile = _fileName;
+    });
+  }
+
+
+  /*CameraController controller;
 
   @override
   void initState() {
@@ -73,7 +85,7 @@ class _CameraState extends State<CameraState>{
 
     );
 
-  }
+  }*/
 }
 
 Future<Null> getCameras() async {

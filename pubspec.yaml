@@ -16,6 +16,7 @@ dependencies:
   pub_mediator: "^1.0.1"
   camera: "^0.1.2"
   path_provider: "^0.4.0"
+  image_picker: "^0.4.0"
 
 
 
