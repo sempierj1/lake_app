@@ -225,7 +225,6 @@ class ChoiceCard extends State<ChoiceState> {
   final _saved = new Set<String>();
 
 
-
   @override
   Widget build(BuildContext context) {
 
@@ -465,6 +464,7 @@ class ChoiceCard extends State<ChoiceState> {
     }
     else if(choice.title == 'Profile') {
       print("Profile");
+      ImageProvider imageProvider = new FileImage(new File(appDocPath));
       List<Widget> children = new List.generate(family.length, (int i) => new FamilyWidget(i));
       return new Column(
                 children: <Widget>[
@@ -474,12 +474,21 @@ class ChoiceCard extends State<ChoiceState> {
                           child: new Column(
                               children: <Widget>[
                                 new Center(
-                                    child: new CircleAvatar(backgroundImage: new FileImage(new File(appDocPath)), radius: widthApp / 7,),
-                                  ),
-                                new FlatButton(onPressed: (){
-                                  Navigator.push(context,
+                                    child: new CircleAvatar(backgroundImage: imageProvider, radius: widthApp / 5,),
+                                  //child: new Image(image: new FileImage(new File(appDocPath))),
+                                ),
+                                new FlatButton(onPressed: () async{
+                                  bool tookPic = await Navigator.push(context,
                                       new MaterialPageRoute(builder: (context) => new CameraState()),);
                                   //Navigator.pushNamed(context, '/screen7');
+                                  if(tookPic)
+                                    {
+                                      print("MADEIT");
+                                      setState(()
+                                      {
+                                        imageProvider = new FileImage(new File(appDocPath));
+                                      });
+                                    }
                                 }, child: new Text("Add Picture", style: new TextStyle(fontFamily: 'Roboto', color:Colors.lightBlue, fontSize: 20.0), textAlign: TextAlign.center,))
                             ]
                         ),
@@ -579,8 +588,8 @@ Future getPath() async
   Directory appDocDir = await getApplicationDocumentsDirectory();
   appDocPath = appDocDir.path;
   try {
-    profilePic = new Image.file(new File(appDocPath + "/pictures/profile.jpg"));
-    appDocPath = appDocPath + "/profile.jpg";
+    profilePic = new Image.file(new File(appDocPath + "/profile.png"));
+    appDocPath = appDocPath + "/profile.png";
   }catch(e){
     appDocPath = appDocPath + "/assets/nouser.png";
     imageExists = false;

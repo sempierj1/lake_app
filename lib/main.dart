@@ -8,7 +8,7 @@ import 'menu.dart';
 import 'serverHandle.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'menuCamera.dart';
-
+import 'package:flutter/services.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 TextEditingController _controller = new TextEditingController();
@@ -17,7 +17,9 @@ ServerHandle qr;
 //test
 void main()
 {
-  
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   runCheck();
 }
 
