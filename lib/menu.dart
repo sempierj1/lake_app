@@ -477,19 +477,9 @@ class ChoiceCard extends State<ChoiceState> {
                                     child: new CircleAvatar(backgroundImage: imageProvider, radius: widthApp / 5,),
                                   //child: new Image(image: new FileImage(new File(appDocPath))),
                                 ),
-                                new FlatButton(onPressed: () async{
-                                  bool tookPic = await Navigator.push(context,
-                                      new MaterialPageRoute(builder: (context) => new CameraState()),);
-                                  //Navigator.pushNamed(context, '/screen7');
-                                  if(tookPic)
-                                    {
-                                      print("MADEIT");
-                                      setState(()
-                                      {
-                                        imageProvider = new FileImage(new File(appDocPath));
-                                      });
-                                    }
-                                }, child: new Text("Add Picture", style: new TextStyle(fontFamily: 'Roboto', color:Colors.lightBlue, fontSize: 20.0), textAlign: TextAlign.center,))
+                                new IconButton(onPressed: (){
+                                },
+                                 icon:
                             ]
                         ),
                          ),

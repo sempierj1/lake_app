@@ -37,7 +37,6 @@ void runCheck() async{
         '/screen4': (BuildContext context) => new LoadScreen(),
         '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen6': (BuildContext context) => new LoadingState(),
-        '/screen7': (BuildContext context) => new CameraState(),
       },
     ));
   }
@@ -52,7 +51,6 @@ void runCheck() async{
         '/screen4': (BuildContext context) => new LoadScreen(),
         '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen6': (BuildContext context) => new LoadingState(),
-        '/screen7': (BuildContext context) => new CameraState(),
       },
     ));
   }
