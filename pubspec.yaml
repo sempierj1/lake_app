@@ -18,7 +18,7 @@ dependencies:
   path_provider: "^0.4.0"
   image_picker: "^0.4.0"
   image: "^1.1.30"
-
+  random_string: "^0.0.1"
 
 
 # For information on the generic Dart part of this file, see the

@@ -13,10 +13,12 @@ import 'package:camera/camera.dart';
 import 'menuCamera.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:random_string/random_string.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 FirebaseUser _user;
-List family;
+List<Family> family = new List<Family>();
+Map familyList;
 String appDocPath;
 bool check = false;
 EmailHandler email = new EmailHandler();
@@ -31,7 +33,8 @@ final mainReference = FirebaseDatabase.instance.reference().child("users");
 DataSnapshot snapshot;
 bool imageExists = true;
 Image profilePic;
-
+TextEditingController _controller = new TextEditingController();
+int familyLength;
 final double devicePixelRatio = ui.window.devicePixelRatio;
 //final QRHandler qr = new QRHandler();
 
@@ -466,7 +469,7 @@ class ChoiceCard extends State<ChoiceState> {
       print("Profile");
       ImageProvider imageProvider = new FileImage(new File(appDocPath));
       List<Widget> children = new List.generate(family.length, (int i) => new FamilyWidget(i));
-      return new Column(
+      return new ListView(
                 children: <Widget>[
                   new Row(
                     children: <Widget>[
@@ -474,12 +477,21 @@ class ChoiceCard extends State<ChoiceState> {
                           child: new Column(
                               children: <Widget>[
                                 new Center(
-                                    child: new CircleAvatar(backgroundImage: imageProvider, radius: widthApp / 5,),
+                                    child: new CircleAvatar(backgroundImage: imageProvider, radius: widthApp / 7,),
                                   //child: new Image(image: new FileImage(new File(appDocPath))),
                                 ),
                                 new IconButton(onPressed: (){
+                                  showDialog(
+                                    context: context,
+                                    barrierDismissible: true,
+                                    child: new AlertDialog(
+                                        title: new Text("Where's My Profile Picture?"),
+                                        content: new Text(
+                                            'Your picture will show up after it has been taken by the Beach Manager or Membership Team'),
+                                    ),
+                                  );
                                 },
-                                 icon:
+                                 icon: new Icon(Icons.help_outline),)
                             ]
                         ),
                          ),
@@ -495,13 +507,6 @@ class ChoiceCard extends State<ChoiceState> {
                       ),
                     ],
                   ),
-                new Row(
-                  children: <Widget>[
-                    new Container(
-                      height: heightApp / 10,
-                    )
-                  ],
-                ),
                 new Column(
                  children: children
                 ),
@@ -534,12 +539,80 @@ class FamilyWidget extends StatelessWidget{
         new Expanded(
           child: new Container(
         padding: new EdgeInsets.only(left: 5.0),
-          child: new Text(family[index], style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0)),
+          child: new Text(family[index].name, style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0)),
     ),),
          new Align(
           alignment: Alignment.bottomRight,
           child: new FlatButton(onPressed: (){
-          }, child: new Text("Invite", style: new TextStyle(fontFamily: 'Roboto', color:Colors.lightBlue, fontSize: 20.0), textAlign: TextAlign.center,))
+            if(family[index].invited == false)
+            {
+            showDialog(context: context, barrierDismissible: true,
+            child: new AlertDialog(
+              title: new Text("Please enter " + family[index].name + "'s email address", style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0)),
+              content: new TextField(controller: _controller,
+                  decoration: new InputDecoration(
+                    hintText: 'example@example.com',
+                  ),),
+                actions: <Widget>[
+                  new FlatButton(
+                    child: new Text("Add", style: new TextStyle(fontFamily: 'Roboto', fontSize: 15.0)),
+                onPressed: () async {
+                  //login = new ServerHandle(_controller.text, _controller2.text);
+                  await _createUser(_controller, index)
+                      .then((FirebaseUser user) {
+                    if (user != null) {
+                      Navigator.pop(context);
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        child: new AlertDialog(
+                            title: new Text('User Not Added'),
+                            content: new Text(
+                                'Failed to Add User'),
+                            actions: <Widget>[
+                              new FlatButton(
+                                  child: new Text('Try Again'),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  }
+                              )
+                            ]
+                        ),
+                      );
+                    }
+                    else {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        child: new AlertDialog(
+                            title: new Text('User Not Added'),
+                            content: new Text(
+                                'Failed to Add User'),
+                            actions: <Widget>[
+                              new FlatButton(
+                                  child: new Text('Try Again'),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  }
+                              )
+                            ]
+                        ),
+                      );
+                    }
+                  })
+                      .catchError((e) => print(e));
+                }
+                ),
+                ],
+            ),
+            );
+
+          }
+          else{
+              //DELETE USER
+            }
+          }
+          , child: new Text(family[index].invited ? "Uninvite" : "Invite", style: new TextStyle(fontFamily: 'Roboto', color:Colors.lightBlue, fontSize: 20.0), textAlign: TextAlign.center,))
          )
       ],
     );
@@ -567,10 +640,34 @@ Future _handleSignIn() async {
     password: pass
   );
   snapshot = await mainReference.once();
-  family = snapshot.value[user.displayName]['family'];
+  familyList = snapshot.value[user.displayName]['family'];
+  createFamily();
   //print(mainReference.equalTo(user.uid));
   _user = user;
   return user;
+}
+
+createFamily()
+{
+  Family temp;
+  if(familyList != null) {
+    for (final i in familyList) {
+      print(i[0][0]);
+    }
+  }
+}
+
+class Family{
+  String name;
+  bool verified;
+  bool invited;
+
+  Family(String n, bool v, bool i)
+  {
+    name = n;
+    verified = v;
+    invited = i;
+  }
 }
 
 Future getPath() async
@@ -584,6 +681,18 @@ Future getPath() async
     appDocPath = appDocPath + "/assets/nouser.png";
     imageExists = false;
   }
+}
+
+Future<FirebaseUser> _createUser(TextEditingController controller, int index) async {
+  FirebaseUser newUser = await _auth.createUserWithEmailAndPassword(email: controller.value.toString(), password: randomAlphaNumeric(12));
+  if(newUser != null)
+  {
+    _auth.sendPasswordResetEmail(email: controller.value.toString());
+    mainReference.child("users/" + _user.displayName + "/family/nonverified" + index.toString()).remove();
+   // mainReference.child("users/" + _user.displayName + "/family").set({"invited": {})
+  }
+  return newUser;
+
 }
 /*
 class EventsPage extends StatefulWidget {
