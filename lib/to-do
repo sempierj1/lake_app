@@ -1,0 +1,10 @@
+https://marcinszalek.pl/flutter/flutter-fullscreendialog-tutorial-weighttracker-ii/
+
+set dialog for invite to a variable and check variable return then display dialog if needed. On Invite click on fullscreen page just have it pop
+
+add uninvite functionality
+
+
+once logged in check DB for user (need to set display name still somehow) and then check DB for their family members and mark verified
+
+Going to need to use member# as part of displayname
