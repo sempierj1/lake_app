@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "783595274967-t222iqonj2hgijbrbbchoi7ngocq3tl8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yourcompany.lakeapp",
+            "certificate_hash": "7bdb3753263371d54b9f66188e610ad17414f13e"
+          }
+        },
+        {
           "client_id": "783595274967-p0o31slhi7dcj51h2iji51corqgmj81g.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,8 +37,13 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "783595274967-p0o31slhi7dcj51h2iji51corqgmj81g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
           "status": 2

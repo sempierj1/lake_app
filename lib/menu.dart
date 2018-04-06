@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'main.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'userinfo.dart';
@@ -6,7 +7,9 @@ import 'dart:ui' as ui;
 import 'eventsHandler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:camera/camera.dart';
 import 'menuCamera.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
@@ -34,6 +37,7 @@ Image profilePic;
 TextEditingController _controller = new TextEditingController();
 int familyLength;
 final double devicePixelRatio = ui.window.devicePixelRatio;
+List<String> _saved = new List();
 //final QRHandler qr = new QRHandler();
 
 class LoadingState extends StatefulWidget {
@@ -146,14 +150,6 @@ class TabbedAppBarMenu extends StatefulWidget {
 
 class TabbedAppBarState extends State<TabbedAppBarMenu>
     with SingleTickerProviderStateMixin {
-  TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = new TabController(vsync: this, length: choices.length);
-  }
-
   TabbedAppBarState() {
     mainReference.onChildChanged.listen(_familyEdited);
   }
@@ -161,13 +157,32 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   int changeCheck = 0;
 
   _familyEdited(Event event) {
-    familyChanges = event.snapshot.value;
-    changeCheck = 0;
-    familyChanges.forEach(checkChanged);
-    //var oldValue = family.singleWhere((entry) => entry.name == event.snapshot.key);
-    // setState((){
-    //  family[family.indexOf(oldValue)].invited = true;
-    // });
+    try {
+      familyChanges = event.snapshot.value;
+      changeCheck = 0;
+      familyChanges.forEach(checkChanged);
+      //var oldValue = family.singleWhere((entry) => entry.name == event.snapshot.key);
+      // setState((){
+      //  family[family.indexOf(oldValue)].invited = true;
+      // });
+    } catch (e) {
+      /*String events = (event.snapshot.value);
+      List eventSplit = events.split("/");
+      print(_saved);
+      for(final i in eventSplit)
+        {
+          try {
+          var oldValue = _saved.singleWhere((test) => test == eventSplit[i]);
+
+            setState(() {
+              _saved[_saved.indexOf(oldValue)] = eventSplit[i];
+            });
+          }
+          catch (e)
+          {}
+
+        }*/
+    }
   }
 
   void checkChanged(key, value) {
@@ -229,7 +244,6 @@ class Choice {
 }
 
 const List<Choice> choices = const <Choice>[
-  //const Choice(title: 'Login', icon: Icons.account_circle),
   const Choice(title: 'Check-In', icon: Icons.contacts),
   const Choice(title: 'Weather', icon: Icons.beach_access),
   const Choice(title: 'Events', icon: Icons.event),
@@ -260,10 +274,9 @@ class ChoiceState extends StatefulWidget {
 }
 
 class ChoiceCard extends State<ChoiceState> {
-  ChoiceCard({Key key, this.choice}) {}
+  ChoiceCard({Key key, this.choice});
 
   final Choice choice;
-  final _saved = new Set<String>();
 
   @override
   Widget build(BuildContext context) {
@@ -419,9 +432,11 @@ class ChoiceCard extends State<ChoiceState> {
                 setState(() {
                   if (_saved.contains((events[index]['name']))) {
                     _saved.remove(events[index]['name']);
+                    _handleEvent(events[index]['name'], 'remove');
                     print("Remove");
                   } else {
                     _saved.add(events[index]['name']);
+                    _handleEvent(events[index]['name'], 'add');
                     print("Add");
                   }
                 });
@@ -777,6 +792,8 @@ Future _handleSignIn() async {
   }
   //print(mainReference.equalTo(user.uid));
   _user = user;
+  String events = snapshot.value['events'];
+  _saved = events.split("/");
   print(user);
   return user;
 }
@@ -824,4 +841,17 @@ Future<FirebaseUser> _deleteUser(int index) async {
   Maybe create web function and add call to that.
    */
   mainReference.child("/family/").update({family[index].name: "nv"});
+}
+
+_handleEvent(String name, String type) async {
+  snapshot = await mainReference.once();
+  String events = snapshot.value['events'];
+  if (type == "add") {
+    mainReference.update({"events": events + name + "/"});
+  } else {
+    events.indexOf(name);
+    String newEvents = events.replaceAll("/" + name + "/", "/");
+    newEvents = events.replaceAll(name + "/", "");
+    mainReference.update({"events": newEvents});
+  }
 }

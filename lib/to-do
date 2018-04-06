@@ -7,3 +7,5 @@ Change db listener in menu to maybe listen under users displayname instead of ju
 once logged in check DB for user (need to set display name still somehow) and then check DB for their family members and mark verified
 
 Going to need to use member# as part of displayname
+
+Fix case sensitivity in login.
