@@ -7,9 +7,7 @@ import 'dart:ui' as ui;
 import 'eventsHandler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:camera/camera.dart';
 import 'menuCamera.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
@@ -38,7 +36,7 @@ TextEditingController _controller = new TextEditingController();
 int familyLength;
 final double devicePixelRatio = ui.window.devicePixelRatio;
 List<String> _saved = new List();
-//final QRHandler qr = new QRHandler();
+
 
 class LoadingState extends StatefulWidget {
   LoadingState({Key key, this.title}) : super(key: key);
@@ -52,6 +50,7 @@ class LoadingState extends StatefulWidget {
 class Loading extends State<LoadingState> {
   Loading() {}
 
+  @override
   void initState() {
     _handleSignIn();
     getCameras();
@@ -59,8 +58,8 @@ class Loading extends State<LoadingState> {
     getWeather();
     getEvents();
     getPath();
-
     new Future.delayed(new Duration(milliseconds: 500), _menu);
+    super.initState();
   }
 
   Future _menu() async {
@@ -588,7 +587,7 @@ class FamilyWidget extends StatelessWidget {
                           if (family[index].invited == 'nv') {
                             Navigator.of(context).push(new MaterialPageRoute(
                               builder: (BuildContext context) {
-                                return new InviteUserDialog(index);
+                                return new InviteUserDialog(index: index);
                               },
                             ));
                             /*if(invited == "done")
@@ -653,11 +652,10 @@ class FamilyWidget extends StatelessWidget {
 }
 
 class InviteUserDialog extends StatelessWidget {
-  int index;
 
-  InviteUserDialog(int i) {
-    index = i;
-  }
+  InviteUserDialog({this.index});
+
+  final int index;
 
   @override
   Widget build(BuildContext context) {
@@ -836,7 +834,7 @@ Future<FirebaseUser> _createUser(
   return newUser;
 }
 
-Future<FirebaseUser> _deleteUser(int index) async {
+Future _deleteUser(int index) async {
   /*NYI in library
   Maybe create web function and add call to that.
    */

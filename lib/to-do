@@ -1,11 +1,9 @@
-https://marcinszalek.pl/flutter/flutter-fullscreendialog-tutorial-weighttracker-ii/
-
 add uninvite functionality
 
 Change db listener in menu to maybe listen under users displayname instead of just users (user/josh sempier) otherwise it'll be a lot of overhead.
 
-once logged in check DB for user (need to set display name still somehow) and then check DB for their family members and mark verified
-
 Going to need to use member# as part of displayname
 
 Fix case sensitivity in login.
+
+Add signout functionality.

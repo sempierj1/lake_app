@@ -7,12 +7,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'menu.dart';
 import 'serverHandle.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'menuCamera.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 TextEditingController _controller = new TextEditingController();
 TextEditingController _controller2 = new TextEditingController();
+DatabaseReference mainReference;
+DataSnapshot snapshot;
+FirebaseUser _user;
 ServerHandle qr;
 //test
 void main() {
@@ -543,11 +546,35 @@ Future<FirebaseUser> _handleSignIn(BuildContext context) async {
   }
 
   if (user != null) {
+    _user = user;
     await setFirstRun();
     await storeInfo();
+    try {
+      mainReference = FirebaseDatabase.instance.reference().child(
+          "users/" + user.displayName);
+      mainReference.update({"email": _controller.text});
+      snapshot = await mainReference.once();
+      Map family = snapshot.value['family'];
+      family.forEach(updateVerified);
+    }catch(e)
+      {
+
+      }
     qr = new ServerHandle(_controller.text);
   }
   return user;
+}
+
+void updateVerified(key, value)
+{
+  try {
+    print(key);
+    print(_controller.text);
+    mainReference =
+        FirebaseDatabase.instance.reference().child("users/" + key);
+    mainReference.child("/family/").update({_user.displayName: "v"});
+  }
+  catch (e){}
 }
 
 setFirstRun() async {
