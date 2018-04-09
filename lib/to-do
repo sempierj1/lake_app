@@ -1,11 +1,8 @@
-add uninvite functionality
-
-Change db listener in menu to maybe listen under users displayname instead of just users (user/josh sempier) otherwise it'll be a lot of overhead.
+add uninvite functionality - going to need to user server script temporarily
 
 Going to need to use member# as part of displayname
 
-Fix case sensitivity in login.
 
-Add signout functionality.
+Try events list as scaffold with floating button
 
-Fix spacing on profile page for invites
+Show only starred events as option

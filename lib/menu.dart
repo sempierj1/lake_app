@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'userinfo.dart';
 import 'dart:ui' as ui;
 import 'eventsHandler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'menuCamera.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:random_string/random_string.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
+
 FirebaseUser _user;
 bool isHead = false;
 List<Family> family = new List<Family>();
@@ -35,8 +37,7 @@ Image profilePic;
 TextEditingController _controller = new TextEditingController();
 int familyLength;
 final double devicePixelRatio = ui.window.devicePixelRatio;
-List<String> _saved = new List();
-
+List<int> _saved = new List();
 
 class LoadingState extends StatefulWidget {
   LoadingState({Key key, this.title}) : super(key: key);
@@ -52,21 +53,22 @@ class Loading extends State<LoadingState> {
 
   @override
   void initState() {
+    super.initState();
     _handleSignIn();
-    getCameras();
+    //getCameras();
     email.setEmail();
     getWeather();
     getEvents();
     getPath();
+
     new Future.delayed(new Duration(milliseconds: 500), _menu);
-    super.initState();
+
   }
 
   Future _menu() async {
     if (qr != null &&
         events != null &&
         weather != null &&
-        cameras != null &&
         appDocPath != null &&
         _user != null) {
       Navigator.popAndPushNamed(context, "/screen5");
@@ -130,6 +132,8 @@ class Loading extends State<LoadingState> {
       ),
     );
   }
+
+
 }
 
 /*lass MenuApp extends StatelessWidget {
@@ -152,7 +156,50 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   TabbedAppBarState() {
     mainReference.onChildChanged.listen(_familyEdited);
   }
+  final FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
 
+  @override
+  void initState(){
+    super.initState();
+    _firebaseMessaging.requestNotificationPermissions(const IosNotificationSettings(sound: true, badge: true, alert: true));
+    _firebaseMessaging.onIosSettingsRegistered.listen((IosNotificationSettings settings)
+    {
+      print("Settings registered: $settings");
+    });
+    _firebaseMessaging.getToken().then((String token){
+      assert(token != null);
+      print("Push Messaging token: $token");
+    });
+    _firebaseMessaging.configure(onLaunch: (Map<String, dynamic> message){
+      goToWeather();
+    },
+        onResume: (Map<String,dynamic> message){
+          goToWeather();
+        },
+    onMessage: (Map<String, dynamic> message){
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        child: new AlertDialog(
+            title: new Text("Beach Status Update"),
+            content: new Text(message['status'].toString()),
+            actions: <Widget>[
+              new FlatButton(
+                  child: new Text('Okay'),
+                  onPressed: () {
+                    Navigator
+                        .of(context, rootNavigator: true)
+                        .pop();
+                    //Navigator.of(context).pop();
+                  })
+            ]),
+      );
+    });
+  }
+  void goToWeather()
+  {
+    Navigator.pushNamed(context, "/screen6");
+  }
   int changeCheck = 0;
 
   _familyEdited(Event event) {
@@ -283,7 +330,6 @@ class ChoiceCard extends State<ChoiceState> {
     heightApp = MediaQuery.of(context).size.height;
     fontSize = (widthApp / 18).round() * 1.0;
     if (choice.title == "Check-In") {
-      print("CHECK IN");
       if (qr == "") {
         return new ListView(children: <Widget>[
           new Container(
@@ -301,7 +347,6 @@ class ChoiceCard extends State<ChoiceState> {
         );
       }
     } else if (choice.title == "Weather") {
-      print("Weather");
       if (weather == null) {
         return new ListView(children: <Widget>[
           new Container(
@@ -409,7 +454,6 @@ class ChoiceCard extends State<ChoiceState> {
         // with winds of " + weather[3].round().toString() + " mph. " + "\u000a\u000a
       }
     } else if (choice.title == "Events") {
-      print("Events");
       if (events == null) {
         return new ListView(children: <Widget>[
           new Container(
@@ -422,62 +466,72 @@ class ChoiceCard extends State<ChoiceState> {
           )
         ]);
       } else {
-        //MAYBE USE CARDS? CHECK EXAMPLE
+        return new NestedScrollView(headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled)
+            {
+              return <Widget>[
+              new SliverAppBar(
+                pinned: false,
+                title: new Text('Lake Events'),
+              ),
+            ];
 
-        return new ListView.builder(
-          itemBuilder: (BuildContext context, int index) {
-            return new GestureDetector(
-              onLongPress: () {
-                setState(() {
-                  if (_saved.contains((events[index]['name']))) {
-                    _saved.remove(events[index]['name']);
-                    _handleEvent(events[index]['name'], 'remove');
-                    print("Remove");
-                  } else {
-                    _saved.add(events[index]['name']);
-                    _handleEvent(events[index]['name'], 'add');
-                    print("Add");
-                  }
-                });
-              },
-              child: new Card(
-                child: new Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    new ExpansionTile(
-                      leading: new Text((events[index]['eventDate'])
-                          .toString()
-                          .substring(5, 10)),
-                      title: new Text(
-                        (events[index]['name']).toString(),
-                        textAlign: TextAlign.left,
-                      ),
-                      trailing: new Icon(
-                          _saved.contains(events[index]['name'])
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: _saved.contains(events[index]['name'])
-                              ? Colors.red
-                              : null),
-                      children: <Widget>[
-                        new Container(
-                          padding: new EdgeInsets.only(
-                              left: 16.0, right: 16.0, bottom: 16.0),
-                          child: new Text((events[index]['description'])),
+            },
+            body: new Column(
+              children: <Widget>[
+              new Container(
+                height: heightApp * .55,
+                child: new ListView.builder(
+                  itemBuilder: (BuildContext context, int index) {
+                    return new GestureDetector(
+                      onLongPress: () {
+                        setState(() {
+                          if (_saved.contains((events[index]['eventNum']))) {
+                            _saved.remove(events[index]['eventNum']);
+                            _handleEvent(events[index]['eventNum'], 'remove', events[index]['eventDate'], events[index]['eventName']);
+                          } else {
+                            _saved.add(events[index]['eventNum']);
+                            _handleEvent(events[index]['eventNum'], 'add', events[index]['eventDate'], events[index]['eventName']);
+                          }
+                        });
+                      },
+                      child: new Card(
+                        child: new Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            new ExpansionTile(
+                              leading: new Text((events[index]['eventDate'])),
+                              title: new Text(
+                                (events[index]['eventName']).toString(),
+                                textAlign: TextAlign.left,
+                              ),
+                              trailing: new Icon(
+                                  _saved.contains(events[index]['eventNum'])
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: _saved.contains(events[index]['eventNum'])
+                                      ? Colors.red
+                                      : null),
+                              children: <Widget>[
+                                new Container(
+                                  padding: new EdgeInsets.only(
+                                      left: 16.0, right: 16.0, bottom: 16.0),
+                                  child: new Text((events[index]['eventDescription'])),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    );
+                  },
+                  itemCount: events.length,
+                  //new EventsPage(),
                 ),
               ),
-            );
-          },
-          itemCount: events.length,
-          //new EventsPage(),
-        );
+                new FloatingActionButton(onPressed: null),
+            ],));
       }
     } else if (choice.title == 'Profile') {
-      print("Profile");
       ImageProvider imageProvider;
       try {
         imageProvider = new FileImage(new File(appDocPath));
@@ -539,7 +593,18 @@ class ChoiceCard extends State<ChoiceState> {
               heightFactor: 3.2,
               alignment: Alignment.bottomCenter,
               child: new FlatButton(
-                  onPressed: () {},
+                  onPressed: () async{
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    prefs.setBool('firstRun', true);
+
+                    final storage = new FlutterSecureStorage();
+                    storage.delete(key: "username");
+                    storage.delete(key: "password");
+                    Navigator
+                        .of(context, rootNavigator: true)
+                        .pushNamed("/screen3");
+                    //Navigator.pushNamed(context, '/screen3');
+                  },
                   child: new Text(
                     "Sign-Out",
                     style: new TextStyle(
@@ -567,7 +632,7 @@ class FamilyWidget extends StatelessWidget {
       children: <Widget>[
         new Expanded(
           child: new Container(
-            padding: new EdgeInsets.only(left: 5.0),
+            padding: new EdgeInsets.only(left: 5.0, top: 5.0),
             child: new Text(family[index].name,
                 style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0)),
           ),
@@ -770,11 +835,12 @@ getWeather() async {
 }
 
 getEvents() async {
-  events = await eventsListHandler.getEvents();
+  mainReference = FirebaseDatabase.instance.reference().child("events");
+  snapshot = await mainReference.once();
+  events = snapshot.value;
 }
 
 Future _handleSignIn() async {
-  print("MADE IT");
   final storage = new FlutterSecureStorage();
   String uName = await storage.read(key: "username");
   String pass = await storage.read(key: "password");
@@ -783,6 +849,7 @@ Future _handleSignIn() async {
   mainReference =
       FirebaseDatabase.instance.reference().child("users/" + user.displayName);
   snapshot = await mainReference.once();
+  family.clear();
   familyList = snapshot.value['family'];
   isHead = snapshot.value['isHead'];
   if (familyList != null) {
@@ -791,8 +858,13 @@ Future _handleSignIn() async {
   //print(mainReference.equalTo(user.uid));
   _user = user;
   String events = snapshot.value['events'];
-  _saved = events.split("/");
-  print(user);
+  List<String> temp = events.split("/");
+  for(final i in temp)
+    {
+      if(i != "") {
+        _saved.add(int.parse(i));
+      }
+    }
   return user;
 }
 
@@ -841,15 +913,24 @@ Future _deleteUser(int index) async {
   mainReference.child("/family/").update({family[index].name: "nv"});
 }
 
-_handleEvent(String name, String type) async {
+_handleEvent(int name, String type, String date, String eName) async {
+
+  mainReference = FirebaseDatabase.instance.reference().child("users/" + _user.displayName);
   snapshot = await mainReference.once();
   String events = snapshot.value['events'];
   if (type == "add") {
-    mainReference.update({"events": events + name + "/"});
+    /*List<String> tempDate = date.split("/");
+    //var scheduledNotificationDateTime = new DateTime(new DateTime.now().year, int.parse(tempDate[0]), int.parse(tempDate[1]), 10);
+    var scheduledNotificationDateTime = new DateTime.now().add(new Duration(seconds: 5));
+    NotificationDetailsAndroid androidPlatformChannelSpecifics = new NotificationDetailsAndroid("com.yourcompany.lakeapp.ANDROID", "ANDROID CHANNEL", "Event Alerts");
+    NotificationDetailsIOS iOSPlatformChannelSpecifics = new NotificationDetailsIOS();
+    NotificationDetails platformChannelSpecifics = new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await FlutterLocalNotifications.schedule(name, eName, "Reminder $eName is coming up today", scheduledNotificationDateTime, platformChannelSpecifics);*/
+    mainReference.update({"events": events + name.toString() + "/"});
   } else {
-    events.indexOf(name);
-    String newEvents = events.replaceAll("/" + name + "/", "/");
-    newEvents = events.replaceAll(name + "/", "");
+    //await FlutterLocalNotifications.cancel(name);
+    String newEvents = events.replaceAll("/" + name.toString() + "/", "/");
+    newEvents = events.replaceAll(name.toString() + "/", "");
     mainReference.update({"events": newEvents});
   }
 }

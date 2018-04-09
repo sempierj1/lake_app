@@ -10,7 +10,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
 
+
 final FirebaseAuth _auth = FirebaseAuth.instance;
+
+
 TextEditingController _controller = new TextEditingController();
 TextEditingController _controller2 = new TextEditingController();
 DatabaseReference mainReference;
@@ -25,6 +28,9 @@ void main() {
   runCheck();
 }
 
+
+
+
 void runCheck() async {
   bool check = await checkFirstRun();
   //bool check2 = await checkInfo();
@@ -35,7 +41,7 @@ void runCheck() async {
         '/screen1': (BuildContext context) => new FirstScreen(),
         '/screen2': (BuildContext context) => new EnterEmail(),
         '/screen3': (BuildContext context) => new Login(),
-        '/screen4': (BuildContext context) => new LoadScreen(),
+        //'/screen4': (BuildContext context) => new LoadScreen(),
         '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen6': (BuildContext context) => new LoadingState(),
       },
@@ -47,7 +53,7 @@ void runCheck() async {
         '/screen1': (BuildContext context) => new FirstScreen(),
         '/screen2': (BuildContext context) => new EnterEmail(),
         '/screen3': (BuildContext context) => new Login(),
-        '/screen4': (BuildContext context) => new LoadScreen(),
+        //'/screen4': (BuildContext context) => new LoadScreen(),
         '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen6': (BuildContext context) => new LoadingState(),
       },
@@ -448,7 +454,7 @@ class Login extends StatelessWidget {
   }
 }
 
-class LoadScreen extends StatefulWidget {
+/*class LoadScreen extends StatefulWidget {
   LoadScreen({Key key, this.title}) : super(key: key);
 
   final String title;
@@ -526,7 +532,7 @@ class Loading extends State<LoadScreen> {
       ),
     );
   }
-}
+}*/
 
 Future resetPassword() async {
   await _auth.sendPasswordResetEmail(email: _controller.text).catchError((e) {
@@ -537,8 +543,9 @@ Future resetPassword() async {
 Future<FirebaseUser> _handleSignIn(BuildContext context) async {
   FirebaseUser user;
   try {
+    List<String> uName = _controller.text.split(" ");
     user = await _auth.signInWithEmailAndPassword(
-      email: _controller.text,
+      email: uName[0],
       password: _controller2.text,
     );
   } catch (e) {
@@ -584,7 +591,8 @@ setFirstRun() async {
 
 storeInfo() async {
   final storage = new FlutterSecureStorage();
-  String user = _controller.text;
+  List<String> uName = _controller.text.split(" ");
+  String user = uName[0];
   String pass = _controller2.text;
   storage.write(key: "username", value: user);
   storage.write(key: "password", value: pass);
