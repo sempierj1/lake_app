@@ -442,7 +442,6 @@ class ChoiceCard extends State<ChoiceState> {
           current.add(i['eventNum']);
         }
       }
-<<<<<<< HEAD
       else {
         return new ListView.builder(
             itemBuilder: (BuildContext context, int index) => new ExpansionTile(leading: new Text((events[index]['eventDate']).toString().substring(5,10)),
@@ -461,7 +460,6 @@ class ChoiceCard extends State<ChoiceState> {
                 new Text("This event is " + (events[index]['price']).toString(), textAlign: TextAlign.left,),
               ],),
             itemCount: events.length,
-=======
       return new Scaffold(
         appBar: new AppBar(
             elevation: 0.0,
@@ -636,7 +634,6 @@ class ChoiceCard extends State<ChoiceState> {
                       ));
           },
           itemCount: events.length,
->>>>>>> beta-usability
           //new EventsPage(),
         ),
       );
@@ -1055,4 +1052,3 @@ _toggleFavorite(bool f) {
       FirebaseDatabase.instance.reference().child("users/" + _user.displayName);
   mainReference.update({"favorites": f.toString()});
 }
->>>>>>> beta-usability
