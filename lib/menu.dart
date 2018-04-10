@@ -31,8 +31,13 @@ List events;
 double widthApp;
 double heightApp;
 double fontSize = 30.0;
+bool beachOpen = true;
 DatabaseReference mainReference;
-DataSnapshot snapshot;
+DataSnapshot userSnapshot;
+DataSnapshot statusSnapshot;
+DataSnapshot eventSnapshot;
+bool favorites = false;
+bool showCurrent = true;
 Image profilePic;
 TextEditingController _controller = new TextEditingController();
 int familyLength;
@@ -60,9 +65,7 @@ class Loading extends State<LoadingState> {
     getWeather();
     getEvents();
     getPath();
-
     new Future.delayed(new Duration(milliseconds: 500), _menu);
-
   }
 
   Future _menu() async {
@@ -132,8 +135,6 @@ class Loading extends State<LoadingState> {
       ),
     );
   }
-
-
 }
 
 /*lass MenuApp extends StatelessWidget {
@@ -153,30 +154,37 @@ class TabbedAppBarMenu extends StatefulWidget {
 
 class TabbedAppBarState extends State<TabbedAppBarMenu>
     with SingleTickerProviderStateMixin {
+  final DatabaseReference listenerReference =
+      FirebaseDatabase.instance.reference().child("users/" + _user.displayName);
+
+  final DatabaseReference beachListener =
+      FirebaseDatabase.instance.reference().child("beach status");
+
   TabbedAppBarState() {
-    mainReference.onChildChanged.listen(_familyEdited);
+    listenerReference.onChildChanged.listen(_familyEdited);
+    beachListener.onValue.listen(_editBeachStatus);
   }
+
   final FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    _firebaseMessaging.requestNotificationPermissions(const IosNotificationSettings(sound: true, badge: true, alert: true));
-    _firebaseMessaging.onIosSettingsRegistered.listen((IosNotificationSettings settings)
-    {
+    _firebaseMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(sound: true, badge: true, alert: true));
+    _firebaseMessaging.onIosSettingsRegistered
+        .listen((IosNotificationSettings settings) {
       print("Settings registered: $settings");
     });
-    _firebaseMessaging.getToken().then((String token){
+    _firebaseMessaging.getToken().then((String token) {
       assert(token != null);
       print("Push Messaging token: $token");
     });
-    _firebaseMessaging.configure(onLaunch: (Map<String, dynamic> message){
+    _firebaseMessaging.configure(onLaunch: (Map<String, dynamic> message) {
       goToWeather();
-    },
-        onResume: (Map<String,dynamic> message){
-          goToWeather();
-        },
-    onMessage: (Map<String, dynamic> message){
+    }, onResume: (Map<String, dynamic> message) {
+      goToWeather();
+    }, onMessage: (Map<String, dynamic> message) {
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -187,48 +195,36 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
               new FlatButton(
                   child: new Text('Okay'),
                   onPressed: () {
-                    Navigator
-                        .of(context, rootNavigator: true)
-                        .pop();
+                    Navigator.of(context, rootNavigator: true).pop();
                     //Navigator.of(context).pop();
                   })
             ]),
       );
     });
   }
-  void goToWeather()
-  {
+
+  void goToWeather() {
     Navigator.pushNamed(context, "/screen6");
   }
+
   int changeCheck = 0;
+
+  _editBeachStatus(Event event) {
+    String status;
+    try {
+      status = event.snapshot.value;
+      setState(() {
+        beachOpen = status == "open" ? true : false;
+      });
+    } catch (e) {}
+  }
 
   _familyEdited(Event event) {
     try {
       familyChanges = event.snapshot.value;
       changeCheck = 0;
       familyChanges.forEach(checkChanged);
-      //var oldValue = family.singleWhere((entry) => entry.name == event.snapshot.key);
-      // setState((){
-      //  family[family.indexOf(oldValue)].invited = true;
-      // });
-    } catch (e) {
-      /*String events = (event.snapshot.value);
-      List eventSplit = events.split("/");
-      print(_saved);
-      for(final i in eventSplit)
-        {
-          try {
-          var oldValue = _saved.singleWhere((test) => test == eventSplit[i]);
-
-            setState(() {
-              _saved[_saved.indexOf(oldValue)] = eventSplit[i];
-            });
-          }
-          catch (e)
-          {}
-
-        }*/
-    }
+    } catch (e) {}
   }
 
   void checkChanged(key, value) {
@@ -243,10 +239,6 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
 
   @override
   Widget build(BuildContext context) {
-    email.setEmail();
-    getInfo();
-    getWeather();
-    getEvents();
     return new MaterialApp(
       home: new DefaultTabController(
         length: choices.length,
@@ -330,22 +322,9 @@ class ChoiceCard extends State<ChoiceState> {
     heightApp = MediaQuery.of(context).size.height;
     fontSize = (widthApp / 18).round() * 1.0;
     if (choice.title == "Check-In") {
-      if (qr == "") {
-        return new ListView(children: <Widget>[
-          new Container(
-            padding: const EdgeInsets.symmetric(horizontal: 125.0),
-            child: new RaisedButton(
-                onPressed: () {
-                  //runApp(new MenuApp());
-                },
-                child: new Text('Reload')),
-          )
-        ]);
-      } else {
-        return new Center(
-          child: new QrImage(data: qr, size: widthApp / 2),
-        );
-      }
+      return new Center(
+        child: new QrImage(data: _user.email, size: widthApp / 2),
+      );
     } else if (choice.title == "Weather") {
       if (weather == null) {
         return new ListView(children: <Widget>[
@@ -362,9 +341,7 @@ class ChoiceCard extends State<ChoiceState> {
         String weatherImg;
         Color barColor;
         String alertText;
-        //CHECK SERVER FOR BEACH STATUS OR ON PULL WITH WEATHER
-        bool open = true;
-        if (open) {
+        if (beachOpen) {
           barColor = Colors.green;
           alertText = "Open";
         } else {
@@ -454,47 +431,160 @@ class ChoiceCard extends State<ChoiceState> {
         // with winds of " + weather[3].round().toString() + " mph. " + "\u000a\u000a
       }
     } else if (choice.title == "Events") {
-      if (events == null) {
-        return new ListView(children: <Widget>[
-          new Container(
-            padding: const EdgeInsets.symmetric(horizontal: 125.0),
-            child: new RaisedButton(
-                onPressed: () async {
-                  events = await eventsListHandler.getEvents();
+      int month = new DateTime.now().month;
+      int day = new DateTime.now().day;
+      List<int> current = new List();
+      for (final i in events) {
+        if (int.parse(i['eventDate'].toString()[0]) > month) {
+          current.add(i['eventNum']);
+        } else if (int.parse(i['eventDate'].toString()[0]) == month &&
+            int.parse(i['eventDate'].toString()[2]) >= day) {
+          current.add(i['eventNum']);
+        }
+      }
+      return new Scaffold(
+        appBar: new AppBar(
+            elevation: 0.0,
+            backgroundColor: Colors.white,
+            title: favorites
+                ? new Text(
+                    (current.length - _saved.length).toString() +
+                        " events hidden",
+                    style: new TextStyle(color: Colors.black),
+                  )
+                : new Text(""),
+            actions: <Widget>[
+              new DropdownButton(
+                  hint: favorites
+                      ? new Text("Favorites Only")
+                      : showCurrent
+                          ? new Text("Upcoming")
+                          : new Text("Show All"),
+                  items: <String>["Upcoming", "Favorites Only", "Show All"]
+                      .map((String value) {
+                    return new DropdownMenuItem<String>(
+                      value: value,
+                      child: new Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (v) {
+                    setState(() {
+                      if (v == "Show All") {
+                        _toggleFavorite(false);
+                        favorites = false;
+                        showCurrent = false;
+                      } else if (v == "Favorites Only") {
+                        _toggleFavorite(true);
+                        favorites = true;
+                        showCurrent = true;
+                      } else {
+                        _toggleFavorite(false);
+                        favorites = false;
+                        showCurrent = true;
+                      }
+                    });
+                  }),
+            ]),
+        body: new ListView.builder(
+          itemBuilder: (BuildContext context, int index) {
+            return new GestureDetector(
+                onLongPress: () {
+                  setState(() {
+                    if (_saved.contains((events[index]['eventNum']))) {
+                      _saved.remove(events[index]['eventNum']);
+                      _handleEvent(
+                          events[index]['eventNum'],
+                          'remove',
+                          events[index]['eventDate'],
+                          events[index]['eventName']);
+                    } else {
+                      _saved.add(events[index]['eventNum']);
+                      _handleEvent(
+                          events[index]['eventNum'],
+                          'add',
+                          events[index]['eventDate'],
+                          events[index]['eventName']);
+                    }
+                  });
                 },
-                child: new Text('Reload')),
-          )
-        ]);
-      } else {
-        return new NestedScrollView(headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled)
-            {
-              return <Widget>[
-              new SliverAppBar(
-                pinned: false,
-                title: new Text('Lake Events'),
-              ),
-            ];
-
-            },
-            body: new Column(
-              children: <Widget>[
-              new Container(
-                height: heightApp * .55,
-                child: new ListView.builder(
-                  itemBuilder: (BuildContext context, int index) {
-                    return new GestureDetector(
-                      onLongPress: () {
-                        setState(() {
-                          if (_saved.contains((events[index]['eventNum']))) {
-                            _saved.remove(events[index]['eventNum']);
-                            _handleEvent(events[index]['eventNum'], 'remove', events[index]['eventDate'], events[index]['eventName']);
-                          } else {
-                            _saved.add(events[index]['eventNum']);
-                            _handleEvent(events[index]['eventNum'], 'add', events[index]['eventDate'], events[index]['eventName']);
-                          }
-                        });
-                      },
-                      child: new Card(
+                child: showCurrent
+                    ? current.contains(events[index]['eventNum'])
+                        ? !favorites
+                            ? new Card(
+                                child: new Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    new ExpansionTile(
+                                      leading: new Text(
+                                          (events[index]['eventDate'])),
+                                      title: new Text(
+                                        (events[index]['eventName']).toString(),
+                                        textAlign: TextAlign.left,
+                                      ),
+                                      trailing: new Icon(
+                                          _saved.contains(
+                                                  events[index]['eventNum'])
+                                              ? Icons.favorite
+                                              : Icons.favorite_border,
+                                          color: _saved.contains(
+                                                  events[index]['eventNum'])
+                                              ? Colors.red
+                                              : null),
+                                      children: <Widget>[
+                                        new Container(
+                                          padding: new EdgeInsets.only(
+                                              left: 16.0,
+                                              right: 16.0,
+                                              bottom: 16.0),
+                                          child: new Text((events[index]
+                                              ['eventDescription'])),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : (_saved.contains(events[index]['eventNum'])
+                                ? new Card(
+                                    child: new Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        new ExpansionTile(
+                                          leading: new Text(
+                                              (events[index]['eventDate'])),
+                                          title: new Text(
+                                            (events[index]['eventName'])
+                                                .toString(),
+                                            textAlign: TextAlign.left,
+                                          ),
+                                          trailing: new Icon(
+                                              _saved.contains(
+                                                      events[index]['eventNum'])
+                                                  ? Icons.favorite
+                                                  : Icons.favorite_border,
+                                              color: _saved.contains(
+                                                      events[index]['eventNum'])
+                                                  ? Colors.red
+                                                  : null),
+                                          children: <Widget>[
+                                            new Container(
+                                              padding: new EdgeInsets.only(
+                                                  left: 16.0,
+                                                  right: 16.0,
+                                                  bottom: 16.0),
+                                              child: new Text((events[index]
+                                                  ['eventDescription'])),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : new Container(width: 0.0, height: 0.0))
+                        : new Container(width: 0.0, height: 0.0)
+                    : new Card(
                         child: new Column(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
@@ -508,29 +598,27 @@ class ChoiceCard extends State<ChoiceState> {
                                   _saved.contains(events[index]['eventNum'])
                                       ? Icons.favorite
                                       : Icons.favorite_border,
-                                  color: _saved.contains(events[index]['eventNum'])
-                                      ? Colors.red
-                                      : null),
+                                  color:
+                                      _saved.contains(events[index]['eventNum'])
+                                          ? Colors.red
+                                          : null),
                               children: <Widget>[
                                 new Container(
                                   padding: new EdgeInsets.only(
                                       left: 16.0, right: 16.0, bottom: 16.0),
-                                  child: new Text((events[index]['eventDescription'])),
+                                  child: new Text(
+                                      (events[index]['eventDescription'])),
                                 ),
                               ],
                             ),
                           ],
                         ),
-                      ),
-                    );
-                  },
-                  itemCount: events.length,
-                  //new EventsPage(),
-                ),
-              ),
-                new FloatingActionButton(onPressed: null),
-            ],));
-      }
+                      ));
+          },
+          itemCount: events.length,
+          //new EventsPage(),
+        ),
+      );
     } else if (choice.title == 'Profile') {
       ImageProvider imageProvider;
       try {
@@ -574,14 +662,15 @@ class ChoiceCard extends State<ChoiceState> {
                   new Text(_user.displayName,
                       style: new TextStyle(
                           fontFamily: 'Roboto', fontSize: fontSize)),
-                  new Text(snapshot.value['email'],
+                  new Text(userSnapshot.value['email'],
                       style: new TextStyle(
                           fontFamily: 'Roboto', fontSize: fontSize * .75)),
-                  new Text(snapshot.value['type'] + " Membership",
+                  new Text(userSnapshot.value['type'] + " Membership",
                       style: new TextStyle(
                           fontFamily: 'Roboto', fontSize: fontSize * .75)),
                   new Text(
-                      "Guest Badges - " + snapshot.value['guests'].toString(),
+                      "Guest Badges - " +
+                          userSnapshot.value['guests'].toString(),
                       style: new TextStyle(
                           fontFamily: 'Roboto', fontSize: fontSize * .75)),
                 ]),
@@ -593,8 +682,9 @@ class ChoiceCard extends State<ChoiceState> {
               heightFactor: 3.2,
               alignment: Alignment.bottomCenter,
               child: new FlatButton(
-                  onPressed: () async{
-                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                  onPressed: () async {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
                     prefs.setBool('firstRun', true);
 
                     final storage = new FlutterSecureStorage();
@@ -717,7 +807,6 @@ class FamilyWidget extends StatelessWidget {
 }
 
 class InviteUserDialog extends StatelessWidget {
-
   InviteUserDialog({this.index});
 
   final int index;
@@ -832,12 +921,15 @@ class InviteUserDialog extends StatelessWidget {
 
 getWeather() async {
   weather = await email.getWeather();
+  mainReference = FirebaseDatabase.instance.reference().child("beach status");
+  statusSnapshot = await mainReference.once();
+  beachOpen = statusSnapshot.value == "open" ? true : false;
 }
 
 getEvents() async {
   mainReference = FirebaseDatabase.instance.reference().child("events");
-  snapshot = await mainReference.once();
-  events = snapshot.value;
+  eventSnapshot = await mainReference.once();
+  events = eventSnapshot.value;
 }
 
 Future _handleSignIn() async {
@@ -848,23 +940,23 @@ Future _handleSignIn() async {
       await _auth.signInWithEmailAndPassword(email: uName, password: pass);
   mainReference =
       FirebaseDatabase.instance.reference().child("users/" + user.displayName);
-  snapshot = await mainReference.once();
+  userSnapshot = await mainReference.once();
   family.clear();
-  familyList = snapshot.value['family'];
-  isHead = snapshot.value['isHead'];
+  familyList = userSnapshot.value['family'];
+  isHead = userSnapshot.value['isHead'];
+  favorites = userSnapshot.value['favorites'] == "true";
   if (familyList != null) {
     familyList.forEach(createFamily);
   }
   //print(mainReference.equalTo(user.uid));
   _user = user;
-  String events = snapshot.value['events'];
+  String events = userSnapshot.value['events'];
   List<String> temp = events.split("/");
-  for(final i in temp)
-    {
-      if(i != "") {
-        _saved.add(int.parse(i));
-      }
+  for (final i in temp) {
+    if (i != "") {
+      _saved.add(int.parse(i));
     }
+  }
   return user;
 }
 
@@ -914,10 +1006,10 @@ Future _deleteUser(int index) async {
 }
 
 _handleEvent(int name, String type, String date, String eName) async {
-
-  mainReference = FirebaseDatabase.instance.reference().child("users/" + _user.displayName);
-  snapshot = await mainReference.once();
-  String events = snapshot.value['events'];
+  mainReference =
+      FirebaseDatabase.instance.reference().child("users/" + _user.displayName);
+  eventSnapshot = await mainReference.once();
+  String events = eventSnapshot.value['events'];
   if (type == "add") {
     /*List<String> tempDate = date.split("/");
     //var scheduledNotificationDateTime = new DateTime(new DateTime.now().year, int.parse(tempDate[0]), int.parse(tempDate[1]), 10);
@@ -933,4 +1025,10 @@ _handleEvent(int name, String type, String date, String eName) async {
     newEvents = events.replaceAll(name.toString() + "/", "");
     mainReference.update({"events": newEvents});
   }
+}
+
+_toggleFavorite(bool f) {
+  mainReference =
+      FirebaseDatabase.instance.reference().child("users/" + _user.displayName);
+  mainReference.update({"favorites": f.toString()});
 }
