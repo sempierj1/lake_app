@@ -26,7 +26,7 @@ bool check = false;
 EmailHandler email = new EmailHandler();
 EventsListHandler eventsListHandler = new EventsListHandler();
 String qr = "";
-List weather;
+Map weather;
 List events;
 double widthApp;
 double heightApp;
@@ -160,9 +160,13 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   final DatabaseReference beachListener =
       FirebaseDatabase.instance.reference().child("beach status");
 
+  final DatabaseReference weatherListener =
+      FirebaseDatabase.instance.reference().child("weather");
+
   TabbedAppBarState() {
     listenerReference.onChildChanged.listen(_familyEdited);
     beachListener.onValue.listen(_editBeachStatus);
+    weatherListener.onValue.listen(_editWeather);
   }
 
   final FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
@@ -209,6 +213,15 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
 
   int changeCheck = 0;
 
+  _editWeather(Event event){
+    try{
+      setState((){
+        weather = event.snapshot.value;
+      });
+    }
+    catch (e)
+    {}
+  }
   _editBeachStatus(Event event) {
     String status;
     try {
@@ -332,7 +345,7 @@ class ChoiceCard extends State<ChoiceState> {
             padding: const EdgeInsets.symmetric(horizontal: 125.0),
             child: new RaisedButton(
                 onPressed: () async {
-                  weather = await email.getWeather();
+                  //weather = await email.getWeather();
                 },
                 child: new Text('Reload')),
           )
@@ -349,7 +362,7 @@ class ChoiceCard extends State<ChoiceState> {
           alertText = "Closed";
         }
 
-        switch (weather[0].toString()) {
+        switch (weather['desc'].toString()) {
           case "Clouds":
             weatherImg = 'assets/Cloud.png';
             break;
@@ -408,7 +421,7 @@ class ChoiceCard extends State<ChoiceState> {
                         child: new Center(
                             child: new Text(
                       "Temp:\n" +
-                          weather[2].round().toString() +
+                          weather['temp'].round().toString() +
                           "\u00b0" +
                           "F",
                       style:
@@ -418,7 +431,7 @@ class ChoiceCard extends State<ChoiceState> {
                     new Expanded(
                       child: new Center(
                           child: new Text(
-                        "Wind:\n" + weather[3].round().toString() + " mph",
+                        "Wind:\n" + weather['wind'].round().toString() + " mph",
                         style: new TextStyle(
                             fontSize: 45.0, fontFamily: "Raleway"),
                         textAlign: TextAlign.center,
@@ -920,7 +933,9 @@ class InviteUserDialog extends StatelessWidget {
 }
 
 getWeather() async {
-  weather = await email.getWeather();
+  mainReference = FirebaseDatabase.instance.reference().child("weather");
+  statusSnapshot = await mainReference.once();
+  weather = statusSnapshot.value;
   mainReference = FirebaseDatabase.instance.reference().child("beach status");
   statusSnapshot = await mainReference.once();
   beachOpen = statusSnapshot.value == "open" ? true : false;
