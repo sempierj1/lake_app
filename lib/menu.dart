@@ -931,7 +931,7 @@ class InviteUserDialog extends StatelessWidget {
             ]));
   }
 }
-
+//Weather
 getWeather() async {
   mainReference = FirebaseDatabase.instance.reference().child("weather");
   statusSnapshot = await mainReference.once();
