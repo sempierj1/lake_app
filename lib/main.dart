@@ -7,9 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
-import 'userinfo.dart';
 import 'dart:ui' as ui;
-import 'eventsHandler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:secure_string/secure_string.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -23,8 +21,6 @@ Map familyList;
 Map familyChanges;
 String appDocPath;
 bool check = false;
-EmailHandler email = new EmailHandler();
-EventsListHandler eventsListHandler = new EventsListHandler();
 Map weather;
 List events;
 double widthApp;
@@ -267,7 +263,7 @@ class EnterEmail extends StatelessWidget {
                             showDialog(
                               context: context,
                               barrierDismissible: false,
-                              child: new AlertDialog(
+                              builder: (BuildContext context) => new AlertDialog(
                                   title: new Text('Password Reset Email Sent'),
                                   content: new Text(
                                       'Please Follow the Instructions in the Email then Click Continue'),
@@ -285,7 +281,7 @@ class EnterEmail extends StatelessWidget {
                             showDialog(
                               context: context,
                               barrierDismissible: false,
-                              child: new AlertDialog(
+                              builder: (BuildContext context) => new AlertDialog(
                                   title: new Text('Verification Email Failed'),
                                   content: new Text(
                                       'Please Be Sure to Enter the Email Associated with Your Membership'),
@@ -529,8 +525,6 @@ class Loading extends State<LoadingState> {
   void initState() {
     super.initState();
     _handleSignInMain();
-    //getCameras();
-    email.setEmail();
     getWeather();
     getEvents();
     new Future.delayed(new Duration(milliseconds: 500), _menu);
@@ -662,7 +656,7 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
       showDialog(
         context: context,
         barrierDismissible: false,
-        child: new AlertDialog(
+        builder: (BuildContext context) =>  new AlertDialog(
             title: new Text("Beach Status Update"),
             content: new Text(message['status'].toString()),
             actions: <Widget>[
@@ -1166,7 +1160,7 @@ class ChoiceCard extends State<ChoiceState> {
                       showDialog(
                         context: context,
                         barrierDismissible: true,
-                        child: new AlertDialog(
+                        builder: (BuildContext context) => new AlertDialog(
                           title: new Text("Where's My Profile Picture?"),
                           content: new Text(
                               'Your picture will show up after it has been taken by the Beach Manager or Membership Team'),
@@ -1294,7 +1288,7 @@ class FamilyWidget extends StatelessWidget {
                     showDialog(
                       context: context,
                       barrierDismissible: false,
-                      child: new AlertDialog(
+                      builder: (BuildContext context) => new AlertDialog(
                           title: new Text("Uninvite"),
                           content: new Text(
                               "Are you sure you want to uninvite " +
@@ -1398,7 +1392,7 @@ class InviteUserDialog extends StatelessWidget {
                             showDialog(
                               context: context,
                               barrierDismissible: false,
-                              child: new AlertDialog(
+                              builder: (BuildContext context) => new AlertDialog(
                                   title: new Text("Success!"),
                                   content: new Text(family[index].name +
                                       " has been invited."),
@@ -1420,7 +1414,7 @@ class InviteUserDialog extends StatelessWidget {
                             showDialog(
                               context: context,
                               barrierDismissible: false,
-                              child: new AlertDialog(
+                              builder: (BuildContext context) => new AlertDialog(
                                   title: new Text('User Not Added'),
                                   content: new Text('Failed to Add User'),
                                   actions: <Widget>[
