@@ -11,7 +11,7 @@ import 'userinfo.dart';
 import 'dart:ui' as ui;
 import 'eventsHandler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:random_string/random_string.dart';
+import 'package:secure_string/secure_string.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 
@@ -42,7 +42,10 @@ TextEditingController _controller = new TextEditingController();
 int familyLength;
 final double devicePixelRatio = ui.window.devicePixelRatio;
 List<int> _saved = new List();
-
+bool weatherClosure;
+String weatherIcon;
+List<String>weatherDescription;
+String weatherDescriptionFixed = "";
 
 
 TextEditingController _controller2 = new TextEditingController();
@@ -61,7 +64,6 @@ void main() {
 
 
 void runCheck() async {
-  print("RUN CHECK");
   bool check = await checkFirstRun();
   //bool check2 = await checkInfo();
   if (check) {
@@ -237,21 +239,22 @@ class EnterEmail extends StatelessWidget {
               ),
               new Column(
                 children: <Widget>[
-                  new Container(
+                  new Form(
+                  child: new Container(
                     //child: new Align(
                     //heightFactor: 5.0,
                     padding: const EdgeInsets.only(top: 100.0),
                     //alignment: Alignment.center,
-                    child: new TextField(
+                    child: new TextFormField(
                       controller: _controller,
                       decoration: new InputDecoration(
                         hintText: 'example@example.com',
                       ),
                       textAlign: TextAlign.center,
                     ),
-                  ),
+                  ),),
                   new Align(
-                    heightFactor: 2.0,
+                    heightFactor: 3.0,
                     alignment: Alignment.bottomCenter,
                     child: new FlatButton(
                         onPressed: () async {
@@ -401,12 +404,12 @@ class Login extends StatelessWidget {
                           await _handleSignIn(context)
                               .then((FirebaseUser user) {
                             if (user != null) {
-                              Navigator.pushNamed(context, "/screen6");
+                              Navigator.pushReplacementNamed(context, "/screen6");
                             } else {
                               showDialog(
                                 context: context,
                                 barrierDismissible: false,
-                                child: new AlertDialog(
+                                builder: (BuildContext context) => new AlertDialog(
                                     title: new Text('Login Failed'),
                                     content: new Text(
                                         'Login Credentials Are Case Sensitive'),
@@ -486,7 +489,6 @@ Future<FirebaseUser> _handleSignIn(BuildContext context) async {
 void updateVerified(key, value)
 {
   try {
-    print(key);
     print(_controller.text);
     mainReference =
         FirebaseDatabase.instance.reference().child("users/" + key);
@@ -538,7 +540,7 @@ class Loading extends State<LoadingState> {
     if (events != null &&
         weather != null &&
         _user != null) {
-      Navigator.popAndPushNamed(context, "/screen5");
+      Navigator.pushReplacementNamed(context, "/screen5");
     } else
       new Future.delayed(new Duration(seconds: 1), _menu);
   }
@@ -627,10 +629,14 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   final DatabaseReference weatherListener =
   FirebaseDatabase.instance.reference().child("weather");
 
+  final DatabaseReference weatherClosureListener =
+  FirebaseDatabase.instance.reference().child("weatherDelay");
+
   TabbedAppBarState() {
     listenerReference.onChildChanged.listen(_familyEdited);
     beachListener.onValue.listen(_editBeachStatus);
     weatherListener.onValue.listen(_editWeather);
+    weatherClosureListener.onValue.listen(_editWeatherClosure);
   }
 
   final FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
@@ -681,6 +687,27 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
     try{
       setState((){
         weather = event.snapshot.value;
+        weatherDescription = weather['longDesc'].toString().split(" ");
+        weatherDescriptionFixed = "";
+        for(final i in weatherDescription)
+        {
+          if(weatherDescriptionFixed != "")
+          {
+            weatherDescriptionFixed += " ";
+          }
+          weatherDescriptionFixed += i.substring(0,1).toUpperCase();
+          weatherDescriptionFixed += i.substring(1, i.length);
+        }
+      });
+    }
+    catch (e)
+    {}
+  }
+  _editWeatherClosure(Event event)
+  {
+    try{
+      setState((){
+        weatherClosure = statusSnapshot.value == "true" ? true : false;
       });
     }
     catch (e)
@@ -819,37 +846,42 @@ class ChoiceCard extends State<ChoiceState> {
         if (beachOpen) {
           barColor = Colors.green;
           alertText = "Open";
-        } else {
+        } else if(!beachOpen && !weatherClosure){
+          barColor = Colors.blueAccent;
+          alertText = "Closed - Off Hours";
+        }
+        else
+        {
           barColor = Colors.red;
-          alertText = "Closed";
+          alertText = "Closed - Inclement Weather";
         }
 
-        switch (weather['desc'].toString()) {
-          case "Clouds":
-            weatherImg = 'assets/Cloud.png';
+        switch (weather['icon'].toString()) {
+          case "03n":
+            weatherImg = 'assets/png/03d.png';
             break;
 
-          case "Thunderstorm":
-            weatherImg = 'assets/Thunder.png';
+          case "04d":
+            weatherImg = 'assets/png/03d.png';
             break;
 
-          case "Drizzle":
-            weatherImg = 'assets/Rain.png';
+          case "04n":
+            weatherImg = 'assets/png/03d.png';
             break;
 
-          case "Rain":
-            weatherImg = 'assets/Rain.png';
+          case "09n":
+            weatherImg = 'assets/png/09d.png';
             break;
-          case "Snow":
-            weatherImg = 'assets/Snow.png';
+          case "11n":
+            weatherImg = 'assets/png/11d.png';
             break;
 
-          case "Clear":
-            weatherImg = 'assets/Sun.png';
+          case "13n":
+            weatherImg = 'assets/png/13d.png';
             break;
 
           default:
-            weatherImg = "assets/Sun.png";
+            weatherImg = "assets/png/" + weather['icon'].toString() + ".png";
             break;
         }
 
@@ -868,14 +900,27 @@ class ChoiceCard extends State<ChoiceState> {
                           fontSize: fontSize, fontFamily: "Alert")),
                 ),
               ),
-              new Image.asset(
-                weatherImg,
-                height: heightApp / 3.0,
-                width: widthApp / 3.0,
-                fit: BoxFit.contain,
+              new Container(
+                height: heightApp / 3,
+                width: widthApp / 3,
+                padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
+                child: new Image.asset(
+                  weatherImg,
+                  height: heightApp / 3.5,
+                  width: widthApp / 3.5,
+                  fit: BoxFit.contain,
+                ),
+              ),
+
+              new Container(
+                padding: new EdgeInsets.only(top: heightApp / 30.0),
+                alignment: Alignment.center,
+                    child: new Text(weatherDescriptionFixed, textAlign: TextAlign.center,
+                        style: new TextStyle(
+                            fontSize: fontSize, fontFamily: "Raleway"))
               ),
               new Container(
-                padding: new EdgeInsets.only(top: heightApp / 20.0),
+                padding: new EdgeInsets.only(top: heightApp / 25.0),
                 alignment: Alignment.center,
                 child: new Row(
                   children: <Widget>[
@@ -887,7 +932,7 @@ class ChoiceCard extends State<ChoiceState> {
                                   "\u00b0" +
                                   "F",
                               style:
-                              new TextStyle(fontSize: 45.0, fontFamily: "Raleway"),
+                              new TextStyle(fontSize: 11.25*(heightApp / 200), fontFamily: "Raleway"),
                               textAlign: TextAlign.center,
                             ))),
                     new Expanded(
@@ -895,7 +940,7 @@ class ChoiceCard extends State<ChoiceState> {
                           child: new Text(
                             "Wind:\n" + weather['wind'].round().toString() + " mph",
                             style: new TextStyle(
-                                fontSize: 45.0, fontFamily: "Raleway"),
+                                fontSize: 11.25*(heightApp / 200), fontFamily: "Raleway"),
                             textAlign: TextAlign.center,
                           )),
                     )
@@ -1099,7 +1144,7 @@ class ChoiceCard extends State<ChoiceState> {
       try {
         imageProvider = new NetworkImage(_user.photoUrl);
       } catch (e) {
-        imageProvider = new AssetImage("/assets/nouser.png");
+        imageProvider = new AssetImage("/assets/png/nouser.png");
       }
       List<Widget> children = new List.generate(
           family.length, (int i) => new FamilyWidget(i, context));
@@ -1159,11 +1204,21 @@ class ChoiceCard extends State<ChoiceState> {
               child: new FlatButton(
                   onPressed: () {
                     _signOut();
-                    Navigator
-                        .of(context, rootNavigator: true)
-                        .pop(context);
-                    Navigator.of(context, rootNavigator: true)
-                    .pushNamed("/screen3");
+                    try {
+                      Navigator
+                          .of(context, rootNavigator: true)
+                          .pop(context);
+                    }
+                    catch (e)
+                    {}
+                    try {
+                      Navigator.of(context, rootNavigator: true)
+                          .pushReplacementNamed("/screen3");
+                    }
+                    catch (e)
+                    {
+                      Navigator.pushReplacementNamed(context, "/screen3");
+                    }
                   },
                   child: new Text(
                     "Sign-Out",
@@ -1393,9 +1448,23 @@ getWeather() async {
   mainReference = FirebaseDatabase.instance.reference().child("weather");
   statusSnapshot = await mainReference.once();
   weather = statusSnapshot.value;
+  weatherDescription = weather['longDesc'].toString().split(" ");
+
+  for(final i in weatherDescription)
+    {
+      if(weatherDescriptionFixed != "")
+        {
+          weatherDescriptionFixed += " ";
+        }
+      weatherDescriptionFixed += i.substring(0,1).toUpperCase();
+     weatherDescriptionFixed += i.substring(1, i.length);
+    }
   mainReference = FirebaseDatabase.instance.reference().child("beach status");
   statusSnapshot = await mainReference.once();
   beachOpen = statusSnapshot.value == "open" ? true : false;
+  mainReference = FirebaseDatabase.instance.reference().child("weatherDelay");
+  statusSnapshot = await mainReference.once();
+  weatherClosure = statusSnapshot.value == "true" ? true : false;
 }
 
 getEvents() async {
@@ -1448,7 +1517,8 @@ class Family {
 
 Future<FirebaseUser> _createUser(
     TextEditingController controller, int index) async {
-  String pass = randomAlphaNumeric(12);
+  SecureString secureString = new SecureString();
+  String pass = secureString.generate(length: 64);
   FirebaseUser newUser = await _auth.createUserWithEmailAndPassword(
       email: controller.text, password: pass);
   newUser = await _auth.signInWithEmailAndPassword(
