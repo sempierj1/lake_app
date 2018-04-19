@@ -701,7 +701,7 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   {
     try{
       setState((){
-        weatherClosure = statusSnapshot.value == "true" ? true : false;
+        weatherClosure = event.snapshot.value == true ? true : false;
       });
     }
     catch (e)
@@ -818,8 +818,9 @@ class ChoiceCard extends State<ChoiceState> {
     heightApp = MediaQuery.of(context).size.height;
     fontSize = (widthApp / 18).round() * 1.0;
     if (choice.title == "Check-In") {
+      print(_user.email);
       return new Center(
-        child: new QrImage(data: _user.email, size: widthApp / 2),
+        child: new QrImage(version: 2, data: _user.email, size: widthApp / 2),
       );
     } else if (choice.title == "Weather") {
       if (weather == null) {
