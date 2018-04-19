@@ -7,3 +7,5 @@ have events sort chronologically (maybe do that serverside)
 look into stream builder
 
 check qr
+
+check status change
