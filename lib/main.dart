@@ -42,6 +42,8 @@ bool weatherClosure;
 String weatherIcon;
 List<String> weatherDescription;
 String weatherDescriptionFixed = "";
+bool isManager = false;
+ImageProvider imageProvider;
 
 TextEditingController _controller2 = new TextEditingController();
 
@@ -641,17 +643,19 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
       assert(token != null);
       print("Push Messaging token: $token");
     });
+    _firebaseMessaging.subscribeToTopic("beach");
     _firebaseMessaging.configure(onLaunch: (Map<String, dynamic> message) {
       goToWeather();
     }, onResume: (Map<String, dynamic> message) {
       goToWeather();
     }, onMessage: (Map<String, dynamic> message) {
+      print(message);
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) => new AlertDialog(
                 title: new Text("Beach Status Update"),
-                content: new Text(message['status'].toString()),
+                content: new Text(message['body'].toString()),
                 actions: <Widget>[
                   new FlatButton(
                       child: new Text('Okay'),
@@ -727,7 +731,7 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new DefaultTabController(
-        length: choices.length,
+        length: isManager ? choicesManager.length: choices.length,
         child: new Scaffold(
           appBar: new AppBar(
             centerTitle: true,
@@ -738,7 +742,12 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
             ),
             bottom: new TabBar(
               //isScrollable: true,
-              tabs: choices.map((Choice choice) {
+              tabs: isManager ? choicesManager.map ((Choice choice) {
+                return new Tab(
+                  text: choice.title,
+                  icon: new Icon(choice.icon),
+                );
+              }).toList() : choices.map ((Choice choice) {
                 return new Tab(
                   text: choice.title,
                   icon: new Icon(choice.icon),
@@ -747,7 +756,12 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
             ),
           ),
           body: new TabBarView(
-            children: choices.map((Choice choice) {
+            children: isManager ? choicesManager.map ((Choice choice) {
+              return new Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: new ChoiceState(choice: choice),
+              );
+            }).toList(): choices.map((Choice choice) {
               return new Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: new ChoiceState(choice: choice),
@@ -772,6 +786,14 @@ const List<Choice> choices = const <Choice>[
   const Choice(title: 'Weather', icon: Icons.beach_access),
   const Choice(title: 'Events', icon: Icons.event),
   const Choice(title: 'Profile', icon: Icons.account_circle),
+];
+
+const List<Choice> choicesManager = const <Choice>[
+  const Choice(title: 'Check-In', icon: Icons.contacts),
+  const Choice(title: 'Weather', icon: Icons.beach_access),
+  const Choice(title: 'Events', icon: Icons.event),
+  const Choice(title: 'Profile', icon: Icons.account_circle),
+  const Choice(title: 'Manager', icon: Icons.vpn_key)
 ];
 
 void deleteCred() async {
@@ -1122,12 +1144,6 @@ class ChoiceCard extends State<ChoiceState> {
         ),
       );
     } else if (choice.title == 'Profile') {
-      ImageProvider imageProvider;
-      try {
-        imageProvider = new NetworkImage(_user.photoUrl);
-      } catch (e) {
-        imageProvider = new AssetImage("/assets/png/nouser.png");
-      }
       List<Widget> children = new List.generate(
           family.length, (int i) => new FamilyWidget(i, context));
       return new ListView(
@@ -1180,7 +1196,6 @@ class ChoiceCard extends State<ChoiceState> {
             ],
           ),
           new Column(children: children),
-          new FlatButton(onPressed: () async{ await _closeBeach();}, child: new Text("TESTBUTTON")),
           new Align(
               heightFactor: 3.2,
               alignment: Alignment.bottomCenter,
@@ -1208,7 +1223,32 @@ class ChoiceCard extends State<ChoiceState> {
                   )))
         ],
       );
-    } else {
+    }
+    else if(choice.title == "Manager")
+      {
+        return new Column(
+            children: <Widget>[
+            new RaisedButton(onPressed: () async {
+              showDialog(
+                context: context,
+                barrierDismissible: true,
+                builder: (BuildContext context) => new AlertDialog(
+                  title: weatherClosure ? new Text("Open the Beach?") : new Text("Close the Beach?"),
+                  content: weatherClosure ? new Text("Are you sure you want to open the beach?") : new Text(
+                      'Are you sure you want to close the beach?'),
+                  actions: <Widget>[
+                    new FlatButton(onPressed: () async{
+                      await _closeBeach();
+                      Navigator.pop(context);
+                    }, child: new Text("Confirm"))
+                  ],
+                ),
+              );
+
+              }, child: weatherClosure ? new Text("Open Beach") : new Text("Close Beach"))],
+        );
+      }
+    else {
       return new Container(width: 0.0, height: 0.0);
     }
   }
@@ -1616,7 +1656,13 @@ Future _handleSignInMain() async {
   family.clear();
   familyList = userSnapshot.value['family'];
   isHead = userSnapshot.value['isHead'];
+  isManager = userSnapshot.value['isManager'];
   favorites = userSnapshot.value['favorites'] == "true";
+  try {
+    imageProvider = await new NetworkImage(user.photoUrl);
+  } catch (e) {
+    imageProvider = await new AssetImage("/assets/png/nouser.png");
+  }
   if (familyList != null) {
     familyList.forEach(createFamily);
   }
@@ -1670,18 +1716,36 @@ Future<FirebaseUser> _createUser(
 Future _closeBeach() async{
   var url = 'https://mediahomecraft.ddns.net/node/beachstatus';
   var success = false;
-  await http
-      .post(url,
-      body: {
-        "userID": _user.uid,
-        "status": "true"
-      },
-      encoding: Encoding.getByName("utf-8"))
-      .then((response) {
-    if (response.body.toString() == "Success") {
-      success = true;
+  if(weatherClosure) {
+    await http
+        .post(url,
+        body: {
+          "userID": _user.uid,
+          "status": "false"
+        },
+        encoding: Encoding.getByName("utf-8"))
+        .then((response) {
+      if (response.body.toString() == "Success") {
+        success = true;
+      }
+    });
+  }
+  else
+    {
+      await http
+        .post(url,
+        body: {
+          "userID": _user.uid,
+          "status": "true"
+        },
+        encoding: Encoding.getByName("utf-8"))
+        .then((response) {
+      if (response.body.toString() == "Success") {
+        success = true;
+      }
+    });
     }
-  });
+
   return success;
 }
 
