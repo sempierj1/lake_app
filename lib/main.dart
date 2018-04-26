@@ -12,6 +12,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:secure_string/secure_string.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
+import 'menuCamera.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 FirebaseUser _user;
@@ -71,6 +72,7 @@ void runCheck() async {
         //'/screen4': (BuildContext context) => new LoadScreen(),
         '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen6': (BuildContext context) => new LoadingState(),
+        '/screen7': (BuildContext context) => new CameraState(),
       },
     ));
   } else {
@@ -83,6 +85,7 @@ void runCheck() async {
         //'/screen4': (BuildContext context) => new LoadScreen(),
         '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen6': (BuildContext context) => new LoadingState(),
+        '/screen7': (BuildContext context) => new CameraState(),
       },
     ));
   }
@@ -529,7 +532,7 @@ class Loading extends State<LoadingState> {
   }
 
   Future _menu() async {
-    if (events != null && weather != null && _user != null) {
+    if (events != null && weather != null && _user != null && imageProvider != null) {
       Navigator.pushReplacementNamed(context, "/screen5");
     } else
       new Future.delayed(new Duration(seconds: 1), _menu);
@@ -1246,7 +1249,13 @@ class ChoiceCard extends State<ChoiceState> {
                 ),
               );
 
-              }, child: weatherClosure ? new Text("Open Beach") : new Text("Close Beach"))],
+              }, child: weatherClosure ? new Text("Open Beach") : new Text("Close Beach")),
+            new IconButton(icon: new Icon(Icons.add_a_photo), onPressed: () {
+              Navigator
+                  .of(context, rootNavigator: true)
+                  .pushNamed("/screen7");
+            })
+            ],
         );
       }
     else {
@@ -1659,10 +1668,7 @@ Future _handleSignInMain() async {
   isHead = userSnapshot.value['isHead'];
   isManager = userSnapshot.value['isManager'];
   favorites = userSnapshot.value['favorites'] == "true";
-  /*UserUpdateInfo uinfo = new UserUpdateInfo();
-  uinfo.displayName = user.displayName;
-  uinfo.photoUrl = "https://firebasestorage.googleapis.com/v0/b/membership-application-64ff9.appspot.com/o/Sun.png?alt=media&token=3989d90e-30b7-4469-8ca3-59a1186df796";
-  await _auth.updateProfile(uinfo);*/
+
   try {
     imageProvider = new NetworkImage(user.photoUrl);
   } catch (e) {
@@ -1824,8 +1830,10 @@ void _signOut() async {
       '/screen1': (BuildContext context) => new FirstScreen(),
       '/screen2': (BuildContext context) => new EnterEmail(),
       '/screen3': (BuildContext context) => new Login(),
+      //'/screen4': (BuildContext context) => new LoadScreen(),
       '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
       '/screen6': (BuildContext context) => new LoadingState(),
+      '/screen7': (BuildContext context) => new CameraState(),
     },
     initialRoute: '/screen1',
   ));

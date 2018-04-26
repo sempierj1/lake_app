@@ -20,6 +20,7 @@ dependencies:
   image: "^1.1.30"
   secure_string: "^2.0.0"
   firebase_messaging: "^0.2.4"
+  firebase_storage: "^0.3.0"
   #flutter_local_notifications: "^0.1.0"
 
 
