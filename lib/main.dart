@@ -28,6 +28,7 @@ double heightApp;
 double fontSize = 30.0;
 bool beachOpen = true;
 DatabaseReference mainReference;
+DatabaseReference userReference;
 DataSnapshot userSnapshot;
 DataSnapshot statusSnapshot;
 DataSnapshot eventSnapshot;
@@ -1650,23 +1651,26 @@ Future _handleSignInMain() async {
   String pass = await storage.read(key: "password");
   FirebaseUser user =
       await _auth.signInWithEmailAndPassword(email: uName, password: pass);
-  mainReference =
+  userReference =
       FirebaseDatabase.instance.reference().child("users/" + user.displayName);
-  userSnapshot = await mainReference.once();
+  userSnapshot = await userReference.once();
   family.clear();
   familyList = userSnapshot.value['family'];
   isHead = userSnapshot.value['isHead'];
   isManager = userSnapshot.value['isManager'];
   favorites = userSnapshot.value['favorites'] == "true";
+  /*UserUpdateInfo uinfo = new UserUpdateInfo();
+  uinfo.displayName = user.displayName;
+  uinfo.photoUrl = "https://firebasestorage.googleapis.com/v0/b/membership-application-64ff9.appspot.com/o/Sun.png?alt=media&token=3989d90e-30b7-4469-8ca3-59a1186df796";
+  await _auth.updateProfile(uinfo);*/
   try {
-    imageProvider = await new NetworkImage(user.photoUrl);
+    imageProvider = new NetworkImage(user.photoUrl);
   } catch (e) {
-    imageProvider = await new AssetImage("/assets/png/nouser.png");
+    imageProvider = new AssetImage("/assets/png/nouser.png");
   }
   if (familyList != null) {
     familyList.forEach(createFamily);
   }
-  //print(mainReference.equalTo(user.uid));
   _user = user;
   String events = userSnapshot.value['events'];
   List<String> temp = events.split("/");
@@ -1696,22 +1700,29 @@ Future<FirebaseUser> _createUser(
     TextEditingController controller, int index) async {
   SecureString secureString = new SecureString();
   String pass = secureString.generate(length: 64);
-  FirebaseUser newUser = await _auth.createUserWithEmailAndPassword(
-      email: controller.text, password: pass);
-  newUser = await _auth.signInWithEmailAndPassword(
-      email: controller.text, password: pass);
-  UserUpdateInfo uinfo = new UserUpdateInfo();
-  uinfo.displayName = family[index].name;
-  _auth.updateProfile(uinfo);
-  if (newUser != null) {
-    mainReference.child("/family/").update({family[index].name: "i"});
-    DatabaseReference temp = FirebaseDatabase.instance
-        .reference()
-        .child("users/" + family[index].name);
-    temp.update({'email': controller.text});
+  try {
+    FirebaseUser newUser = await _auth.createUserWithEmailAndPassword(
+        email: controller.text, password: pass);
+
+    newUser = await _auth.signInWithEmailAndPassword(
+        email: controller.text, password: pass);
+    UserUpdateInfo uinfo = new UserUpdateInfo();
+    uinfo.displayName = family[index].name;
+    await _auth.updateProfile(uinfo);
+    if (newUser != null) {
+      await userReference.child("/family/").update({family[index].name: "i"});
+      DatabaseReference temp = FirebaseDatabase.instance
+          .reference()
+          .child("users/" + family[index].name);
+      temp.update({'email': controller.text});
+    }
+    return newUser;
   }
-  return newUser;
-}
+  catch (e) {
+  return null;
+  }
+
+  }
 
 Future _closeBeach() async{
   var url = 'https://mediahomecraft.ddns.net/node/beachstatus';
@@ -1762,7 +1773,7 @@ Future _deleteUser(int index) async {
           encoding: Encoding.getByName("utf-8"))
       .then((response) {
     if (response.body.toString() == "Success") {
-      mainReference.child("/family/").update({family[index].name: "nv"});
+      userReference.child("/family/").update({family[index].name: "nv"});
       success = true;
     }
   });
