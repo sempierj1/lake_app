@@ -15,6 +15,8 @@ double widthApp;
 String appDocPath;
 int i = 0;
 TextEditingController _controller = new TextEditingController();
+String test = "";
+
 
 class CameraState extends StatefulWidget {
   CameraState({Key key, this.title}) : super(key: key);
@@ -147,8 +149,11 @@ class _CameraState extends State<CameraState> {
               child: new IconButton(
                 onPressed: () async
                 {
+                  test ="";
+                  test += DateTime.now().toString() + "\n";
                   await controller.capture(appDocPath + "/profile" + i.toString() + ".png"
                   ).then((String value){
+                    test += DateTime.now().toString() + "\n";
                     cropImage(context);
                   });
                   },
@@ -228,19 +233,43 @@ cropImage(BuildContext context) async
   IO.Directory appDocDir = await getApplicationDocumentsDirectory();
   appDocPath = appDocDir.path;
   try {
+
+    test += "Start f" + DateTime.now().toString() + "\n";
+    print(DateTime.now());
     IMAGE.Image image = IMAGE.decodeImage(
         new IO.File(appDocPath + "/profile" + i.toString() + ".png").readAsBytesSync());
+    test += "File read " + DateTime.now().toString() + "\n";
+    print("File read");
+    print(DateTime.now());
     //IMAGE.Image imageDest = new IMAGE.Image(widthApp.toInt(), widthApp.toInt());
     //IMAGE.copyInto(imageDest, image);
     //IMAGE.Image rotated = IMAGE.copyRotate(image, -90);
     IMAGE.Image cropped = IMAGE.copyCrop(
         image, (image.width * (5.0/ 16)).toInt(), (image.height * (2 / 9)).toInt(), (image.height * (5 / 9)).toInt(),
         (image.height * (5 / 9)).toInt());
+    test += "File cropped " + DateTime.now().toString() + "\n";
+    print("File cropped");
+    print(DateTime.now());
     IMAGE.Image rotated = IMAGE.copyRotate(cropped, 90);
+    test += "File rotated" + DateTime.now().toString() + "\n";
+    print("File rotated");
+    print(DateTime.now());
     new IO.File(appDocPath + "/profile" + i.toString() + ".png")
         .writeAsBytesSync(IMAGE.encodePng(rotated));
+    test += "File written " + DateTime.now().toString() + "\n";
+    print("File written");
+    print(DateTime.now());
     IO.File upload = new IO.File(appDocPath + "/profile" + i.toString() + ".png");
+    test += "File set for upload " + DateTime.now().toString() + "\n";
+    print("File set for upload");
+    print(DateTime.now());
     showDialog(context: context,
+    barrierDismissible: true,
+    builder: (BuildContext context) =>
+    new AlertDialog(
+        title: new Text("Upload?"),
+        content: new Text(test)));
+    /*showDialog(context: context,
     barrierDismissible: true,
     builder: (BuildContext context) =>
     new AlertDialog(
@@ -340,7 +369,7 @@ cropImage(BuildContext context) async
       ],
     )
 
-    )));
+    )));*/
 
   }
   catch (e) {

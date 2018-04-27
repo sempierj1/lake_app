@@ -74,6 +74,7 @@ void runCheck() async {
         '/screen6': (BuildContext context) => new LoadingState(),
         '/screen7': (BuildContext context) => new CameraState(),
       },
+      showPerformanceOverlay: true,
     ));
   } else {
     runApp(new MaterialApp(
@@ -87,6 +88,7 @@ void runCheck() async {
         '/screen6': (BuildContext context) => new LoadingState(),
         '/screen7': (BuildContext context) => new CameraState(),
       },
+      showPerformanceOverlay: true,
     ));
   }
 }
