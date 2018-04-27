@@ -37,7 +37,7 @@ class ServerHandle
     else {
     verified = false;
     }
-    };
+    }
   }
   bool getVerified()
   {
