@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io' as IO;
 import 'package:image/image.dart' as IMAGE;
+import 'package:flutter/services.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -16,6 +17,7 @@ String appDocPath;
 int i = 0;
 TextEditingController _controller = new TextEditingController();
 String test = "";
+
 
 
 class CameraState extends StatefulWidget {
@@ -192,28 +194,6 @@ class _CameraState extends State<CameraState> {
       ),
     ])],
       ));
-    return new Scaffold(
-      appBar: new AppBar(
-        title: const Text('Take a Profile Picture'),
-      ),
-      body: new AspectRatio(aspectRatio: controller.value.aspectRatio,
-          child: new CameraPreview(controller)),
-
-
-    );
-
-    /*backgroundColor: Colors.red,
-            mini: false,
-            tooltip: 'Take Picture',
-            onPressed: () async {
-              await controller.capture(appDocPath + "/profile.jpg");*/
-    /*new FlatButton(onPressed: (){
-            Navigator.pop(context);
-
-            //Navigator.pushNamed(context, '/screen7');
-          }, child: new Text("Go Back", style: new TextStyle(fontFamily: 'Roboto', color:Colors.lightBlue, fontSize: 20.0), textAlign: TextAlign.center,))*/
-
-
   }
 }
 
@@ -230,46 +210,14 @@ Future getPath() async {
 
 cropImage(BuildContext context) async
 {
+  //const platform = const MethodChannel('com.yourcompany.flutter/readWrite');
+  //final List<int> result = await platform.invokeMethod('getFile');
+
   IO.Directory appDocDir = await getApplicationDocumentsDirectory();
   appDocPath = appDocDir.path;
+  IO.File image = new IO.File(appDocPath + "/profile" + i.toString() + ".png");
   try {
-
-    test += "Start f" + DateTime.now().toString() + "\n";
-    print(DateTime.now());
-    IMAGE.Image image = IMAGE.decodeImage(
-        new IO.File(appDocPath + "/profile" + i.toString() + ".png").readAsBytesSync());
-    test += "File read " + DateTime.now().toString() + "\n";
-    print("File read");
-    print(DateTime.now());
-    //IMAGE.Image imageDest = new IMAGE.Image(widthApp.toInt(), widthApp.toInt());
-    //IMAGE.copyInto(imageDest, image);
-    //IMAGE.Image rotated = IMAGE.copyRotate(image, -90);
-    IMAGE.Image cropped = IMAGE.copyCrop(
-        image, (image.width * (5.0/ 16)).toInt(), (image.height * (2 / 9)).toInt(), (image.height * (5 / 9)).toInt(),
-        (image.height * (5 / 9)).toInt());
-    test += "File cropped " + DateTime.now().toString() + "\n";
-    print("File cropped");
-    print(DateTime.now());
-    IMAGE.Image rotated = IMAGE.copyRotate(cropped, 90);
-    test += "File rotated" + DateTime.now().toString() + "\n";
-    print("File rotated");
-    print(DateTime.now());
-    new IO.File(appDocPath + "/profile" + i.toString() + ".png")
-        .writeAsBytesSync(IMAGE.encodePng(rotated));
-    test += "File written " + DateTime.now().toString() + "\n";
-    print("File written");
-    print(DateTime.now());
-    IO.File upload = new IO.File(appDocPath + "/profile" + i.toString() + ".png");
-    test += "File set for upload " + DateTime.now().toString() + "\n";
-    print("File set for upload");
-    print(DateTime.now());
     showDialog(context: context,
-    barrierDismissible: true,
-    builder: (BuildContext context) =>
-    new AlertDialog(
-        title: new Text("Upload?"),
-        content: new Text(test)));
-    /*showDialog(context: context,
     barrierDismissible: true,
     builder: (BuildContext context) =>
     new AlertDialog(
@@ -281,7 +229,7 @@ cropImage(BuildContext context) async
         children: <Widget>[
         new Center(
           child: new CircleAvatar(
-            backgroundImage: FileImage(upload),
+            backgroundImage: FileImage(image),
             radius: widthApp / 7,
           ),
           //child: new Image(image: new FileImage(new File(appDocPath))),
@@ -329,15 +277,15 @@ cropImage(BuildContext context) async
                         //IMAGE.Image cropped = IMAGE.copyCrop(
                         //    image, 0, 0, image.height,
                         //    image.height);
-                        List<String> nameSplit = _controller.text.split(" ");
-                        String name = nameSplit[0] + "_" + nameSplit[1];
+                        String name = _controller.text;
+                        //List<String> nameSplit = _controller.text.split(" ");
+                        //String name = nameSplit[0] + "_" + nameSplit[1];
                         final StorageReference ref = FirebaseStorage.instance.ref().child(
                             name + ".png");
                         final StorageUploadTask uploadTask = ref.putFile(
-                            upload, const StorageMetadata(contentLanguage: "en"));
+                            image, const StorageMetadata(contentLanguage: "en"));
                         final Uri downloadUrl = (await uploadTask.future).downloadUrl;
-
-                        var url = 'https://mediahomecraft.ddns.net/node/addPic';
+                        var url = 'https://membershipme.ddns.net/node/addPic';
                         await http
                             .post(url,
                             body: {
@@ -369,7 +317,7 @@ cropImage(BuildContext context) async
       ],
     )
 
-    )));*/
+    )));
 
   }
   catch (e) {

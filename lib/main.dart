@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -45,6 +44,7 @@ String weatherIcon;
 List<String> weatherDescription;
 String weatherDescriptionFixed = "";
 bool isManager = false;
+bool isBeach = false;
 ImageProvider imageProvider;
 
 TextEditingController _controller2 = new TextEditingController();
@@ -53,9 +53,9 @@ DataSnapshot snapshot;
 
 //test
 void main() {
-  SystemChrome.setPreferredOrientations([
+  /*SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
-  ]);
+  ]);*/
   runCheck();
 }
 
@@ -74,7 +74,6 @@ void runCheck() async {
         '/screen6': (BuildContext context) => new LoadingState(),
         '/screen7': (BuildContext context) => new CameraState(),
       },
-      showPerformanceOverlay: true,
     ));
   } else {
     runApp(new MaterialApp(
@@ -88,7 +87,6 @@ void runCheck() async {
         '/screen6': (BuildContext context) => new LoadingState(),
         '/screen7': (BuildContext context) => new CameraState(),
       },
-      showPerformanceOverlay: true,
     ));
   }
 }
@@ -210,7 +208,7 @@ class EnterEmail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-        // 1
+      // 1
         appBar: new AppBar(
           //2
           title: new Text("Enter Email",
@@ -269,38 +267,38 @@ class EnterEmail extends StatelessWidget {
                               context: context,
                               barrierDismissible: false,
                               builder: (BuildContext context) =>
-                                  new AlertDialog(
-                                      title:
-                                          new Text('Password Reset Email Sent'),
-                                      content: new Text(
-                                          'Please Follow the Instructions in the Email then Click Continue'),
-                                      actions: <Widget>[
-                                        new FlatButton(
-                                            child: new Text('Continue'),
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                              Navigator.pushNamed(
-                                                  context, "/screen3");
-                                            })
-                                      ]),
+                              new AlertDialog(
+                                  title:
+                                  new Text('Password Reset Email Sent'),
+                                  content: new Text(
+                                      'Please Follow the Instructions in the Email then Click Continue'),
+                                  actions: <Widget>[
+                                    new FlatButton(
+                                        child: new Text('Continue'),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          Navigator.pushNamed(
+                                              context, "/screen3");
+                                        })
+                                  ]),
                             );
                           } else {
                             showDialog(
                               context: context,
                               barrierDismissible: false,
                               builder: (BuildContext context) =>
-                                  new AlertDialog(
-                                      title:
-                                          new Text('Verification Email Failed'),
-                                      content: new Text(
-                                          'Please Be Sure to Enter the Email Associated with Your Membership'),
-                                      actions: <Widget>[
-                                        new FlatButton(
-                                            child: new Text('Try Again'),
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            })
-                                      ]),
+                              new AlertDialog(
+                                  title:
+                                  new Text('Verification Email Failed'),
+                                  content: new Text(
+                                      'Please Be Sure to Enter the Email Associated with Your Membership'),
+                                  actions: <Widget>[
+                                    new FlatButton(
+                                        child: new Text('Try Again'),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        })
+                                  ]),
                             );
                           }
                         },
@@ -316,29 +314,6 @@ class EnterEmail extends StatelessWidget {
                 ],
               ),
             ]));
-  }
-
-  Future<bool> sendEmail() async {
-    var email = _controller.text;
-    var url = 'https://mediahomecraft.ddns.net/lake/main.php';
-    var uri = Uri.parse(url);
-    try {
-      var request = new MultipartRequest("POST", uri);
-      request.fields['email'] = email;
-      StreamedResponse response = await request.send();
-      await for (var value in response.stream.transform(utf8.decoder)) {
-        if (value.toString().length == 1) {
-          sent = true;
-        } else {
-          sent = false;
-        }
-      }
-    } catch (exception) {
-      print(exception);
-      sent = false;
-      //Error Message Here
-    }
-    return sent;
   }
 }
 
@@ -456,8 +431,24 @@ class Login extends StatelessWidget {
 }
 
 Future resetPassword() async {
-  await _auth.sendPasswordResetEmail(email: _controller.text).catchError((e) {
-    sent = false;
+  var url = 'https://membershipme.ddns.net/node/emailCheck';
+  await http
+      .post(url,
+      body: {
+        "email": _controller.text
+      },
+      encoding: Encoding.getByName("utf-8"))
+      .then((response) async {
+    if (response.body.toString() == "Reset") {
+      sent = true;
+      await _auth.sendPasswordResetEmail(email: _controller.text).catchError((e) {
+        sent = false;
+      });
+    }
+    else
+      {
+        sent = false;
+      }
   });
 }
 
@@ -483,6 +474,22 @@ Future<FirebaseUser> _handleSignIn(BuildContext context) async {
           .child("users/" + user.displayName);
       mainReference.update({"email": _controller.text});
       snapshot = await mainReference.once();
+      if(snapshot.value['firstLogin'] == "true")
+        {
+          mainReference.update({'firstLogin': "false"});
+          var url = 'https://membershipme.ddns.net/node/emailVerified';
+          await http
+              .post(url,
+              body: {
+                "email": _controller.text,
+              },
+              encoding: Encoding.getByName("utf-8"))
+              .then((response) async {
+            if (response.body.toString() != "Done") {
+              return false;
+            }
+          });
+        }
       Map family = snapshot.value['family'];
       family.forEach(updateVerified);
     } catch (e) {}
@@ -492,7 +499,6 @@ Future<FirebaseUser> _handleSignIn(BuildContext context) async {
 
 void updateVerified(key, value) {
   try {
-    print(_controller.text);
     mainReference = FirebaseDatabase.instance.reference().child("users/" + key);
     mainReference.child("/family/").update({_user.displayName: "v"});
   } catch (e) {}
@@ -534,7 +540,7 @@ class Loading extends State<LoadingState> {
   }
 
   Future _menu() async {
-    if (events != null && weather != null && _user != null && imageProvider != null) {
+    if ((events != null && weather != null && _user != null && imageProvider != null) || (isBeach)) {
       Navigator.pushReplacementNamed(context, "/screen5");
     } else
       new Future.delayed(new Duration(seconds: 1), _menu);
@@ -615,23 +621,26 @@ class TabbedAppBarMenu extends StatefulWidget {
 
 class TabbedAppBarState extends State<TabbedAppBarMenu>
     with SingleTickerProviderStateMixin {
-  final DatabaseReference listenerReference =
-      FirebaseDatabase.instance.reference().child("users/" + _user.displayName);
 
-  final DatabaseReference beachListener =
-      FirebaseDatabase.instance.reference().child("beach status");
+  final DatabaseReference listenerReference = isBeach ? null :
+  FirebaseDatabase.instance.reference().child("users/" + _user.uid);
 
-  final DatabaseReference weatherListener =
-      FirebaseDatabase.instance.reference().child("weather");
+  final DatabaseReference beachListener = isBeach ? null :
+  FirebaseDatabase.instance.reference().child("beach status");
 
-  final DatabaseReference weatherClosureListener =
-      FirebaseDatabase.instance.reference().child("weatherDelay");
+  final DatabaseReference weatherListener = isBeach ? null :
+  FirebaseDatabase.instance.reference().child("weather");
+
+  final DatabaseReference weatherClosureListener = isBeach ? null :
+  FirebaseDatabase.instance.reference().child("weatherDelay");
 
   TabbedAppBarState() {
-    listenerReference.onChildChanged.listen(_familyEdited);
-    beachListener.onValue.listen(_editBeachStatus);
-    weatherListener.onValue.listen(_editWeather);
-    weatherClosureListener.onValue.listen(_editWeatherClosure);
+    if(!isBeach) {
+      listenerReference.onChildChanged.listen(_familyEdited);
+      beachListener.onValue.listen(_editBeachStatus);
+      weatherListener.onValue.listen(_editWeather);
+      weatherClosureListener.onValue.listen(_editWeatherClosure);
+    }
   }
 
   final FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
@@ -655,7 +664,6 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
     }, onResume: (Map<String, dynamic> message) {
       goToWeather();
     }, onMessage: (Map<String, dynamic> message) {
-      print(message);
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -737,7 +745,7 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new DefaultTabController(
-        length: isManager ? choicesManager.length: choices.length,
+        length: isManager ? choicesManager.length : isBeach ? choicesBeach.length : choices.length,
         child: new Scaffold(
           appBar: new AppBar(
             centerTitle: true,
@@ -753,6 +761,11 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
                   text: choice.title,
                   icon: new Icon(choice.icon),
                 );
+              }).toList() : isBeach ? choicesBeach.map ((Choice choice) {
+                return new Tab(
+                  text: choice.title,
+                  icon: new Icon(choice.icon),
+                );
               }).toList() : choices.map ((Choice choice) {
                 return new Tab(
                   text: choice.title,
@@ -763,6 +776,11 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
           ),
           body: new TabBarView(
             children: isManager ? choicesManager.map ((Choice choice) {
+              return new Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: new ChoiceState(choice: choice),
+              );
+            }).toList(): isBeach ? choicesBeach.map((Choice choice) {
               return new Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: new ChoiceState(choice: choice),
@@ -802,6 +820,10 @@ const List<Choice> choicesManager = const <Choice>[
   const Choice(title: 'Manager', icon: Icons.vpn_key)
 ];
 
+const List<Choice> choicesBeach = const <Choice>[
+  const Choice(title: 'Sign-In', icon: Icons.image),
+];
+
 void deleteCred() async {
   final storage = new FlutterSecureStorage();
   await storage.delete(key: "username");
@@ -834,9 +856,8 @@ class ChoiceCard extends State<ChoiceState> {
     heightApp = MediaQuery.of(context).size.height;
     fontSize = (widthApp / 18).round() * 1.0;
     if (choice.title == "Check-In") {
-      print(_user.email);
       return new Center(
-        child: new QrImage(version: 2, data: _user.email, size: widthApp / 2),
+        child: new QrImage(version: 3, data: _user.uid, size: widthApp / 2),
       );
     } else if (choice.title == "Weather") {
       if (weather == null) {
@@ -1260,6 +1281,19 @@ class ChoiceCard extends State<ChoiceState> {
             ],
         );
       }
+      else if(choice.title == "Sign-In")
+        {
+          return new Row(
+            children: <Widget>[
+              new Expanded(
+                child: new IconButton(icon: new Icon(Icons.camera_alt), onPressed: (){})
+              ),
+              new Expanded(
+                child: new FlatButton(onPressed: (){}, child: new Text("Badge #"))
+              )
+            ],
+          );
+        }
     else {
       return new Container(width: 0.0, height: 0.0);
     }
@@ -1632,7 +1666,6 @@ getWeather() async {
   beachOpen = statusSnapshot.value == "open" ? true : false;
   mainReference = FirebaseDatabase.instance.reference().child("weatherDelay");
   statusSnapshot = await mainReference.once();
-  print(statusSnapshot.value);
   weatherClosure = statusSnapshot.value.toString() == "true" ? true : false;
 
   mainReference = FirebaseDatabase.instance.reference().child("weather");
@@ -1662,31 +1695,37 @@ Future _handleSignInMain() async {
   String pass = await storage.read(key: "password");
   FirebaseUser user =
       await _auth.signInWithEmailAndPassword(email: uName, password: pass);
-  userReference =
-      FirebaseDatabase.instance.reference().child("users/" + user.displayName);
-  userSnapshot = await userReference.once();
-  family.clear();
-  familyList = userSnapshot.value['family'];
-  isHead = userSnapshot.value['isHead'];
-  isManager = userSnapshot.value['isManager'];
-  favorites = userSnapshot.value['favorites'] == "true";
+  if(uName != "beachmanager@lake-parsippany.org") {
+    userReference =
+        FirebaseDatabase.instance.reference().child("users/" + user.uid);
+    userSnapshot = await userReference.once();
+    family.clear();
+    familyList = userSnapshot.value['family'];
+    isHead = userSnapshot.value['isHead'];
+    isManager = userSnapshot.value['isManager'];
+    favorites = userSnapshot.value['favorites'] == "true";
 
-  try {
-    imageProvider = new NetworkImage(user.photoUrl);
-  } catch (e) {
-    imageProvider = new AssetImage("/assets/png/nouser.png");
-  }
-  if (familyList != null) {
-    familyList.forEach(createFamily);
-  }
-  _user = user;
-  String events = userSnapshot.value['events'];
-  List<String> temp = events.split("/");
-  for (final i in temp) {
-    if (i != "") {
-      _saved.add(int.parse(i));
+    try {
+      imageProvider = new NetworkImage(user.photoUrl);
+    } catch (e) {
+      imageProvider = new AssetImage("/assets/png/nouser.png");
+    }
+    if (familyList != null) {
+      familyList.forEach(createFamily);
+    }
+    _user = user;
+    String events = userSnapshot.value['events'];
+    List<String> temp = events.split("/");
+    for (final i in temp) {
+      if (i != "") {
+        _saved.add(int.parse(i));
+      }
     }
   }
+  else
+    {
+      isBeach = true;
+    }
   return user;
 }
 
@@ -1716,24 +1755,53 @@ Future<FirebaseUser> _createUser(
         email: controller.text, password: pass);
     UserUpdateInfo uinfo = new UserUpdateInfo();
     uinfo.displayName = family[index].name;
+    DataSnapshot snapshot = await userReference.once();
     await _auth.updateProfile(uinfo);
     if (newUser != null) {
-      await userReference.child("/family/").update({family[index].name: "i"});
+      print("ONE");
+      Map newFamily = createFamilyList(snapshot, family[index].name);
+      print(newFamily);
+      await userReference.child("/family/").update({family[index].name: controller.text});
       DatabaseReference temp = FirebaseDatabase.instance
           .reference()
-          .child("users/" + family[index].name);
-      temp.update({'email': controller.text});
+          .child("users/" + newUser.uid);
+      temp.update({'email': controller.text,
+        'badge': snapshot.value['badge'],
+        'events': "",
+        'family': newFamily,
+        'favorites': 'false',
+        'firstLogin': 'true',
+        'guests': snapshot.value['guests'],
+        'isHead': 'false',
+        'isManager': 'false',
+        'name': family[index].name,
+        'type': snapshot.value['type']});
     }
     return newUser;
   }
   catch (e) {
+    print(e);
   return null;
   }
 
   }
 
+  Map createFamilyList(DataSnapshot s, String name)
+  {
+    Map familyMap = new Map();
+    void checkFamily(key, value) {
+      if (key != name) {
+        familyMap[key] = "v";
+      }
+    }
+    s.value['family'].forEach(checkFamily);
+      familyMap[_user.displayName] = "v";
+    return familyMap;
+  }
+
+
 Future _closeBeach() async{
-  var url = 'https://mediahomecraft.ddns.net/node/beachstatus';
+  var url = 'https://membershipme.ddns.net/node/beachstatus';
   var success = false;
   if(weatherClosure) {
     await http
@@ -1769,7 +1837,7 @@ Future _closeBeach() async{
 }
 
 Future _deleteUser(int index) async {
-  var url = 'https://mediahomecraft.ddns.net/node';
+  var url = 'https://membershipme.ddns.net/node';
   var success = false;
   await http
       .post(url,
@@ -1790,7 +1858,7 @@ Future _deleteUser(int index) async {
 
 _handleEvent(int name, String type, String date, String eName) async {
   mainReference =
-      FirebaseDatabase.instance.reference().child("users/" + _user.displayName);
+      FirebaseDatabase.instance.reference().child("users/" + _user.uid);
   eventSnapshot = await mainReference.once();
   String events = eventSnapshot.value['events'];
   if (type == "add") {
@@ -1812,7 +1880,7 @@ _handleEvent(int name, String type, String date, String eName) async {
 
 _toggleFavorite(bool f) {
   mainReference =
-      FirebaseDatabase.instance.reference().child("users/" + _user.displayName);
+      FirebaseDatabase.instance.reference().child("users/" + _user.uid);
   mainReference.update({"favorites": f.toString()});
 }
 

@@ -1,14 +1,9 @@
-Going to need to use member# as part of displayname
+uid as sort for users database and a member# to email thing.
 
 have events sort chronologically (maybe do that serverside)
 
-look into stream builder
-
 Need to put on description page - Icons made by Freepik from www.flaticon.com
 
-switch to uid for creation
+flesh out creation to include full info on user
 
-Get Started - Check if user has already had their password changes. If so do not reset password.
-
-Fix Read / Write
-
+LOGIN VIEW
