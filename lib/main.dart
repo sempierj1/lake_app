@@ -13,7 +13,9 @@ import 'package:http/http.dart' as http;
 import 'menuCamera.dart';
 import 'qrScan.dart';
 import 'badgeNumber.dart';
+import 'membershipTextStyles.dart';
 
+MembershipTextStyle myStyle = new MembershipTextStyle();
 final FirebaseAuth _auth = FirebaseAuth.instance;
 FirebaseUser _user;
 bool isHead = false;
@@ -132,7 +134,7 @@ class FirstScreen extends StatelessWidget {
         appBar: new AppBar(
           //2
           title: new Text("Getting Started",
-              style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0)),
+              style: myStyle.whiteText(context)),
         ),
         body: new Column(children: <Widget>[
           new Row(
@@ -142,10 +144,7 @@ class FirstScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     new Text('\n\nWelcome to the Lake Parsippany Phone App',
-                        style: new TextStyle(
-                            fontFamily: 'Raleway',
-                            fontSize: 30.0,
-                            color: Colors.black),
+                        style: myStyle.header(context),
                         textAlign: TextAlign.center),
                   ],
                 ),
@@ -162,10 +161,7 @@ class FirstScreen extends StatelessWidget {
               },
               child: new Text(
                 "Get Started",
-                style: new TextStyle(
-                    fontFamily: 'Roboto',
-                    color: Colors.lightBlue,
-                    fontSize: 25.0),
+                style: myStyle.banner(context),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -179,10 +175,7 @@ class FirstScreen extends StatelessWidget {
               children: <Widget>[
                 new Text(
                   "Used the App Before?",
-                  style: new TextStyle(
-                      fontFamily: 'Raleway',
-                      fontSize: 15.0,
-                      color: Colors.grey),
+                  style: myStyle.subText(context),
                   textAlign: TextAlign.center,
                 ),
                 new FlatButton(
@@ -192,10 +185,7 @@ class FirstScreen extends StatelessWidget {
                   },
                   child: new Text(
                     "Login",
-                    style: new TextStyle(
-                        fontFamily: 'Roboto',
-                        color: Colors.lightBlue,
-                        fontSize: 15.0),
+                    style: myStyle.smallFlatButton(context),
                   ),
                 ),
               ],
@@ -218,7 +208,7 @@ class EnterEmail extends StatelessWidget {
         appBar: new AppBar(
           //2
           title: new Text("Enter Email",
-              style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0)),
+              style: myStyle.whiteText(context)),
         ),
         body: new ListView(
             padding: const EdgeInsets.only(left: 25.0, right: 25.0),
@@ -231,10 +221,7 @@ class EnterEmail extends StatelessWidget {
                       children: <Widget>[
                         new Text(
                             '\n\nPlease Enter the Email Associated With Your Membership',
-                            style: new TextStyle(
-                                fontFamily: 'Raleway',
-                                fontSize: 30.0,
-                                color: Colors.black),
+                            style: myStyle.header(context),
                             textAlign: TextAlign.center),
                       ],
                     ),
@@ -310,10 +297,7 @@ class EnterEmail extends StatelessWidget {
                         },
                         child: new Text(
                           "Submit",
-                          style: new TextStyle(
-                              fontFamily: 'Roboto',
-                              color: Colors.lightBlue,
-                              fontSize: 15.0),
+                          style: myStyle.smallFlatButton(context),
                           textAlign: TextAlign.center,
                         )),
                   ),
@@ -332,7 +316,7 @@ class Login extends StatelessWidget {
         appBar: new AppBar(
           //2
           title: new Text("Enter Email",
-              style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0)),
+              style: myStyle.normalText(context)),
         ),
         body: new ListView(
             padding: const EdgeInsets.only(left: 25.0, right: 25.0),
@@ -1591,133 +1575,12 @@ class FamilyWidget extends StatelessWidget {
                                   family[index].invited != "nv"
                               ? "Uninvite"
                               : "Invite",
-                          style: new TextStyle(
-                              fontFamily: 'Roboto',
-                              color: Colors.lightBlue,
-                              fontSize: 20.0),
+                          style: myStyle.listButtons(context),
                           textAlign: TextAlign.center,
                         )))
             : new Container()
       ],
     );
-  }
-}
-
-class InviteUserDialog extends StatelessWidget {
-  InviteUserDialog({this.index});
-
-  final int index;
-
-  @override
-  Widget build(BuildContext context) {
-    return new Scaffold(
-        // 1
-        appBar: new AppBar(
-          //2
-          title: new Text("Enter Email",
-              style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0)),
-        ),
-        body: new ListView(
-            padding: const EdgeInsets.only(left: 25.0, right: 25.0),
-            children: <Widget>[
-              new Row(
-                children: <Widget>[
-                  new Flexible(
-                    child: new Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        new Text(
-                            '\n\nPlease Enter ' +
-                                family[index].name +
-                                "'s Email Address",
-                            style: new TextStyle(
-                                fontFamily: 'Raleway',
-                                fontSize: 30.0,
-                                color: Colors.black),
-                            textAlign: TextAlign.center),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              new Column(
-                children: <Widget>[
-                  new Container(
-                    //child: new Align(
-                    //heightFactor: 5.0,
-                    padding: const EdgeInsets.only(top: 100.0),
-                    //alignment: Alignment.center,
-                    child: new TextField(
-                      controller: _controller,
-                      decoration: new InputDecoration(
-                        hintText: 'example@example.com',
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  new Align(
-                    heightFactor: 2.0,
-                    alignment: Alignment.bottomCenter,
-                    child: new FlatButton(
-                      child: new Text("Add",
-                          style: new TextStyle(
-                              fontFamily: 'Roboto',
-                              fontSize: 15.0,
-                              color: Colors.lightBlue)),
-                      onPressed: () async {
-                        //login = new ServerHandle(_controller.text, _controller2.text);
-                        await _createUser(_controller, index)
-                            .then((FirebaseUser user) {
-                          if (user != null) {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (BuildContext context) =>
-                                  new AlertDialog(
-                                      title: new Text("Success!"),
-                                      content: new Text(family[index].name +
-                                          " has been invited."),
-                                      actions: <Widget>[
-                                        new FlatButton(
-                                            child: new Text('Okay'),
-                                            onPressed: () {
-                                              Navigator
-                                                  .of(context,
-                                                      rootNavigator: true)
-                                                  .pop();
-                                              //Navigator.of(context).pop();
-                                            })
-                                      ]),
-                            );
-
-                            //Navigator.of(context).pop("good");
-                          } else {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (BuildContext context) =>
-                                  new AlertDialog(
-                                      title: new Text('User Not Added'),
-                                      content: new Text('Failed to Add User'),
-                                      actions: <Widget>[
-                                        new FlatButton(
-                                            child: new Text('Try Again'),
-                                            onPressed: () {
-                                              Navigator
-                                                  .of(context,
-                                                      rootNavigator: true)
-                                                  .pop();
-                                            })
-                                      ]),
-                            );
-                          }
-                        }).catchError((e) => print(e));
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ]));
   }
 }
 
