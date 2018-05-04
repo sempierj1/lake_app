@@ -3,34 +3,37 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io' as IO;
-import 'package:image/image.dart' as IMAGE;
-import 'package:flutter/services.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'qrScan.dart';
 
 List<CameraDescription> cameras;
 double heightApp;
 double widthApp;
 String appDocPath;
 int i = 0;
-TextEditingController _controller = new TextEditingController();
 String test = "";
 
 
 
 class CameraState extends StatefulWidget {
-  CameraState({Key key, this.title}) : super(key: key);
+  CameraState({Key key, this.title, this.list}) : super(key: key);
 
   final String title;
+  final List list;
+
 
   @override
-  _CameraState createState() => new _CameraState();
+  _CameraState createState() => new _CameraState(list);
 }
 
 class _CameraState extends State<CameraState> {
   CameraController controller;
+
+  final List list;
+
+  _CameraState(this.list);
 
   @override
   void initState() {
@@ -156,7 +159,7 @@ class _CameraState extends State<CameraState> {
                   await controller.capture(appDocPath + "/profile" + i.toString() + ".png"
                   ).then((String value){
                     test += DateTime.now().toString() + "\n";
-                    cropImage(context);
+                    cropImage(context, list[0], list[1]);
                   });
                   },
                 icon: new Icon(Icons.camera_alt),
@@ -208,10 +211,11 @@ Future getPath() async {
 }
 
 
-cropImage(BuildContext context) async
+cropImage(BuildContext context, String n, String uid) async
 {
   //const platform = const MethodChannel('com.yourcompany.flutter/readWrite');
   //final List<int> result = await platform.invokeMethod('getFile');
+  final String name = n;
 
   IO.Directory appDocDir = await getApplicationDocumentsDirectory();
   appDocPath = appDocDir.path;
@@ -238,24 +242,8 @@ cropImage(BuildContext context) async
         new Row(
           children: <Widget>[
             new Expanded(child:
-            new FlatButton(onPressed: (){
+            new FlatButton(onPressed: () async{
               i++;
-              showDialog(
-                context: context,
-                barrierDismissible: true,
-                builder: (BuildContext context) =>
-                new AlertDialog(
-                    title: new Text("Name"),
-                    content: new TextField(
-                      controller: _controller,
-                      decoration: new InputDecoration(
-                        hintText: 'John Smith',
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    actions: <Widget>[
-                      new FlatButton(
-                          child: new Text('Add Picture'), onPressed: () async {
                         showDialog(context: context,
                             barrierDismissible: false,
                             builder: (BuildContext context) =>
@@ -277,7 +265,6 @@ cropImage(BuildContext context) async
                         //IMAGE.Image cropped = IMAGE.copyCrop(
                         //    image, 0, 0, image.height,
                         //    image.height);
-                        String name = _controller.text;
                         //List<String> nameSplit = _controller.text.split(" ");
                         //String name = nameSplit[0] + "_" + nameSplit[1];
                         final StorageReference ref = FirebaseStorage.instance.ref().child(
@@ -290,19 +277,17 @@ cropImage(BuildContext context) async
                             .post(url,
                             body: {
                               "picURL": downloadUrl.toString(),
-                              "name": _controller.text
+                              "name": name
                             },
                             encoding: Encoding.getByName("utf-8"))
                             .then((response) {
                           if (response.body.toString() == "Success") {}
                         });
-                        Navigator.popAndPushNamed(context, "/screen6");
-                      }
+                        Navigator.pushAndRemoveUntil(context, new MaterialPageRoute(builder: (context) => new QrScanner(uid: uid)), ModalRoute.withName('/screen8'));
+                      },
 
-                      )
-                    ]),
-              );
-            }, child: new Text("Yes", style: new TextStyle(fontFamily: 'Roboto',
+
+             child: new Text("Yes", style: new TextStyle(fontFamily: 'Roboto',
                 color: Colors.lightBlue,
                 fontSize: 20.0),),),),
             new Expanded(child:

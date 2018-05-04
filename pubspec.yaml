@@ -21,6 +21,7 @@ dependencies:
   secure_string: "^2.0.0"
   firebase_messaging: "^0.2.4"
   firebase_storage: "^0.3.0"
+  barcode_scan: "^0.0.4"
   #flutter_local_notifications: "^0.1.0"
 
 

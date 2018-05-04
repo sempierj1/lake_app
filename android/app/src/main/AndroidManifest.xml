@@ -40,5 +40,6 @@
             </intent-filter>
 
         </activity>
+        <activity android:name="com.apptreesoftware.barcodescan.BarcodeScannerActivity"/>
     </application>
 </manifest>

@@ -1,9 +1,11 @@
-uid as sort for users database and a member# to email thing.
-
 have events sort chronologically (maybe do that serverside)
 
 Need to put on description page - Icons made by Freepik from www.flaticon.com
 
-flesh out creation to include full info on user
+seperate file for common textstyles?
+
+see about moving functions out to seperate class?
+
+clear all vars on sign out
 
 LOGIN VIEW

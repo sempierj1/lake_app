@@ -5,13 +5,14 @@ import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/services.dart';
 import 'dart:ui' as ui;
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:secure_string/secure_string.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'menuCamera.dart';
+import 'qrScan.dart';
+import 'badgeNumber.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 FirebaseUser _user;
@@ -45,6 +46,7 @@ List<String> weatherDescription;
 String weatherDescriptionFixed = "";
 bool isManager = false;
 bool isBeach = false;
+int badgeNumber;
 ImageProvider imageProvider;
 
 TextEditingController _controller2 = new TextEditingController();
@@ -73,6 +75,8 @@ void runCheck() async {
         '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen6': (BuildContext context) => new LoadingState(),
         '/screen7': (BuildContext context) => new CameraState(),
+        '/screen8': (BuildContext context) => new QrScanner(),
+        '/screen9': (BuildContext context) => new BadgeNumber(),
       },
     ));
   } else {
@@ -86,6 +90,8 @@ void runCheck() async {
         '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen6': (BuildContext context) => new LoadingState(),
         '/screen7': (BuildContext context) => new CameraState(),
+        '/screen8': (BuildContext context) => new QrScanner(),
+        '/screen9': (BuildContext context) => new BadgeNumber(),
       },
     ));
   }
@@ -208,7 +214,7 @@ class EnterEmail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      // 1
+        // 1
         appBar: new AppBar(
           //2
           title: new Text("Enter Email",
@@ -267,38 +273,38 @@ class EnterEmail extends StatelessWidget {
                               context: context,
                               barrierDismissible: false,
                               builder: (BuildContext context) =>
-                              new AlertDialog(
-                                  title:
-                                  new Text('Password Reset Email Sent'),
-                                  content: new Text(
-                                      'Please Follow the Instructions in the Email then Click Continue'),
-                                  actions: <Widget>[
-                                    new FlatButton(
-                                        child: new Text('Continue'),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          Navigator.pushNamed(
-                                              context, "/screen3");
-                                        })
-                                  ]),
+                                  new AlertDialog(
+                                      title:
+                                          new Text('Password Reset Email Sent'),
+                                      content: new Text(
+                                          'Please Follow the Instructions in the Email then Click Continue'),
+                                      actions: <Widget>[
+                                        new FlatButton(
+                                            child: new Text('Continue'),
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                              Navigator.pushNamed(
+                                                  context, "/screen3");
+                                            })
+                                      ]),
                             );
                           } else {
                             showDialog(
                               context: context,
                               barrierDismissible: false,
                               builder: (BuildContext context) =>
-                              new AlertDialog(
-                                  title:
-                                  new Text('Verification Email Failed'),
-                                  content: new Text(
-                                      'Please Be Sure to Enter the Email Associated with Your Membership'),
-                                  actions: <Widget>[
-                                    new FlatButton(
-                                        child: new Text('Try Again'),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        })
-                                  ]),
+                                  new AlertDialog(
+                                      title:
+                                          new Text('Verification Email Failed'),
+                                      content: new Text(
+                                          'Please Be Sure to Enter the Email Associated with Your Membership'),
+                                      actions: <Widget>[
+                                        new FlatButton(
+                                            child: new Text('Try Again'),
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            })
+                                      ]),
                             );
                           }
                         },
@@ -434,21 +440,19 @@ Future resetPassword() async {
   var url = 'https://membershipme.ddns.net/node/emailCheck';
   await http
       .post(url,
-      body: {
-        "email": _controller.text
-      },
-      encoding: Encoding.getByName("utf-8"))
+          body: {"email": _controller.text},
+          encoding: Encoding.getByName("utf-8"))
       .then((response) async {
     if (response.body.toString() == "Reset") {
       sent = true;
-      await _auth.sendPasswordResetEmail(email: _controller.text).catchError((e) {
+      await _auth
+          .sendPasswordResetEmail(email: _controller.text)
+          .catchError((e) {
         sent = false;
       });
+    } else {
+      sent = false;
     }
-    else
-      {
-        sent = false;
-      }
   });
 }
 
@@ -469,27 +473,25 @@ Future<FirebaseUser> _handleSignIn(BuildContext context) async {
     await setFirstRun();
     await storeInfo();
     try {
-      mainReference = FirebaseDatabase.instance
-          .reference()
-          .child("users/" + user.displayName);
+      mainReference =
+          FirebaseDatabase.instance.reference().child("users/" + user.uid);
       mainReference.update({"email": _controller.text});
       snapshot = await mainReference.once();
-      if(snapshot.value['firstLogin'] == "true")
-        {
-          mainReference.update({'firstLogin': "false"});
-          var url = 'https://membershipme.ddns.net/node/emailVerified';
-          await http
-              .post(url,
-              body: {
-                "email": _controller.text,
-              },
-              encoding: Encoding.getByName("utf-8"))
-              .then((response) async {
-            if (response.body.toString() != "Done") {
-              return false;
-            }
-          });
-        }
+      if (snapshot.value['firstLogin'] == "true") {
+        mainReference.update({'firstLogin': "false"});
+        var url = 'https://membershipme.ddns.net/node/emailVerified';
+        await http
+            .post(url,
+                body: {
+                  "email": _controller.text,
+                },
+                encoding: Encoding.getByName("utf-8"))
+            .then((response) async {
+          if (response.body.toString() != "Done") {
+            return false;
+          }
+        });
+      }
       Map family = snapshot.value['family'];
       family.forEach(updateVerified);
     } catch (e) {}
@@ -540,7 +542,11 @@ class Loading extends State<LoadingState> {
   }
 
   Future _menu() async {
-    if ((events != null && weather != null && _user != null && imageProvider != null) || (isBeach)) {
+    if ((events != null &&
+            weather != null &&
+            _user != null &&
+            imageProvider != null) ||
+        (isBeach)) {
       Navigator.pushReplacementNamed(context, "/screen5");
     } else
       new Future.delayed(new Duration(seconds: 1), _menu);
@@ -621,21 +627,23 @@ class TabbedAppBarMenu extends StatefulWidget {
 
 class TabbedAppBarState extends State<TabbedAppBarMenu>
     with SingleTickerProviderStateMixin {
+  final DatabaseReference listenerReference = isBeach
+      ? null
+      : FirebaseDatabase.instance.reference().child("users/" + _user.uid);
 
-  final DatabaseReference listenerReference = isBeach ? null :
-  FirebaseDatabase.instance.reference().child("users/" + _user.uid);
+  final DatabaseReference beachListener = isBeach
+      ? null
+      : FirebaseDatabase.instance.reference().child("beach status");
 
-  final DatabaseReference beachListener = isBeach ? null :
-  FirebaseDatabase.instance.reference().child("beach status");
+  final DatabaseReference weatherListener =
+      isBeach ? null : FirebaseDatabase.instance.reference().child("weather");
 
-  final DatabaseReference weatherListener = isBeach ? null :
-  FirebaseDatabase.instance.reference().child("weather");
-
-  final DatabaseReference weatherClosureListener = isBeach ? null :
-  FirebaseDatabase.instance.reference().child("weatherDelay");
+  final DatabaseReference weatherClosureListener = isBeach
+      ? null
+      : FirebaseDatabase.instance.reference().child("weatherDelay");
 
   TabbedAppBarState() {
-    if(!isBeach) {
+    if (!isBeach) {
       listenerReference.onChildChanged.listen(_familyEdited);
       beachListener.onValue.listen(_editBeachStatus);
       weatherListener.onValue.listen(_editWeather);
@@ -745,7 +753,9 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new DefaultTabController(
-        length: isManager ? choicesManager.length : isBeach ? choicesBeach.length : choices.length,
+        length: isManager
+            ? choicesManager.length
+            : isBeach ? choicesBeach.length : choices.length,
         child: new Scaffold(
           appBar: new AppBar(
             centerTitle: true,
@@ -756,41 +766,49 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
             ),
             bottom: new TabBar(
               //isScrollable: true,
-              tabs: isManager ? choicesManager.map ((Choice choice) {
-                return new Tab(
-                  text: choice.title,
-                  icon: new Icon(choice.icon),
-                );
-              }).toList() : isBeach ? choicesBeach.map ((Choice choice) {
-                return new Tab(
-                  text: choice.title,
-                  icon: new Icon(choice.icon),
-                );
-              }).toList() : choices.map ((Choice choice) {
-                return new Tab(
-                  text: choice.title,
-                  icon: new Icon(choice.icon),
-                );
-              }).toList(),
+              tabs: isManager
+                  ? choicesManager.map((Choice choice) {
+                      return new Tab(
+                        text: choice.title,
+                        icon: new Icon(choice.icon),
+                      );
+                    }).toList()
+                  : isBeach
+                      ? choicesBeach.map((Choice choice) {
+                          return new Tab(
+                            text: choice.title,
+                            icon: new Icon(choice.icon),
+                          );
+                        }).toList()
+                      : choices.map((Choice choice) {
+                          return new Tab(
+                            text: choice.title,
+                            icon: new Icon(choice.icon),
+                          );
+                        }).toList(),
             ),
           ),
           body: new TabBarView(
-            children: isManager ? choicesManager.map ((Choice choice) {
-              return new Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: new ChoiceState(choice: choice),
-              );
-            }).toList(): isBeach ? choicesBeach.map((Choice choice) {
-              return new Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: new ChoiceState(choice: choice),
-              );
-            }).toList(): choices.map((Choice choice) {
-              return new Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: new ChoiceState(choice: choice),
-              );
-            }).toList(),
+            children: isManager
+                ? choicesManager.map((Choice choice) {
+                    return new Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: new ChoiceState(choice: choice),
+                    );
+                  }).toList()
+                : isBeach
+                    ? choicesBeach.map((Choice choice) {
+                        return new Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: new ChoiceState(choice: choice),
+                        );
+                      }).toList()
+                    : choices.map((Choice choice) {
+                        return new Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: new ChoiceState(choice: choice),
+                        );
+                      }).toList(),
           ),
         ),
       ),
@@ -856,8 +874,19 @@ class ChoiceCard extends State<ChoiceState> {
     heightApp = MediaQuery.of(context).size.height;
     fontSize = (widthApp / 18).round() * 1.0;
     if (choice.title == "Check-In") {
-      return new Center(
-        child: new QrImage(version: 3, data: _user.uid, size: widthApp / 2),
+      return new Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Center(
+            child: new QrImage(version: 3, data: _user.uid, size: widthApp / 2),
+          ),
+          Container(
+              padding: const EdgeInsets.only(top: 50.0),
+              child: Center(
+                  child: new Text(badgeNumber.toString(),
+                      style: new TextStyle(
+                          fontFamily: "Raleway", fontSize: fontSize*3))))
+        ],
       );
     } else if (choice.title == "Weather") {
       if (weather == null) {
@@ -1250,51 +1279,111 @@ class ChoiceCard extends State<ChoiceState> {
                   )))
         ],
       );
-    }
-    else if(choice.title == "Manager")
-      {
-        return new Column(
-            children: <Widget>[
-            new RaisedButton(onPressed: () async {
-              showDialog(
-                context: context,
-                barrierDismissible: true,
-                builder: (BuildContext context) => new AlertDialog(
-                  title: weatherClosure ? new Text("Open the Beach?") : new Text("Close the Beach?"),
-                  content: weatherClosure ? new Text("Are you sure you want to open the beach?") : new Text(
-                      'Are you sure you want to close the beach?'),
-                  actions: <Widget>[
-                    new FlatButton(onPressed: () async{
-                      await _closeBeach();
-                      Navigator.pop(context);
-                    }, child: new Text("Confirm"))
-                  ],
-                ),
-              );
-
-              }, child: weatherClosure ? new Text("Open Beach") : new Text("Close Beach")),
-            new IconButton(icon: new Icon(Icons.add_a_photo), onPressed: () {
-              Navigator
-                  .of(context, rootNavigator: true)
-                  .pushNamed("/screen7");
-            })
-            ],
-        );
-      }
-      else if(choice.title == "Sign-In")
-        {
-          return new Row(
-            children: <Widget>[
-              new Expanded(
-                child: new IconButton(icon: new Icon(Icons.camera_alt), onPressed: (){})
-              ),
-              new Expanded(
-                child: new FlatButton(onPressed: (){}, child: new Text("Badge #"))
-              )
-            ],
-          );
-        }
-    else {
+    } else if (choice.title == "Manager") {
+      return new Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          new RaisedButton(
+              onPressed: () async {
+                showDialog(
+                  context: context,
+                  barrierDismissible: true,
+                  builder: (BuildContext context) => new AlertDialog(
+                        title: weatherClosure
+                            ? new Text("Open the Beach?")
+                            : new Text("Close the Beach?"),
+                        content: weatherClosure
+                            ? new Text(
+                                "Are you sure you want to open the beach?")
+                            : new Text(
+                                'Are you sure you want to close the beach?'),
+                        actions: <Widget>[
+                          new FlatButton(
+                              onPressed: () async {
+                                showDialog(context: context,
+                                    barrierDismissible: false,
+                                    builder: (BuildContext context) =>
+                                    new AlertDialog(
+                                      title: new Text("Sending Message"),
+                                      content: new Container(
+                                        height: 200.0,
+                                        child: new Center(
+                                          child: new SizedBox(
+                                            height: 50.0,
+                                            width: 50.0,
+                                            child: new CircularProgressIndicator(
+                                              value: null,
+                                              strokeWidth: 7.0,
+                                            ),
+                                          ),
+                                        ),),)
+                                );
+                                await _closeBeach();
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                              },
+                              child: new Text("Confirm"))
+                        ],
+                      ),
+                );
+              },color: Colors.white,
+              child: weatherClosure
+                  ? new Text("Open Beach", style: new TextStyle(fontSize: fontSize),)
+                  : new Text("Close Beach", style: new TextStyle(fontSize: fontSize))),
+        ],
+      );
+    } else if (choice.title == "Sign-In") {
+      return new Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          new Row(children: <Widget>[
+            new Expanded(
+                child: new IconButton(
+                    icon: new Icon(Icons.camera_alt),
+                    iconSize: 70.0,
+                    color: Colors.lightBlue,
+                    onPressed: () {
+                      Navigator
+                          .of(context, rootNavigator: true)
+                          .pushNamed("/screen8");
+                    })),
+            new Expanded(
+                child: new FlatButton(
+                    onPressed: () {
+                      Navigator
+                          .of(context, rootNavigator: true)
+                          .pushNamed("/screen9");
+                    },
+                    child: new Text("Badge #",
+                        style: new TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: fontSize * 1.3,
+                            color: Colors.lightBlue)))),
+          ]),
+          new Align(
+              alignment: Alignment.bottomCenter,
+              child: new FlatButton(
+                  onPressed: () {
+                    _signOut();
+                    try {
+                      Navigator.of(context, rootNavigator: true).pop(context);
+                    } catch (e) {}
+                    try {
+                      Navigator
+                          .of(context, rootNavigator: true)
+                          .pushReplacementNamed("/screen3");
+                    } catch (e) {
+                      Navigator.pushReplacementNamed(context, "/screen3");
+                    }
+                  },
+                  child: new Text("Sign-Out",
+                      style: new TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: fontSize * .75,
+                          color: Colors.lightBlue)))),
+        ],
+      );
+    } else {
       return new Container(width: 0.0, height: 0.0);
     }
   }
@@ -1354,8 +1443,7 @@ class FamilyWidget extends StatelessWidget {
                                                 if (user != null) {
                                                   Navigator
                                                       .of(context,
-                                                      rootNavigator:
-                                                      true)
+                                                          rootNavigator: true)
                                                       .pop();
                                                   showDialog(
                                                     context: context,
@@ -1387,7 +1475,6 @@ class FamilyWidget extends StatelessWidget {
 
                                                   //Navigator.of(context).pop("good");
                                                 } else {
-
                                                   showDialog(
                                                     context: context,
                                                     barrierDismissible: false,
@@ -1417,31 +1504,6 @@ class FamilyWidget extends StatelessWidget {
                                             })
                                       ]),
                             );
-                            /*Navigator.of(context).push(new MaterialPageRoute(
-                      builder: (BuildContext context) {
-                        return new InviteUserDialog(index: index);
-                      },
-                    ));*/
-                            /*if(invited == "done")
-                  {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      child: new AlertDialog(
-                          title: new Text("Success!"),
-                          content: new Text(
-                              family[index].name + " has been invited."),
-                          actions: <Widget>[
-                            new FlatButton(
-                                child: new Text('Okay'),
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                }
-                            )
-                          ]
-                      ),
-                    );
-                  }*/
                           } else {
                             showDialog(
                               context: context,
@@ -1680,7 +1742,6 @@ getWeather() async {
     weatherDescriptionFixed += i.substring(0, 1).toUpperCase();
     weatherDescriptionFixed += i.substring(1, i.length);
   }
-
 }
 
 getEvents() async {
@@ -1695,7 +1756,7 @@ Future _handleSignInMain() async {
   String pass = await storage.read(key: "password");
   FirebaseUser user =
       await _auth.signInWithEmailAndPassword(email: uName, password: pass);
-  if(uName != "beachmanager@lake-parsippany.org") {
+  if (uName != "beachmanager@lake-parsippany.org") {
     userReference =
         FirebaseDatabase.instance.reference().child("users/" + user.uid);
     userSnapshot = await userReference.once();
@@ -1704,11 +1765,12 @@ Future _handleSignInMain() async {
     isHead = userSnapshot.value['isHead'];
     isManager = userSnapshot.value['isManager'];
     favorites = userSnapshot.value['favorites'] == "true";
+    badgeNumber = userSnapshot.value['badge'];
 
     try {
       imageProvider = new NetworkImage(user.photoUrl);
     } catch (e) {
-      imageProvider = new AssetImage("/assets/png/nouser.png");
+      imageProvider = new AssetImage("assets/png/nouser.png");
     }
     if (familyList != null) {
       familyList.forEach(createFamily);
@@ -1721,11 +1783,9 @@ Future _handleSignInMain() async {
         _saved.add(int.parse(i));
       }
     }
+  } else {
+    isBeach = true;
   }
-  else
-    {
-      isBeach = true;
-    }
   return user;
 }
 
@@ -1761,11 +1821,13 @@ Future<FirebaseUser> _createUser(
       print("ONE");
       Map newFamily = createFamilyList(snapshot, family[index].name);
       print(newFamily);
-      await userReference.child("/family/").update({family[index].name: controller.text});
-      DatabaseReference temp = FirebaseDatabase.instance
-          .reference()
-          .child("users/" + newUser.uid);
-      temp.update({'email': controller.text,
+      await userReference
+          .child("/family/")
+          .update({family[index].name: controller.text});
+      DatabaseReference temp =
+          FirebaseDatabase.instance.reference().child("users/" + newUser.uid);
+      temp.update({
+        'email': controller.text,
         'badge': snapshot.value['badge'],
         'events': "",
         'family': newFamily,
@@ -1775,63 +1837,53 @@ Future<FirebaseUser> _createUser(
         'isHead': 'false',
         'isManager': 'false',
         'name': family[index].name,
-        'type': snapshot.value['type']});
+        'type': snapshot.value['type']
+      });
     }
     return newUser;
-  }
-  catch (e) {
+  } catch (e) {
     print(e);
-  return null;
+    return null;
   }
+}
 
-  }
-
-  Map createFamilyList(DataSnapshot s, String name)
-  {
-    Map familyMap = new Map();
-    void checkFamily(key, value) {
-      if (key != name) {
-        familyMap[key] = "v";
-      }
+Map createFamilyList(DataSnapshot s, String name) {
+  Map familyMap = new Map();
+  void checkFamily(key, value) {
+    if (key != name) {
+      familyMap[key] = "v";
     }
-    s.value['family'].forEach(checkFamily);
-      familyMap[_user.displayName] = "v";
-    return familyMap;
   }
 
+  s.value['family'].forEach(checkFamily);
+  familyMap[_user.displayName] = "v";
+  return familyMap;
+}
 
-Future _closeBeach() async{
+Future _closeBeach() async {
   var url = 'https://membershipme.ddns.net/node/beachstatus';
   var success = false;
-  if(weatherClosure) {
+  if (weatherClosure) {
     await http
         .post(url,
-        body: {
-          "userID": _user.uid,
-          "status": "false"
-        },
-        encoding: Encoding.getByName("utf-8"))
+            body: {"userID": _user.uid, "status": "false"},
+            encoding: Encoding.getByName("utf-8"))
+        .then((response) {
+      if (response.body.toString() == "Success") {
+        success = true;
+      }
+    });
+  } else {
+    await http
+        .post(url,
+            body: {"userID": _user.uid, "status": "true"},
+            encoding: Encoding.getByName("utf-8"))
         .then((response) {
       if (response.body.toString() == "Success") {
         success = true;
       }
     });
   }
-  else
-    {
-      await http
-        .post(url,
-        body: {
-          "userID": _user.uid,
-          "status": "true"
-        },
-        encoding: Encoding.getByName("utf-8"))
-        .then((response) {
-      if (response.body.toString() == "Success") {
-        success = true;
-      }
-    });
-    }
 
   return success;
 }
@@ -1894,18 +1946,8 @@ void _signOut() async {
 
   await _auth.signOut();
 
-  runApp(new MaterialApp(
-    home: new FirstScreen(),
-    routes: <String, WidgetBuilder>{
-      '/screen1': (BuildContext context) => new FirstScreen(),
-      '/screen2': (BuildContext context) => new EnterEmail(),
-      '/screen3': (BuildContext context) => new Login(),
-      //'/screen4': (BuildContext context) => new LoadScreen(),
-      '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
-      '/screen6': (BuildContext context) => new LoadingState(),
-      '/screen7': (BuildContext context) => new CameraState(),
-    },
-    initialRoute: '/screen1',
-  ));
+  _controller.text = "";
+  _controller2.text = "";
+  isBeach = false;
+  isManager = false;
 }
-
