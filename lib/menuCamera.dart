@@ -42,7 +42,13 @@ class _CameraState extends State<CameraState> {
     getCameras();
 
     _finishInit() {
-      controller = new CameraController(cameras[0], ResolutionPreset.medium);
+      for(int i = 0; i < cameras.length; i++)
+        {
+          if(cameras[i].lensDirection == CameraLensDirection.back)
+            {
+              controller = new CameraController(cameras[i], ResolutionPreset.medium);
+            }
+        }
       controller.initialize().then((_) {
         if (!mounted) {
           return;
@@ -168,31 +174,6 @@ class _CameraState extends State<CameraState> {
               ),
             ),
           ),
-          /*new Container(
-          decoration: new BoxDecoration(
-            //shape: BoxShape.circle,
-            color: Colors.grey,
-            /*border: const Border(
-            top: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF)),
-            left: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF)),
-            right: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF)),
-            bottom: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF))),*/
-
-          ),
-          child: new Container(
-            decoration: new BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.transparent,
-              border: const Border(
-                  top: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF)),
-                  left: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF)),
-                  right: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF)),
-                  bottom: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF))),
-            ),
-          ),
-
-
-        ),*/
         ],
       ),
     ])],
@@ -203,6 +184,8 @@ class _CameraState extends State<CameraState> {
 
 Future<Null> getCameras() async {
   cameras = await availableCameras();
+  print(cameras);
+  print(cameras[0].lensDirection);
 }
 
 Future getPath() async {

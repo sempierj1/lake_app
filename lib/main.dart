@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -7,65 +6,30 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'dart:ui' as ui;
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:secure_string/secure_string.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:http/http.dart' as http;
 import 'menuCamera.dart';
 import 'qrScan.dart';
 import 'badgeNumber.dart';
 import 'membershipTextStyles.dart';
+import 'userInfo.dart';
+import 'familyWidget.dart';
+import 'serverFunctions.dart';
+import 'events.dart';
+import 'weather.dart';
 
-MembershipTextStyle myStyle = new MembershipTextStyle();
-final FirebaseAuth _auth = FirebaseAuth.instance;
-FirebaseUser _user;
-bool isHead = false;
-List<Family> family = new List<Family>();
-Map familyList;
-Map familyChanges;
-String appDocPath;
-bool check = false;
-Map weather;
-List events;
-double widthApp;
-double heightApp;
-double fontSize = 30.0;
-bool beachOpen = true;
-DatabaseReference mainReference;
-DatabaseReference userReference;
-DataSnapshot userSnapshot;
-DataSnapshot statusSnapshot;
-DataSnapshot eventSnapshot;
-bool favorites = false;
-bool showCurrent = true;
-Image profilePic;
-TextEditingController _controller = new TextEditingController();
-int familyLength;
+final MembershipTextStyle myStyle = new MembershipTextStyle();
+final AppUserInfo userInfo = new AppUserInfo();
+final ServerFunctions serverFunctions = new ServerFunctions();
+final Events eventHandler = new Events();
+final Weather weatherHandler = new Weather();
 final double devicePixelRatio = ui.window.devicePixelRatio;
-List<int> _saved = new List();
-bool weatherClosure;
-String weatherIcon;
-List<String> weatherDescription;
-String weatherDescriptionFixed = "";
-bool isManager = false;
-bool isBeach = false;
-int badgeNumber;
-ImageProvider imageProvider;
 
-TextEditingController _controller2 = new TextEditingController();
-
-DataSnapshot snapshot;
-
-//test
 void main() {
-  /*SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]);*/
   runCheck();
 }
 
 void runCheck() async {
   bool check = await checkFirstRun();
-  //bool check2 = await checkInfo();
   if (check) {
     runApp(new MaterialApp(
       home: new FirstScreen(),
@@ -73,7 +37,6 @@ void runCheck() async {
         '/screen1': (BuildContext context) => new FirstScreen(),
         '/screen2': (BuildContext context) => new EnterEmail(),
         '/screen3': (BuildContext context) => new Login(),
-        //'/screen4': (BuildContext context) => new LoadScreen(),
         '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen6': (BuildContext context) => new LoadingState(),
         '/screen7': (BuildContext context) => new CameraState(),
@@ -88,7 +51,6 @@ void runCheck() async {
         '/screen1': (BuildContext context) => new FirstScreen(),
         '/screen2': (BuildContext context) => new EnterEmail(),
         '/screen3': (BuildContext context) => new Login(),
-        //'/screen4': (BuildContext context) => new LoadScreen(),
         '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen6': (BuildContext context) => new LoadingState(),
         '/screen7': (BuildContext context) => new CameraState(),
@@ -105,19 +67,6 @@ Future<bool> checkFirstRun() async {
   return run;
 }
 
-/*Future<bool> checkInfo() async
-{
-  final storage = new FlutterSecureStorage();
-  String user = await (storage.read(key: "username") ?? null);
-  if (user != null) {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-}*/
-//TEST VARIABLES
 bool sent = true;
 int message = 0;
 
@@ -196,6 +145,8 @@ class FirstScreen extends StatelessWidget {
 }
 
 class EnterEmail extends StatelessWidget {
+  
+
   setPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('firstRun', true);
@@ -203,6 +154,7 @@ class EnterEmail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextEditingController _controller = new TextEditingController();
     return new Scaffold(
         // 1
         appBar: new AppBar(
@@ -251,7 +203,7 @@ class EnterEmail extends StatelessWidget {
                     child: new FlatButton(
                         onPressed: () async {
                           sent = true;
-                          await resetPassword().catchError((e) {
+                          await serverFunctions.resetPassword(_controller.text).catchError((e) {
                             sent = false;
                           });
                           if (sent) {
@@ -308,15 +260,18 @@ class EnterEmail extends StatelessWidget {
 }
 
 class Login extends StatelessWidget {
+
   @override
   @override
   Widget build(BuildContext context) {
+    TextEditingController _controller = new TextEditingController();
+    TextEditingController _controller2 = new TextEditingController();
     return new Scaffold(
         // 1
         appBar: new AppBar(
           //2
           title: new Text("Enter Email",
-              style: myStyle.normalText(context)),
+              style: myStyle.whiteText(context)),
         ),
         body: new ListView(
             padding: const EdgeInsets.only(left: 25.0, right: 25.0),
@@ -329,10 +284,7 @@ class Login extends StatelessWidget {
                       children: <Widget>[
                         new Text(
                             '\n\nPlease Enter Your Email Address and Password',
-                            style: new TextStyle(
-                                fontFamily: 'Raleway',
-                                fontSize: 30.0,
-                                color: Colors.black),
+                            style: myStyle.header(context),
                             textAlign: TextAlign.center),
                       ],
                     ),
@@ -342,10 +294,7 @@ class Login extends StatelessWidget {
               new Column(
                 children: <Widget>[
                   new Container(
-                    //child: new Align(
-                    //heightFactor: 5.0,
                     padding: const EdgeInsets.only(top: 100.0),
-                    //alignment: Alignment.center,
                     child: new TextField(
                       controller: _controller,
                       decoration: new InputDecoration(
@@ -370,8 +319,7 @@ class Login extends StatelessWidget {
                     alignment: Alignment.bottomCenter,
                     child: new FlatButton(
                         onPressed: () async {
-                          //login = new ServerHandle(_controller.text, _controller2.text);
-                          await _handleSignIn(context)
+                          await userInfo.handleSignIn(_controller.text, _controller2.text)
                               .then((FirebaseUser user) {
                             if (user != null) {
                               Navigator.pushReplacementNamed(
@@ -396,21 +344,10 @@ class Login extends StatelessWidget {
                               );
                             }
                           }).catchError((e) => print(e));
-                          //await login.checkLogin();
-                          /*runApp(new MaterialApp(
-                              home: new TabbedAppBarMenu(),
-                              routes: <String, WidgetBuilder>{
-                                '/screen1': (BuildContext context) => new TabbedAppBarMenu(),
-                                '/screen2': (BuildContext context) => new LoadingState(),
-                              },
-                            ));*/
                         },
                         child: new Text(
                           "Submit",
-                          style: new TextStyle(
-                              fontFamily: 'Roboto',
-                              color: Colors.lightBlue,
-                              fontSize: 15.0),
+                          style: myStyle.smallFlatButton(context),
                           textAlign: TextAlign.center,
                         )),
                   ),
@@ -420,89 +357,7 @@ class Login extends StatelessWidget {
   }
 }
 
-Future resetPassword() async {
-  var url = 'https://membershipme.ddns.net/node/emailCheck';
-  await http
-      .post(url,
-          body: {"email": _controller.text},
-          encoding: Encoding.getByName("utf-8"))
-      .then((response) async {
-    if (response.body.toString() == "Reset") {
-      sent = true;
-      await _auth
-          .sendPasswordResetEmail(email: _controller.text)
-          .catchError((e) {
-        sent = false;
-      });
-    } else {
-      sent = false;
-    }
-  });
-}
 
-Future<FirebaseUser> _handleSignIn(BuildContext context) async {
-  FirebaseUser user;
-  try {
-    List<String> uName = _controller.text.split(" ");
-    user = await _auth.signInWithEmailAndPassword(
-      email: uName[0],
-      password: _controller2.text,
-    );
-  } catch (e) {
-    print(e);
-  }
-
-  if (user != null) {
-    _user = user;
-    await setFirstRun();
-    await storeInfo();
-    try {
-      mainReference =
-          FirebaseDatabase.instance.reference().child("users/" + user.uid);
-      mainReference.update({"email": _controller.text});
-      snapshot = await mainReference.once();
-      if (snapshot.value['firstLogin'] == "true") {
-        mainReference.update({'firstLogin': "false"});
-        var url = 'https://membershipme.ddns.net/node/emailVerified';
-        await http
-            .post(url,
-                body: {
-                  "email": _controller.text,
-                },
-                encoding: Encoding.getByName("utf-8"))
-            .then((response) async {
-          if (response.body.toString() != "Done") {
-            return false;
-          }
-        });
-      }
-      Map family = snapshot.value['family'];
-      family.forEach(updateVerified);
-    } catch (e) {}
-  }
-  return user;
-}
-
-void updateVerified(key, value) {
-  try {
-    mainReference = FirebaseDatabase.instance.reference().child("users/" + key);
-    mainReference.child("/family/").update({_user.displayName: "v"});
-  } catch (e) {}
-}
-
-setFirstRun() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  prefs.setBool('firstRun', false);
-}
-
-storeInfo() async {
-  final storage = new FlutterSecureStorage();
-  List<String> uName = _controller.text.split(" ");
-  String user = uName[0];
-  String pass = _controller2.text;
-  storage.write(key: "username", value: user);
-  storage.write(key: "password", value: pass);
-}
 
 class LoadingState extends StatefulWidget {
   LoadingState({Key key, this.title}) : super(key: key);
@@ -519,18 +374,20 @@ class Loading extends State<LoadingState> {
   @override
   void initState() {
     super.initState();
-    _handleSignInMain();
-    getWeather();
-    getEvents();
+    if(!userInfo.signedIn) {
+      userInfo.handleSignInMain();
+    }
+    weatherHandler.getWeather();
+    eventHandler.getEvents();
     new Future.delayed(new Duration(milliseconds: 500), _menu);
   }
 
   Future _menu() async {
-    if ((events != null &&
-            weather != null &&
-            _user != null &&
-            imageProvider != null) ||
-        (isBeach)) {
+    if ((eventHandler.events != null &&
+            weatherHandler.finished != null &&
+            userInfo.user != null &&
+            userInfo.imageProvider != null) ||
+        (userInfo.isBeach)) {
       Navigator.pushReplacementNamed(context, "/screen5");
     } else
       new Future.delayed(new Duration(seconds: 1), _menu);
@@ -543,7 +400,7 @@ class Loading extends State<LoadingState> {
       appBar: new AppBar(
         //2
         title: new Text("Loading",
-            style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0)),
+            style: myStyle.normalText(context)),
       ),
       body: new Container(
         child: new Stack(
@@ -579,7 +436,7 @@ class Loading extends State<LoadingState> {
                       child: new Center(
                         child: new Text(
                           "Loading",
-                          style: new TextStyle(color: Colors.lightBlue),
+                          style: myStyle.banner(context),
                         ),
                       ),
                     ),
@@ -594,12 +451,6 @@ class Loading extends State<LoadingState> {
   }
 }
 
-/*lass MenuApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return new TabbedAppBarMenu();
-  }
-}*/
 class TabbedAppBarMenu extends StatefulWidget {
   TabbedAppBarMenu({Key key, this.title}) : super(key: key);
 
@@ -611,23 +462,25 @@ class TabbedAppBarMenu extends StatefulWidget {
 
 class TabbedAppBarState extends State<TabbedAppBarMenu>
     with SingleTickerProviderStateMixin {
-  final DatabaseReference listenerReference = isBeach
+  final DatabaseReference listenerReference = userInfo.isBeach
       ? null
-      : FirebaseDatabase.instance.reference().child("users/" + _user.uid);
+      : FirebaseDatabase.instance.reference().child("users/" + userInfo.user.uid);
 
-  final DatabaseReference beachListener = isBeach
+  final DatabaseReference beachListener = userInfo.isBeach
       ? null
       : FirebaseDatabase.instance.reference().child("beach status");
 
   final DatabaseReference weatherListener =
-      isBeach ? null : FirebaseDatabase.instance.reference().child("weather");
+      userInfo.isBeach ? null : FirebaseDatabase.instance.reference().child("weather");
 
-  final DatabaseReference weatherClosureListener = isBeach
+  final DatabaseReference weatherClosureListener = userInfo.isBeach
       ? null
       : FirebaseDatabase.instance.reference().child("weatherDelay");
 
+  Map familyChanges;
+
   TabbedAppBarState() {
-    if (!isBeach) {
+    if (!userInfo.isBeach) {
       listenerReference.onChildChanged.listen(_familyEdited);
       beachListener.onValue.listen(_editBeachStatus);
       weatherListener.onValue.listen(_editWeather);
@@ -683,15 +536,15 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   _editWeather(Event event) {
     try {
       setState(() {
-        weather = event.snapshot.value;
-        weatherDescription = weather['longDesc'].toString().split(" ");
-        weatherDescriptionFixed = "";
-        for (final i in weatherDescription) {
-          if (weatherDescriptionFixed != "") {
-            weatherDescriptionFixed += " ";
+        weatherHandler.weather = event.snapshot.value;
+        weatherHandler.weatherDescription = weatherHandler.weather['longDesc'].toString().split(" ");
+        weatherHandler.weatherDescriptionFixed = "";
+        for (final i in weatherHandler.weatherDescription) {
+          if (weatherHandler.weatherDescriptionFixed != "") {
+            weatherHandler.weatherDescriptionFixed += " ";
           }
-          weatherDescriptionFixed += i.substring(0, 1).toUpperCase();
-          weatherDescriptionFixed += i.substring(1, i.length);
+          weatherHandler.weatherDescriptionFixed += i.substring(0, 1).toUpperCase();
+          weatherHandler.weatherDescriptionFixed += i.substring(1, i.length);
         }
       });
     } catch (e) {}
@@ -700,7 +553,7 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   _editWeatherClosure(Event event) {
     try {
       setState(() {
-        weatherClosure = event.snapshot.value == "true" ? true : false;
+        weatherHandler.weatherClosure = event.snapshot.value == "true" ? true : false;
       });
     } catch (e) {}
   }
@@ -710,7 +563,7 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
     try {
       status = event.snapshot.value;
       setState(() {
-        beachOpen = status == "open" ? true : false;
+        weatherHandler.beachOpen = status == "open" ? true : false;
       });
     } catch (e) {}
   }
@@ -724,10 +577,10 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   }
 
   void checkChanged(key, value) {
-    if (familyList[key] != familyChanges[key]) {
-      familyList = familyChanges;
+    if (userInfo.familyList[key] != familyChanges[key]) {
+      userInfo.familyList = familyChanges;
       setState(() {
-        family[changeCheck].invited = familyChanges[key];
+        userInfo.family[changeCheck].invited = familyChanges[key];
       });
     }
     changeCheck++;
@@ -737,27 +590,27 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new DefaultTabController(
-        length: isManager
+        length: userInfo.isManager
             ? choicesManager.length
-            : isBeach ? choicesBeach.length : choices.length,
+            : userInfo.isBeach ? choicesBeach.length : choices.length,
         child: new Scaffold(
           appBar: new AppBar(
             centerTitle: true,
             title: new Text(
               'Lake Parsippany',
               textAlign: TextAlign.center,
-              style: new TextStyle(fontFamily: "Roboto"),
+              style: myStyle.whiteText(context),
             ),
             bottom: new TabBar(
               //isScrollable: true,
-              tabs: isManager
+              tabs: userInfo.isManager
                   ? choicesManager.map((Choice choice) {
                       return new Tab(
                         text: choice.title,
                         icon: new Icon(choice.icon),
                       );
                     }).toList()
-                  : isBeach
+                  : userInfo.isBeach
                       ? choicesBeach.map((Choice choice) {
                           return new Tab(
                             text: choice.title,
@@ -773,14 +626,14 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
             ),
           ),
           body: new TabBarView(
-            children: isManager
+            children: userInfo.isManager
                 ? choicesManager.map((Choice choice) {
                     return new Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: new ChoiceState(choice: choice),
                     );
                   }).toList()
-                : isBeach
+                : userInfo.isBeach
                     ? choicesBeach.map((Choice choice) {
                         return new Padding(
                           padding: const EdgeInsets.all(16.0),
@@ -856,30 +709,30 @@ class ChoiceCard extends State<ChoiceState> {
   Widget build(BuildContext context) {
     widthApp = MediaQuery.of(context).size.width;
     heightApp = MediaQuery.of(context).size.height;
-    fontSize = (widthApp / 18).round() * 1.0;
+    myStyle.fontSize = (widthApp / 18).round() * 1.0;
     if (choice.title == "Check-In") {
       return new Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Center(
-            child: new QrImage(version: 3, data: _user.uid, size: widthApp / 2),
+            child: new QrImage(version: 3, data: userInfo.user.uid, size: widthApp / 2),
           ),
           Container(
               padding: const EdgeInsets.only(top: 50.0),
               child: Center(
-                  child: new Text(badgeNumber.toString(),
+                  child: new Text(userInfo.badgeNumber.toString(),
                       style: new TextStyle(
-                          fontFamily: "Raleway", fontSize: fontSize*3))))
+                          fontFamily: "Raleway", fontSize: myStyle.fontSize*3))))
         ],
       );
     } else if (choice.title == "Weather") {
-      if (weather == null) {
+      if (weatherHandler.weather == null) {
         return new ListView(children: <Widget>[
           new Container(
             padding: const EdgeInsets.symmetric(horizontal: 125.0),
             child: new RaisedButton(
                 onPressed: () async {
-                  //weather = await email.getWeather();
+                  //weatherHandler.weather = await email.getWeather();
                 },
                 child: new Text('Reload')),
           )
@@ -888,10 +741,10 @@ class ChoiceCard extends State<ChoiceState> {
         String weatherImg;
         Color barColor;
         String alertText;
-        if (beachOpen && !weatherClosure) {
+        if (weatherHandler.beachOpen && !weatherHandler.weatherClosure) {
           barColor = Colors.green;
           alertText = "Open";
-        } else if (!beachOpen && !weatherClosure) {
+        } else if (!weatherHandler.beachOpen && !weatherHandler.weatherClosure) {
           barColor = Colors.blueAccent;
           alertText = "Closed - Off Hours";
         } else {
@@ -899,7 +752,7 @@ class ChoiceCard extends State<ChoiceState> {
           alertText = "Closed - Inclement Weather";
         }
 
-        switch (weather['icon'].toString()) {
+        switch (weatherHandler.weather['icon'].toString()) {
           case "03n":
             weatherImg = 'assets/png/03d.png';
             break;
@@ -924,7 +777,7 @@ class ChoiceCard extends State<ChoiceState> {
             break;
 
           default:
-            weatherImg = "assets/png/" + weather['icon'].toString() + ".png";
+            weatherImg = "assets/png/" + weatherHandler.weather['icon'].toString() + ".png";
             break;
         }
 
@@ -940,7 +793,7 @@ class ChoiceCard extends State<ChoiceState> {
                   child: new Text(alertText,
                       textAlign: TextAlign.center,
                       style: new TextStyle(
-                          fontSize: fontSize, fontFamily: "Alert")),
+                          fontSize: myStyle.fontSize, fontFamily: "Alert")),
                 ),
               ),
               new Container(
@@ -957,10 +810,10 @@ class ChoiceCard extends State<ChoiceState> {
               new Container(
                   padding: new EdgeInsets.only(top: heightApp / 30.0),
                   alignment: Alignment.center,
-                  child: new Text(weatherDescriptionFixed,
+                  child: new Text(weatherHandler.weatherDescriptionFixed,
                       textAlign: TextAlign.center,
                       style: new TextStyle(
-                          fontSize: fontSize, fontFamily: "Raleway"))),
+                          fontSize: myStyle.fontSize, fontFamily: "Raleway"))),
               new Container(
                 padding: new EdgeInsets.only(top: heightApp / 25.0),
                 alignment: Alignment.center,
@@ -970,7 +823,7 @@ class ChoiceCard extends State<ChoiceState> {
                         child: new Center(
                             child: new Text(
                       "Temp:\n" +
-                          weather['temp'].round().toString() +
+                          weatherHandler.weather['temp'].round().toString() +
                           "\u00b0" +
                           "F",
                       style: new TextStyle(
@@ -981,7 +834,7 @@ class ChoiceCard extends State<ChoiceState> {
                     new Expanded(
                       child: new Center(
                           child: new Text(
-                        "Wind:\n" + weather['wind'].round().toString() + " mph",
+                        "Wind:\n" + weatherHandler.weather['wind'].round().toString() + " mph",
                         style: new TextStyle(
                             fontSize: 11.25 * (heightApp / 200),
                             fontFamily: "Raleway"),
@@ -992,13 +845,13 @@ class ChoiceCard extends State<ChoiceState> {
                 ),
               ),
             ]));
-        // with winds of " + weather[3].round().toString() + " mph. " + "\u000a\u000a
+        // with winds of " + weatherHandler.weather[3].round().toString() + " mph. " + "\u000a\u000a
       }
     } else if (choice.title == "Events") {
       int month = new DateTime.now().month;
       int day = new DateTime.now().day;
       List<int> current = new List();
-      for (final i in events) {
+      for (final i in eventHandler.events) {
         if (int.parse(i['eventDate'].toString()[0]) > month) {
           current.add(i['eventNum']);
         } else if (int.parse(i['eventDate'].toString()[0]) == month &&
@@ -1010,18 +863,18 @@ class ChoiceCard extends State<ChoiceState> {
         appBar: new AppBar(
             elevation: 0.0,
             backgroundColor: Colors.white,
-            title: favorites
+            title: userInfo.favorites
                 ? new Text(
-                    (current.length - _saved.length).toString() +
+                    (current.length - userInfo.saved.length).toString() +
                         " events hidden",
                     style: new TextStyle(color: Colors.black),
                   )
                 : new Text(""),
             actions: <Widget>[
               new DropdownButton(
-                  hint: favorites
+                  hint: userInfo.favorites
                       ? new Text("Favorites Only")
-                      : showCurrent
+                      : eventHandler.showCurrent
                           ? new Text("Upcoming")
                           : new Text("Show All"),
                   items: <String>["Upcoming", "Favorites Only", "Show All"]
@@ -1034,17 +887,17 @@ class ChoiceCard extends State<ChoiceState> {
                   onChanged: (v) {
                     setState(() {
                       if (v == "Show All") {
-                        _toggleFavorite(false);
-                        favorites = false;
-                        showCurrent = false;
+                        userInfo.toggleFavorite(false);
+                        userInfo.favorites = false;
+                        eventHandler.showCurrent = false;
                       } else if (v == "Favorites Only") {
-                        _toggleFavorite(true);
-                        favorites = true;
-                        showCurrent = true;
+                        userInfo.toggleFavorite(true);
+                        userInfo.favorites = true;
+                        eventHandler.showCurrent = true;
                       } else {
-                        _toggleFavorite(false);
-                        favorites = false;
-                        showCurrent = true;
+                        userInfo.toggleFavorite(false);
+                        userInfo.favorites = false;
+                        eventHandler.showCurrent = true;
                       }
                     });
                   }),
@@ -1054,26 +907,28 @@ class ChoiceCard extends State<ChoiceState> {
             return new GestureDetector(
                 onLongPress: () {
                   setState(() {
-                    if (_saved.contains((events[index]['eventNum']))) {
-                      _saved.remove(events[index]['eventNum']);
-                      _handleEvent(
-                          events[index]['eventNum'],
+                    if (userInfo.saved.contains((eventHandler.events[index]['eventNum']))) {
+                      userInfo.saved.remove(eventHandler.events[index]['eventNum']);
+                      eventHandler.handleEvent(
+                          eventHandler.events[index]['eventNum'],
                           'remove',
-                          events[index]['eventDate'],
-                          events[index]['eventName']);
+                          eventHandler.events[index]['eventDate'],
+                          eventHandler.events[index]['eventName'],
+                      userInfo);
                     } else {
-                      _saved.add(events[index]['eventNum']);
-                      _handleEvent(
-                          events[index]['eventNum'],
+                      userInfo.saved.add(eventHandler.events[index]['eventNum']);
+                      eventHandler.handleEvent(
+                          eventHandler.events[index]['eventNum'],
                           'add',
-                          events[index]['eventDate'],
-                          events[index]['eventName']);
+                          eventHandler.events[index]['eventDate'],
+                          eventHandler.events[index]['eventName'],
+                      userInfo);
                     }
                   });
                 },
-                child: showCurrent
-                    ? current.contains(events[index]['eventNum'])
-                        ? !favorites
+                child: eventHandler.showCurrent
+                    ? current.contains(eventHandler.events[index]['eventNum'])
+                        ? !userInfo.favorites
                             ? new Card(
                                 child: new Column(
                                   mainAxisAlignment:
@@ -1081,18 +936,18 @@ class ChoiceCard extends State<ChoiceState> {
                                   children: <Widget>[
                                     new ExpansionTile(
                                       leading: new Text(
-                                          (events[index]['eventDate'])),
+                                          (eventHandler.events[index]['eventDate'])),
                                       title: new Text(
-                                        (events[index]['eventName']).toString(),
+                                        (eventHandler.events[index]['eventName']).toString(),
                                         textAlign: TextAlign.left,
                                       ),
                                       trailing: new Icon(
-                                          _saved.contains(
-                                                  events[index]['eventNum'])
+                                          userInfo.saved.contains(
+                                                  eventHandler.events[index]['eventNum'])
                                               ? Icons.favorite
                                               : Icons.favorite_border,
-                                          color: _saved.contains(
-                                                  events[index]['eventNum'])
+                                          color: userInfo.saved.contains(
+                                                  eventHandler.events[index]['eventNum'])
                                               ? Colors.red
                                               : null),
                                       children: <Widget>[
@@ -1101,7 +956,7 @@ class ChoiceCard extends State<ChoiceState> {
                                               left: 16.0,
                                               right: 16.0,
                                               bottom: 16.0),
-                                          child: new Text((events[index]
+                                          child: new Text((eventHandler.events[index]
                                               ['eventDescription'])),
                                         ),
                                       ],
@@ -1109,7 +964,7 @@ class ChoiceCard extends State<ChoiceState> {
                                   ],
                                 ),
                               )
-                            : (_saved.contains(events[index]['eventNum'])
+                            : (userInfo.saved.contains(eventHandler.events[index]['eventNum'])
                                 ? new Card(
                                     child: new Column(
                                       mainAxisAlignment:
@@ -1117,19 +972,19 @@ class ChoiceCard extends State<ChoiceState> {
                                       children: <Widget>[
                                         new ExpansionTile(
                                           leading: new Text(
-                                              (events[index]['eventDate'])),
+                                              (eventHandler.events[index]['eventDate'])),
                                           title: new Text(
-                                            (events[index]['eventName'])
+                                            (eventHandler.events[index]['eventName'])
                                                 .toString(),
                                             textAlign: TextAlign.left,
                                           ),
                                           trailing: new Icon(
-                                              _saved.contains(
-                                                      events[index]['eventNum'])
+                                              userInfo.saved.contains(
+                                                      eventHandler.events[index]['eventNum'])
                                                   ? Icons.favorite
                                                   : Icons.favorite_border,
-                                              color: _saved.contains(
-                                                      events[index]['eventNum'])
+                                              color: userInfo.saved.contains(
+                                                      eventHandler.events[index]['eventNum'])
                                                   ? Colors.red
                                                   : null),
                                           children: <Widget>[
@@ -1138,7 +993,7 @@ class ChoiceCard extends State<ChoiceState> {
                                                   left: 16.0,
                                                   right: 16.0,
                                                   bottom: 16.0),
-                                              child: new Text((events[index]
+                                              child: new Text((eventHandler.events[index]
                                                   ['eventDescription'])),
                                             ),
                                           ],
@@ -1153,17 +1008,17 @@ class ChoiceCard extends State<ChoiceState> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             new ExpansionTile(
-                              leading: new Text((events[index]['eventDate'])),
+                              leading: new Text((eventHandler.events[index]['eventDate'])),
                               title: new Text(
-                                (events[index]['eventName']).toString(),
+                                (eventHandler.events[index]['eventName']).toString(),
                                 textAlign: TextAlign.left,
                               ),
                               trailing: new Icon(
-                                  _saved.contains(events[index]['eventNum'])
+                                  userInfo.saved.contains(eventHandler.events[index]['eventNum'])
                                       ? Icons.favorite
                                       : Icons.favorite_border,
                                   color:
-                                      _saved.contains(events[index]['eventNum'])
+                                      userInfo.saved.contains(eventHandler.events[index]['eventNum'])
                                           ? Colors.red
                                           : null),
                               children: <Widget>[
@@ -1171,7 +1026,7 @@ class ChoiceCard extends State<ChoiceState> {
                                   padding: new EdgeInsets.only(
                                       left: 16.0, right: 16.0, bottom: 16.0),
                                   child: new Text(
-                                      (events[index]['eventDescription'])),
+                                      (eventHandler.events[index]['eventDescription'])),
                                 ),
                               ],
                             ),
@@ -1179,13 +1034,13 @@ class ChoiceCard extends State<ChoiceState> {
                         ),
                       ));
           },
-          itemCount: events.length,
-          //new EventsPage(),
+          itemCount: eventHandler.events.length,
+          //new eventHandler.eventsPage(),
         ),
       );
     } else if (choice.title == 'Profile') {
       List<Widget> children = new List.generate(
-          family.length, (int i) => new FamilyWidget(i, context));
+          userInfo.family.length, (int i) => new FamilyWidget(i, context, userInfo));
       return new ListView(
         children: <Widget>[
           new Row(
@@ -1194,7 +1049,7 @@ class ChoiceCard extends State<ChoiceState> {
                 child: new Column(children: <Widget>[
                   new Center(
                     child: new CircleAvatar(
-                      backgroundImage: imageProvider,
+                      backgroundImage: userInfo.imageProvider,
                       radius: widthApp / 7,
                     ),
                     //child: new Image(image: new FileImage(new File(appDocPath))),
@@ -1217,20 +1072,20 @@ class ChoiceCard extends State<ChoiceState> {
               ),
               new Expanded(
                 child: new Column(children: <Widget>[
-                  new Text(_user.displayName,
+                  new Text(userInfo.user.displayName,
                       style: new TextStyle(
-                          fontFamily: 'Roboto', fontSize: fontSize)),
-                  new Text(userSnapshot.value['email'],
+                          fontFamily: 'Roboto', fontSize: myStyle.fontSize)),
+                  new Text(userInfo.userSnapshot.value['email'],
                       style: new TextStyle(
-                          fontFamily: 'Roboto', fontSize: fontSize * .75)),
-                  new Text(userSnapshot.value['type'] + " Membership",
+                          fontFamily: 'Roboto', fontSize: myStyle.fontSize * .75)),
+                  new Text(userInfo.userSnapshot.value['type'] + " Membership",
                       style: new TextStyle(
-                          fontFamily: 'Roboto', fontSize: fontSize * .75)),
+                          fontFamily: 'Roboto', fontSize: myStyle.fontSize * .75)),
                   new Text(
                       "Guest Badges - " +
-                          userSnapshot.value['guests'].toString(),
+                          userInfo.userSnapshot.value['guests'].toString(),
                       style: new TextStyle(
-                          fontFamily: 'Roboto', fontSize: fontSize * .75)),
+                          fontFamily: 'Roboto', fontSize: myStyle.fontSize * .75)),
                 ]),
               ),
             ],
@@ -1241,7 +1096,7 @@ class ChoiceCard extends State<ChoiceState> {
               alignment: Alignment.bottomCenter,
               child: new FlatButton(
                   onPressed: () {
-                    _signOut();
+                    userInfo.signOut();
                     try {
                       Navigator.of(context, rootNavigator: true).pop(context);
                     } catch (e) {}
@@ -1255,10 +1110,7 @@ class ChoiceCard extends State<ChoiceState> {
                   },
                   child: new Text(
                     "Sign-Out",
-                    style: new TextStyle(
-                        fontFamily: 'Roboto',
-                        color: Colors.lightBlue,
-                        fontSize: 20.0),
+                    style: myStyle.smallFlatButton(context),
                     textAlign: TextAlign.center,
                   )))
         ],
@@ -1273,10 +1125,10 @@ class ChoiceCard extends State<ChoiceState> {
                   context: context,
                   barrierDismissible: true,
                   builder: (BuildContext context) => new AlertDialog(
-                        title: weatherClosure
+                        title: weatherHandler.weatherClosure
                             ? new Text("Open the Beach?")
                             : new Text("Close the Beach?"),
-                        content: weatherClosure
+                        content: weatherHandler.weatherClosure
                             ? new Text(
                                 "Are you sure you want to open the beach?")
                             : new Text(
@@ -1302,7 +1154,7 @@ class ChoiceCard extends State<ChoiceState> {
                                           ),
                                         ),),)
                                 );
-                                await _closeBeach();
+                                await serverFunctions.closeBeach(weatherHandler.weatherClosure);
                                 Navigator.pop(context);
                                 Navigator.pop(context);
                               },
@@ -1311,9 +1163,9 @@ class ChoiceCard extends State<ChoiceState> {
                       ),
                 );
               },color: Colors.white,
-              child: weatherClosure
-                  ? new Text("Open Beach", style: new TextStyle(fontSize: fontSize),)
-                  : new Text("Close Beach", style: new TextStyle(fontSize: fontSize))),
+              child: weatherHandler.weatherClosure
+                  ? new Text("Open Beach", style: new TextStyle(fontSize: myStyle.fontSize),)
+                  : new Text("Close Beach", style: new TextStyle(fontSize: myStyle.fontSize))),
         ],
       );
     } else if (choice.title == "Sign-In") {
@@ -1341,14 +1193,14 @@ class ChoiceCard extends State<ChoiceState> {
                     child: new Text("Badge #",
                         style: new TextStyle(
                             fontFamily: 'Roboto',
-                            fontSize: fontSize * 1.3,
+                            fontSize: myStyle.fontSize * 1.3,
                             color: Colors.lightBlue)))),
           ]),
           new Align(
               alignment: Alignment.bottomCenter,
               child: new FlatButton(
                   onPressed: () {
-                    _signOut();
+                    userInfo.signOut();
                     try {
                       Navigator.of(context, rootNavigator: true).pop(context);
                     } catch (e) {}
@@ -1363,7 +1215,7 @@ class ChoiceCard extends State<ChoiceState> {
                   child: new Text("Sign-Out",
                       style: new TextStyle(
                           fontFamily: 'Roboto',
-                          fontSize: fontSize * .75,
+                          fontSize: myStyle.fontSize * .75,
                           color: Colors.lightBlue)))),
         ],
       );
@@ -1373,444 +1225,3 @@ class ChoiceCard extends State<ChoiceState> {
   }
 }
 
-class FamilyWidget extends StatelessWidget {
-  final int index;
-
-  FamilyWidget(this.index, BuildContext c);
-
-  @override
-  Widget build(BuildContext context) {
-    return new Row(
-      children: <Widget>[
-        new Expanded(
-          child: new Container(
-            padding: new EdgeInsets.only(left: 5.0, top: 5.0),
-            child: new Text(family[index].name,
-                style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0)),
-          ),
-        ),
-        isHead
-            ? new Align(
-                alignment: Alignment.bottomRight,
-                child: family[index].invited == "v"
-                    ? new Container(
-                        padding: const EdgeInsets.only(right: 30.0),
-                        child: new Icon(
-                          Icons.check,
-                          color: Colors.lightBlue,
-                        ))
-                    : new FlatButton(
-                        onPressed: () {
-                          if (family[index].invited == 'nv') {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: true,
-                              builder: (BuildContext context) =>
-                                  new AlertDialog(
-                                      title: new Text("Please Enter " +
-                                          family[index].name +
-                                          "'s Email Address"),
-                                      content: new TextField(
-                                        controller: _controller,
-                                        decoration: new InputDecoration(
-                                          hintText: 'example@example.com',
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      actions: <Widget>[
-                                        new FlatButton(
-                                            child: new Text('Invite'),
-                                            onPressed: () async {
-                                              await _createUser(
-                                                      _controller, index)
-                                                  .then((FirebaseUser user) {
-                                                if (user != null) {
-                                                  Navigator
-                                                      .of(context,
-                                                          rootNavigator: true)
-                                                      .pop();
-                                                  showDialog(
-                                                    context: context,
-                                                    barrierDismissible: false,
-                                                    builder: (BuildContext
-                                                            context) =>
-                                                        new AlertDialog(
-                                                            title: new Text(
-                                                                "Success!"),
-                                                            content: new Text(
-                                                                family[index]
-                                                                        .name +
-                                                                    " has been invited."),
-                                                            actions: <Widget>[
-                                                              new FlatButton(
-                                                                  child: new Text(
-                                                                      'Okay'),
-                                                                  onPressed:
-                                                                      () {
-                                                                    Navigator
-                                                                        .of(context,
-                                                                            rootNavigator:
-                                                                                true)
-                                                                        .pop();
-                                                                    //Navigator.of(context).pop();
-                                                                  })
-                                                            ]),
-                                                  );
-
-                                                  //Navigator.of(context).pop("good");
-                                                } else {
-                                                  showDialog(
-                                                    context: context,
-                                                    barrierDismissible: false,
-                                                    builder: (BuildContext
-                                                            context) =>
-                                                        new AlertDialog(
-                                                            title: new Text(
-                                                                'User Not Added'),
-                                                            content: new Text(
-                                                                'Failed to Add User'),
-                                                            actions: <Widget>[
-                                                              new FlatButton(
-                                                                  child: new Text(
-                                                                      'Try Again'),
-                                                                  onPressed:
-                                                                      () {
-                                                                    Navigator
-                                                                        .of(context,
-                                                                            rootNavigator:
-                                                                                true)
-                                                                        .pop();
-                                                                  })
-                                                            ]),
-                                                  );
-                                                }
-                                              });
-                                            })
-                                      ]),
-                            );
-                          } else {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (BuildContext context) =>
-                                  new AlertDialog(
-                                      title: new Text("Uninvite"),
-                                      content: new Text(
-                                          "Are you sure you want to uninvite " +
-                                              family[index].name +
-                                              "?"),
-                                      actions: <Widget>[
-                                        new FlatButton(
-                                            child: new Text('Yes'),
-                                            onPressed: () async {
-                                              await _deleteUser(index)
-                                                  .then((value) {
-                                                if (value) {
-                                                  Navigator
-                                                      .of(context,
-                                                          rootNavigator: true)
-                                                      .pop();
-                                                  showDialog(
-                                                      context: context,
-                                                      barrierDismissible: true,
-                                                      builder: (BuildContext
-                                                              context) =>
-                                                          new AlertDialog(
-                                                              title: new Text(
-                                                                  "Success"),
-                                                              content: new Text(
-                                                                  family[index]
-                                                                          .name +
-                                                                      " has been successfully uninvited"),
-                                                              actions: <Widget>[
-                                                                new FlatButton(
-                                                                    child: new Text(
-                                                                        "Okay"),
-                                                                    onPressed:
-                                                                        () {
-                                                                      Navigator
-                                                                          .of(context,
-                                                                              rootNavigator: true)
-                                                                          .pop();
-                                                                    })
-                                                              ]));
-                                                } else {
-                                                  Navigator
-                                                      .of(context,
-                                                          rootNavigator: true)
-                                                      .pop();
-                                                  showDialog(
-                                                      context: context,
-                                                      barrierDismissible: true,
-                                                      builder: (BuildContext
-                                                              context) =>
-                                                          new AlertDialog(
-                                                              title: new Text(
-                                                                  "Failure"),
-                                                              content: new Text(
-                                                                  family[index]
-                                                                          .name +
-                                                                      " has not been uninvited"),
-                                                              actions: <Widget>[
-                                                                new FlatButton(
-                                                                    child: new Text(
-                                                                        "Okay"),
-                                                                    onPressed:
-                                                                        () {
-                                                                      Navigator
-                                                                          .of(context,
-                                                                              rootNavigator: true)
-                                                                          .pop();
-                                                                    })
-                                                              ]));
-                                                }
-                                              });
-                                            })
-                                      ]),
-                            );
-                          }
-                        },
-                        child: new Text(
-                          family[index].invited != "v" &&
-                                  family[index].invited != "nv"
-                              ? "Uninvite"
-                              : "Invite",
-                          style: myStyle.listButtons(context),
-                          textAlign: TextAlign.center,
-                        )))
-            : new Container()
-      ],
-    );
-  }
-}
-
-//Weather
-getWeather() async {
-  mainReference = FirebaseDatabase.instance.reference().child("beach status");
-  statusSnapshot = await mainReference.once();
-  beachOpen = statusSnapshot.value == "open" ? true : false;
-  mainReference = FirebaseDatabase.instance.reference().child("weatherDelay");
-  statusSnapshot = await mainReference.once();
-  weatherClosure = statusSnapshot.value.toString() == "true" ? true : false;
-
-  mainReference = FirebaseDatabase.instance.reference().child("weather");
-  statusSnapshot = await mainReference.once();
-  weather = statusSnapshot.value;
-  weatherDescription = weather['longDesc'].toString().split(" ");
-
-  for (final i in weatherDescription) {
-    if (weatherDescriptionFixed != "") {
-      weatherDescriptionFixed += " ";
-    }
-    weatherDescriptionFixed += i.substring(0, 1).toUpperCase();
-    weatherDescriptionFixed += i.substring(1, i.length);
-  }
-}
-
-getEvents() async {
-  mainReference = FirebaseDatabase.instance.reference().child("events");
-  eventSnapshot = await mainReference.once();
-  events = eventSnapshot.value;
-}
-
-Future _handleSignInMain() async {
-  final storage = new FlutterSecureStorage();
-  String uName = await storage.read(key: "username");
-  String pass = await storage.read(key: "password");
-  FirebaseUser user =
-      await _auth.signInWithEmailAndPassword(email: uName, password: pass);
-  if (uName != "beachmanager@lake-parsippany.org") {
-    userReference =
-        FirebaseDatabase.instance.reference().child("users/" + user.uid);
-    userSnapshot = await userReference.once();
-    family.clear();
-    familyList = userSnapshot.value['family'];
-    isHead = userSnapshot.value['isHead'];
-    isManager = userSnapshot.value['isManager'];
-    favorites = userSnapshot.value['favorites'] == "true";
-    badgeNumber = userSnapshot.value['badge'];
-
-    try {
-      imageProvider = new NetworkImage(user.photoUrl);
-    } catch (e) {
-      imageProvider = new AssetImage("assets/png/nouser.png");
-    }
-    if (familyList != null) {
-      familyList.forEach(createFamily);
-    }
-    _user = user;
-    String events = userSnapshot.value['events'];
-    List<String> temp = events.split("/");
-    for (final i in temp) {
-      if (i != "") {
-        _saved.add(int.parse(i));
-      }
-    }
-  } else {
-    isBeach = true;
-  }
-  return user;
-}
-
-void createFamily(key, value) {
-  family.add(new Family(key, value));
-}
-
-class Family {
-  String name;
-  String invited;
-
-  Family(String n, String i) {
-    name = n;
-    invited = i;
-  }
-}
-
-Future<FirebaseUser> _createUser(
-    TextEditingController controller, int index) async {
-  SecureString secureString = new SecureString();
-  String pass = secureString.generate(length: 64);
-  try {
-    FirebaseUser newUser = await _auth.createUserWithEmailAndPassword(
-        email: controller.text, password: pass);
-
-    newUser = await _auth.signInWithEmailAndPassword(
-        email: controller.text, password: pass);
-    UserUpdateInfo uinfo = new UserUpdateInfo();
-    uinfo.displayName = family[index].name;
-    DataSnapshot snapshot = await userReference.once();
-    await _auth.updateProfile(uinfo);
-    if (newUser != null) {
-      print("ONE");
-      Map newFamily = createFamilyList(snapshot, family[index].name);
-      print(newFamily);
-      await userReference
-          .child("/family/")
-          .update({family[index].name: controller.text});
-      DatabaseReference temp =
-          FirebaseDatabase.instance.reference().child("users/" + newUser.uid);
-      temp.update({
-        'email': controller.text,
-        'badge': snapshot.value['badge'],
-        'events': "",
-        'family': newFamily,
-        'favorites': 'false',
-        'firstLogin': 'true',
-        'guests': snapshot.value['guests'],
-        'isHead': 'false',
-        'isManager': 'false',
-        'name': family[index].name,
-        'type': snapshot.value['type']
-      });
-    }
-    return newUser;
-  } catch (e) {
-    print(e);
-    return null;
-  }
-}
-
-Map createFamilyList(DataSnapshot s, String name) {
-  Map familyMap = new Map();
-  void checkFamily(key, value) {
-    if (key != name) {
-      familyMap[key] = "v";
-    }
-  }
-
-  s.value['family'].forEach(checkFamily);
-  familyMap[_user.displayName] = "v";
-  return familyMap;
-}
-
-Future _closeBeach() async {
-  var url = 'https://membershipme.ddns.net/node/beachstatus';
-  var success = false;
-  if (weatherClosure) {
-    await http
-        .post(url,
-            body: {"userID": _user.uid, "status": "false"},
-            encoding: Encoding.getByName("utf-8"))
-        .then((response) {
-      if (response.body.toString() == "Success") {
-        success = true;
-      }
-    });
-  } else {
-    await http
-        .post(url,
-            body: {"userID": _user.uid, "status": "true"},
-            encoding: Encoding.getByName("utf-8"))
-        .then((response) {
-      if (response.body.toString() == "Success") {
-        success = true;
-      }
-    });
-  }
-
-  return success;
-}
-
-Future _deleteUser(int index) async {
-  var url = 'https://membershipme.ddns.net/node';
-  var success = false;
-  await http
-      .post(url,
-          body: {
-            "remName": family[index].name,
-            "sendName": _user.displayName,
-            "userID": _user.uid
-          },
-          encoding: Encoding.getByName("utf-8"))
-      .then((response) {
-    if (response.body.toString() == "Success") {
-      userReference.child("/family/").update({family[index].name: "nv"});
-      success = true;
-    }
-  });
-  return success;
-}
-
-_handleEvent(int name, String type, String date, String eName) async {
-  mainReference =
-      FirebaseDatabase.instance.reference().child("users/" + _user.uid);
-  eventSnapshot = await mainReference.once();
-  String events = eventSnapshot.value['events'];
-  if (type == "add") {
-    /*List<String> tempDate = date.split("/");
-    //var scheduledNotificationDateTime = new DateTime(new DateTime.now().year, int.parse(tempDate[0]), int.parse(tempDate[1]), 10);
-    var scheduledNotificationDateTime = new DateTime.now().add(new Duration(seconds: 5));
-    NotificationDetailsAndroid androidPlatformChannelSpecifics = new NotificationDetailsAndroid("com.yourcompany.lakeapp.ANDROID", "ANDROID CHANNEL", "Event Alerts");
-    NotificationDetailsIOS iOSPlatformChannelSpecifics = new NotificationDetailsIOS();
-    NotificationDetails platformChannelSpecifics = new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await FlutterLocalNotifications.schedule(name, eName, "Reminder $eName is coming up today", scheduledNotificationDateTime, platformChannelSpecifics);*/
-    mainReference.update({"events": events + name.toString() + "/"});
-  } else {
-    //await FlutterLocalNotifications.cancel(name);
-    String newEvents = events.replaceAll("/" + name.toString() + "/", "/");
-    newEvents = events.replaceAll(name.toString() + "/", "");
-    mainReference.update({"events": newEvents});
-  }
-}
-
-_toggleFavorite(bool f) {
-  mainReference =
-      FirebaseDatabase.instance.reference().child("users/" + _user.uid);
-  mainReference.update({"favorites": f.toString()});
-}
-
-void _signOut() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  prefs.setBool('firstRun', true);
-
-  final storage = new FlutterSecureStorage();
-  storage.delete(key: "username");
-  storage.delete(key: "password");
-
-  await _auth.signOut();
-
-  _controller.text = "";
-  _controller2.text = "";
-  isBeach = false;
-  isManager = false;
-}

@@ -36,4 +36,6 @@ class MembershipTextStyle{
           color: Colors.lightBlue,
           fontSize: 20.0);
     }
+
+    double fontSize = 30.0;
 }
