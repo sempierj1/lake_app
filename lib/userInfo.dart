@@ -8,6 +8,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:http/http.dart' as http;
 import 'family.dart';
 import 'main.dart';
+import 'package:flutter/services.dart';
 
 class AppUserInfo {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -37,7 +38,12 @@ class AppUserInfo {
     if (uName != "beachmanager@lake-parsippany.org") {
       getVars();
     } else {
+      /*SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight
+      ]);*/
       isBeach = true;
+      isManager = false;
     }
   }
 
@@ -50,7 +56,7 @@ class AppUserInfo {
         email: uName[0],
         password: p,
       );
-    if (user != null) {
+    if (user != null && user.email != "beachmanager@lake-parsippany.org") {
       await setFirstRun();
       await storeInfo(uName[0], p);
       try {
@@ -75,12 +81,17 @@ class AppUserInfo {
         }
         Map family = snapshot.value['family'];
         family.forEach(updateVerified);
+        getVars();
       } catch (e) {}
+    }else if (user != null && user.email == "beachmanager@lake-parsippany.org"){
+      isBeach = true;
+      isManager = false;
+      await setFirstRun();
+      await storeInfo(uName[0], p);
     }
     } catch (e) {
-      print(e);
     }
-    getVars();
+
     return user;
   }
 

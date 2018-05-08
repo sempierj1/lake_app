@@ -23,6 +23,9 @@ final ServerFunctions serverFunctions = new ServerFunctions();
 final Events eventHandler = new Events();
 final Weather weatherHandler = new Weather();
 final double devicePixelRatio = ui.window.devicePixelRatio;
+final TextEditingController _controller = new TextEditingController();
+final TextEditingController _controller2 = new TextEditingController();
+
 
 void main() {
   runCheck();
@@ -90,7 +93,7 @@ class FirstScreen extends StatelessWidget {
             children: <Widget>[
               new Flexible(
                 child: new Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     new Text('\n\nWelcome to the Lake Parsippany Phone App',
                         style: myStyle.header(context),
@@ -154,7 +157,6 @@ class EnterEmail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController _controller = new TextEditingController();
     return new Scaffold(
         // 1
         appBar: new AppBar(
@@ -262,10 +264,7 @@ class EnterEmail extends StatelessWidget {
 class Login extends StatelessWidget {
 
   @override
-  @override
   Widget build(BuildContext context) {
-    TextEditingController _controller = new TextEditingController();
-    TextEditingController _controller2 = new TextEditingController();
     return new Scaffold(
         // 1
         appBar: new AppBar(

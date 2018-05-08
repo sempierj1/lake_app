@@ -37,6 +37,7 @@ class _CameraState extends State<CameraState> {
 
   @override
   void initState() {
+
     super.initState();
     getPath();
     getCameras();
@@ -93,91 +94,25 @@ class _CameraState extends State<CameraState> {
         children: <Widget>[
           new Column(
           children: <Widget>[
-        new Stack(
-        //alignment: const Alignment(0.6, 0.6),
-        children: <Widget>[
           new AspectRatio(aspectRatio: controller.value.aspectRatio,
               child: new CameraPreview(controller)),
-          new Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              new Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  new Opacity(opacity: 1.0,
-                    child: new Container(
-                      height: heightApp * (2 / 16),
-                      width: widthApp,
-                      decoration: new BoxDecoration(
-                          color: Colors.white
-                      ),
-                    ),
-                  )
-                ],
-              ),
-              new Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  new Container(
-                    height: heightApp * (9 / 16),
-                    width: widthApp,
-                    decoration: new BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.transparent
-                    ),
-                  ),
-
-                ],
-              ),
-              new Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  new Opacity(opacity: 1.0,
-                    child: new Container(
-                      height: heightApp * (4.0 / 16),
-                      width: widthApp,
-                      decoration: new BoxDecoration(
-                          color: Colors.white
-
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ],
-          ),
-          new Align(
-            alignment: Alignment.bottomCenter,
-            heightFactor: 3.7,
-            child: new Container(
-              width: widthApp / 3,
-              height: heightApp * 4.0 / 16,
-              decoration: new BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: new Border.all(
-                      width: 2.0, color: const Color(0xFF00E5FF))
-              ),
-              child: new IconButton(
-                onPressed: () async
-                {
-                  test ="";
-                  test += DateTime.now().toString() + "\n";
-                  await controller.capture(appDocPath + "/profile" + i.toString() + ".png"
-                  ).then((String value){
-                    test += DateTime.now().toString() + "\n";
-                    cropImage(context, list[0], list[1]);
-                  });
-                  },
-                icon: new Icon(Icons.camera_alt),
-                iconSize: widthApp / 6,
-                splashColor: Colors.red,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ])],
-      ));
+    ])]
+      ), floatingActionButton:  new IconButton(
+        onPressed: () async
+    {
+      test ="";
+      test += DateTime.now().toString() + "\n";
+      await controller.capture(appDocPath + "/profile" + i.toString() + ".png"
+      ).then((String value){
+        test += DateTime.now().toString() + "\n";
+        cropImage(context, list[0], list[1]);
+      });
+    },
+    icon: new Icon(Icons.camera_alt),
+    iconSize: widthApp / 6,
+    splashColor: Colors.red,
+      color: Colors.lightBlue,
+    ),floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,);
   }
 }
 
