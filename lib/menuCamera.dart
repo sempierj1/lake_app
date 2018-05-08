@@ -3,39 +3,53 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io' as IO;
-import 'package:image/image.dart' as IMAGE;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'qrScan.dart';
 
 List<CameraDescription> cameras;
 double heightApp;
 double widthApp;
 String appDocPath;
 int i = 0;
-TextEditingController _controller = new TextEditingController();
+String test = "";
+
+
 
 class CameraState extends StatefulWidget {
-  CameraState({Key key, this.title}) : super(key: key);
+  CameraState({Key key, this.title, this.list}) : super(key: key);
 
   final String title;
+  final List list;
+
 
   @override
-  _CameraState createState() => new _CameraState();
+  _CameraState createState() => new _CameraState(list);
 }
 
 class _CameraState extends State<CameraState> {
   CameraController controller;
 
+  final List list;
+
+  _CameraState(this.list);
+
   @override
   void initState() {
+
     super.initState();
     getPath();
     getCameras();
 
     _finishInit() {
-      controller = new CameraController(cameras[0], ResolutionPreset.medium);
+      for(int i = 0; i < cameras.length; i++)
+        {
+          if(cameras[i].lensDirection == CameraLensDirection.back)
+            {
+              controller = new CameraController(cameras[i], ResolutionPreset.medium);
+            }
+        }
       controller.initialize().then((_) {
         if (!mounted) {
           return;
@@ -80,141 +94,33 @@ class _CameraState extends State<CameraState> {
         children: <Widget>[
           new Column(
           children: <Widget>[
-        new Stack(
-        //alignment: const Alignment(0.6, 0.6),
-        children: <Widget>[
           new AspectRatio(aspectRatio: controller.value.aspectRatio,
               child: new CameraPreview(controller)),
-          new Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              new Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  new Opacity(opacity: 1.0,
-                    child: new Container(
-                      height: heightApp * (2 / 16),
-                      width: widthApp,
-                      decoration: new BoxDecoration(
-                          color: Colors.white
-                      ),
-                    ),
-                  )
-                ],
-              ),
-              new Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  new Container(
-                    height: heightApp * (9 / 16),
-                    width: widthApp,
-                    decoration: new BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.transparent
-                    ),
-                  ),
-
-                ],
-              ),
-              new Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  new Opacity(opacity: 1.0,
-                    child: new Container(
-                      height: heightApp * (4.0 / 16),
-                      width: widthApp,
-                      decoration: new BoxDecoration(
-                          color: Colors.white
-
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ],
-          ),
-          new Align(
-            alignment: Alignment.bottomCenter,
-            heightFactor: 3.7,
-            child: new Container(
-              width: widthApp / 3,
-              height: heightApp * 4.0 / 16,
-              decoration: new BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: new Border.all(
-                      width: 2.0, color: const Color(0xFF00E5FF))
-              ),
-              child: new IconButton(
-                onPressed: () async
-                {
-                  await controller.capture(appDocPath + "/profile" + i.toString() + ".png"
-                  ).then((String value){
-                    cropImage(context);
-                  });
-                  },
-                icon: new Icon(Icons.camera_alt),
-                iconSize: widthApp / 6,
-                splashColor: Colors.red,
-              ),
-            ),
-          ),
-          /*new Container(
-          decoration: new BoxDecoration(
-            //shape: BoxShape.circle,
-            color: Colors.grey,
-            /*border: const Border(
-            top: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF)),
-            left: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF)),
-            right: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF)),
-            bottom: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF))),*/
-
-          ),
-          child: new Container(
-            decoration: new BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.transparent,
-              border: const Border(
-                  top: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF)),
-                  left: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF)),
-                  right: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF)),
-                  bottom: const BorderSide(width: 2.0, color: const Color(0xFFFFFFFFFF))),
-            ),
-          ),
-
-
-        ),*/
-        ],
-      ),
-    ])],
-      ));
-    return new Scaffold(
-      appBar: new AppBar(
-        title: const Text('Take a Profile Picture'),
-      ),
-      body: new AspectRatio(aspectRatio: controller.value.aspectRatio,
-          child: new CameraPreview(controller)),
-
-
-    );
-
-    /*backgroundColor: Colors.red,
-            mini: false,
-            tooltip: 'Take Picture',
-            onPressed: () async {
-              await controller.capture(appDocPath + "/profile.jpg");*/
-    /*new FlatButton(onPressed: (){
-            Navigator.pop(context);
-
-            //Navigator.pushNamed(context, '/screen7');
-          }, child: new Text("Go Back", style: new TextStyle(fontFamily: 'Roboto', color:Colors.lightBlue, fontSize: 20.0), textAlign: TextAlign.center,))*/
-
-
+    ])]
+      ), floatingActionButton:  new IconButton(
+        onPressed: () async
+    {
+      test ="";
+      test += DateTime.now().toString() + "\n";
+      await controller.capture(appDocPath + "/profile" + i.toString() + ".png"
+      ).then((String value){
+        test += DateTime.now().toString() + "\n";
+        cropImage(context, list[0], list[1]);
+      });
+    },
+    icon: new Icon(Icons.camera_alt),
+    iconSize: widthApp / 6,
+    splashColor: Colors.red,
+      color: Colors.lightBlue,
+    ),floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,);
   }
 }
 
 
 Future<Null> getCameras() async {
   cameras = await availableCameras();
+  print(cameras);
+  print(cameras[0].lensDirection);
 }
 
 Future getPath() async {
@@ -223,23 +129,16 @@ Future getPath() async {
 }
 
 
-cropImage(BuildContext context) async
+cropImage(BuildContext context, String n, String uid) async
 {
+  //const platform = const MethodChannel('com.yourcompany.flutter/readWrite');
+  //final List<int> result = await platform.invokeMethod('getFile');
+  final String name = n;
+
   IO.Directory appDocDir = await getApplicationDocumentsDirectory();
   appDocPath = appDocDir.path;
+  IO.File image = new IO.File(appDocPath + "/profile" + i.toString() + ".png");
   try {
-    IMAGE.Image image = IMAGE.decodeImage(
-        new IO.File(appDocPath + "/profile" + i.toString() + ".png").readAsBytesSync());
-    //IMAGE.Image imageDest = new IMAGE.Image(widthApp.toInt(), widthApp.toInt());
-    //IMAGE.copyInto(imageDest, image);
-    //IMAGE.Image rotated = IMAGE.copyRotate(image, -90);
-    IMAGE.Image cropped = IMAGE.copyCrop(
-        image, (image.width * (5.0/ 16)).toInt(), (image.height * (2 / 9)).toInt(), (image.height * (5 / 9)).toInt(),
-        (image.height * (5 / 9)).toInt());
-    IMAGE.Image rotated = IMAGE.copyRotate(cropped, 90);
-    new IO.File(appDocPath + "/profile" + i.toString() + ".png")
-        .writeAsBytesSync(IMAGE.encodePng(rotated));
-    IO.File upload = new IO.File(appDocPath + "/profile" + i.toString() + ".png");
     showDialog(context: context,
     barrierDismissible: true,
     builder: (BuildContext context) =>
@@ -252,7 +151,7 @@ cropImage(BuildContext context) async
         children: <Widget>[
         new Center(
           child: new CircleAvatar(
-            backgroundImage: FileImage(upload),
+            backgroundImage: FileImage(image),
             radius: widthApp / 7,
           ),
           //child: new Image(image: new FileImage(new File(appDocPath))),
@@ -261,24 +160,8 @@ cropImage(BuildContext context) async
         new Row(
           children: <Widget>[
             new Expanded(child:
-            new FlatButton(onPressed: (){
+            new FlatButton(onPressed: () async{
               i++;
-              showDialog(
-                context: context,
-                barrierDismissible: true,
-                builder: (BuildContext context) =>
-                new AlertDialog(
-                    title: new Text("Name"),
-                    content: new TextField(
-                      controller: _controller,
-                      decoration: new InputDecoration(
-                        hintText: 'John Smith',
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    actions: <Widget>[
-                      new FlatButton(
-                          child: new Text('Add Picture'), onPressed: () async {
                         showDialog(context: context,
                             barrierDismissible: false,
                             builder: (BuildContext context) =>
@@ -300,32 +183,29 @@ cropImage(BuildContext context) async
                         //IMAGE.Image cropped = IMAGE.copyCrop(
                         //    image, 0, 0, image.height,
                         //    image.height);
-                        List<String> nameSplit = _controller.text.split(" ");
-                        String name = nameSplit[0] + "_" + nameSplit[1];
+                        //List<String> nameSplit = _controller.text.split(" ");
+                        //String name = nameSplit[0] + "_" + nameSplit[1];
                         final StorageReference ref = FirebaseStorage.instance.ref().child(
                             name + ".png");
                         final StorageUploadTask uploadTask = ref.putFile(
-                            upload, const StorageMetadata(contentLanguage: "en"));
+                            image, const StorageMetadata(contentLanguage: "en"));
                         final Uri downloadUrl = (await uploadTask.future).downloadUrl;
-
-                        var url = 'https://mediahomecraft.ddns.net/node/addPic';
+                        var url = 'https://membershipme.ddns.net/node/addPic';
                         await http
                             .post(url,
                             body: {
                               "picURL": downloadUrl.toString(),
-                              "name": _controller.text
+                              "name": name
                             },
                             encoding: Encoding.getByName("utf-8"))
                             .then((response) {
                           if (response.body.toString() == "Success") {}
                         });
-                        Navigator.popAndPushNamed(context, "/screen6");
-                      }
+                        Navigator.pushAndRemoveUntil(context, new MaterialPageRoute(builder: (context) => new QrScanner(uid: uid)), ModalRoute.withName('/screen8'));
+                      },
 
-                      )
-                    ]),
-              );
-            }, child: new Text("Yes", style: new TextStyle(fontFamily: 'Roboto',
+
+             child: new Text("Yes", style: new TextStyle(fontFamily: 'Roboto',
                 color: Colors.lightBlue,
                 fontSize: 20.0),),),),
             new Expanded(child:

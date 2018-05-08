@@ -1,10 +1,13 @@
-Going to need to use member# as part of displayname
-
 have events sort chronologically (maybe do that serverside)
-
-look into stream builder
 
 Need to put on description page - Icons made by Freepik from www.flaticon.com
 
-switch to uid for creation
+seperate file for common textstyles?
 
+see about moving functions out to seperate class?
+
+clear all vars on sign out
+
+Have loading bounce back eventually
+
+In Enteremail maybe set firstRun later? After signin works.
