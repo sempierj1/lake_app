@@ -8,7 +8,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:http/http.dart' as http;
 import 'family.dart';
 import 'main.dart';
-import 'package:flutter/services.dart';
 
 class AppUserInfo {
   final FirebaseAuth _auth = FirebaseAuth.instance;

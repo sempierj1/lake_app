@@ -148,7 +148,7 @@ class FirstScreen extends StatelessWidget {
 }
 
 class EnterEmail extends StatelessWidget {
-  
+
 
   setPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1071,18 +1071,18 @@ class ChoiceCard extends State<ChoiceState> {
               ),
               new Expanded(
                 child: new Column(children: <Widget>[
-                  new Text(userInfo.user.displayName,
+                  new Text(userInfo.user.displayName, textAlign: TextAlign.center,
                       style: new TextStyle(
                           fontFamily: 'Roboto', fontSize: myStyle.fontSize)),
-                  new Text(userInfo.userSnapshot.value['email'],
+                  new Text(userInfo.userSnapshot.value['email'], textAlign: TextAlign.center,
                       style: new TextStyle(
-                          fontFamily: 'Roboto', fontSize: myStyle.fontSize * .75)),
-                  new Text(userInfo.userSnapshot.value['type'] + " Membership",
+                          fontFamily: 'Roboto', fontSize: myStyle.fontSize * .5)),
+                  new Text(userInfo.userSnapshot.value['type'], textAlign: TextAlign.center,
                       style: new TextStyle(
                           fontFamily: 'Roboto', fontSize: myStyle.fontSize * .75)),
                   new Text(
                       "Guest Badges - " +
-                          userInfo.userSnapshot.value['guests'].toString(),
+                          userInfo.userSnapshot.value['guest'].toString(), textAlign: TextAlign.center,
                       style: new TextStyle(
                           fontFamily: 'Roboto', fontSize: myStyle.fontSize * .75)),
                 ]),

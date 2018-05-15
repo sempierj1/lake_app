@@ -22,7 +22,7 @@ class MembershipTextStyle{
     TextStyle smallFlatButton(BuildContext context){
       return Theme.of(context).textTheme.display1.copyWith(fontFamily: 'Roboto',
           color: Colors.lightBlue,
-          fontSize: 15.0);
+          fontSize: 20.0);
     }
 
     TextStyle subText(BuildContext context){
