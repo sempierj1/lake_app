@@ -4,6 +4,12 @@ class MembershipTextStyle{
     TextStyle normalText(BuildContext context){
     return Theme.of(context).textTheme.display1.copyWith(fontFamily: 'Roboto', fontSize: 20.0);
   }
+    TextStyle eventText(BuildContext context){
+      return Theme.of(context).textTheme.display1.copyWith(fontFamily: 'Roboto', fontSize: 18.0, color: Colors.black);
+    }
+    TextStyle eventTextSub(BuildContext context){
+      return Theme.of(context).textTheme.display1.copyWith(fontFamily: 'Roboto', fontSize: 13.0, color: Colors.grey);
+    }
 
     TextStyle whiteText(BuildContext context){
       return Theme.of(context).textTheme.display1.copyWith(fontFamily: 'Roboto', fontSize: 20.0, color: Colors.white);
@@ -23,6 +29,11 @@ class MembershipTextStyle{
       return Theme.of(context).textTheme.display1.copyWith(fontFamily: 'Roboto',
           color: Colors.lightBlue,
           fontSize: 20.0);
+    }
+    TextStyle smallerFlatButton(BuildContext context){
+      return Theme.of(context).textTheme.display1.copyWith(fontFamily: 'Roboto',
+          color: Colors.lightBlue,
+          fontSize: 15.0);
     }
 
     TextStyle subText(BuildContext context){

@@ -6,12 +6,13 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:secure_string/secure_string.dart';
 import 'package:http/http.dart' as http;
 import 'main.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ServerFunctions {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<FirebaseUser> createUser(TextEditingController controller,
-      int index) async {
+      int index, String uid) async {
     SecureString secureString = new SecureString();
     String pass = secureString.generate(length: 64);
     try {
@@ -25,7 +26,7 @@ class ServerFunctions {
       DataSnapshot snapshot = await userInfo.userReference.once();
       await _auth.updateProfile(uInfo);
       if (newUser != null) {
-        Map newFamily = createFamilyList(snapshot, userInfo.family[index].name);
+        Map newFamily = createFamilyList(snapshot, userInfo.family[index].name, uid);
         await userInfo.userReference
             .child("/family/")
             .update({userInfo.family[index].name: controller.text});
@@ -52,11 +53,11 @@ class ServerFunctions {
     }
   }
 
-  Map createFamilyList(DataSnapshot s, String name) {
+  Map createFamilyList(DataSnapshot s, String name, String uid) {
     Map familyMap = new Map();
     void checkFamily(key, value) {
       if (key != name) {
-        familyMap[key] = "v";
+        familyMap[key] = uid;
       }
     }
 
@@ -64,6 +65,7 @@ class ServerFunctions {
     familyMap[userInfo.user.displayName] = "v";
     return familyMap;
   }
+
 
   Future closeBeach(bool weatherClosure) async {
     var url = 'https://membershipme.ddns.net/node/beachstatus';
@@ -132,5 +134,14 @@ class ServerFunctions {
         sent = false;
       }
     });
+  }
+
+  launchURL(String event) async {
+    String url = 'https://lake-parsippany.org/event-' + event;
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }

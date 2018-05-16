@@ -57,7 +57,7 @@ class FamilyWidget extends StatelessWidget {
                                             child: new Text('Invite'),
                                             onPressed: () async {
                                               await serverFunctions.createUser(
-                                                      _controller, index)
+                                                      _controller, index, userInfo.user.uid)
                                                   .then((FirebaseUser user) {
                                                 if (user != null) {
                                                   Navigator

@@ -26,7 +26,6 @@ final double devicePixelRatio = ui.window.devicePixelRatio;
 final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller2 = new TextEditingController();
 
-
 void main() {
   runCheck();
 }
@@ -85,8 +84,7 @@ class FirstScreen extends StatelessWidget {
         // 1
         appBar: new AppBar(
           //2
-          title: new Text("Getting Started",
-              style: myStyle.whiteText(context)),
+          title: new Text("Getting Started", style: myStyle.whiteText(context)),
         ),
         body: new Column(children: <Widget>[
           new Row(
@@ -148,8 +146,6 @@ class FirstScreen extends StatelessWidget {
 }
 
 class EnterEmail extends StatelessWidget {
-
-
   setPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('firstRun', true);
@@ -161,8 +157,7 @@ class EnterEmail extends StatelessWidget {
         // 1
         appBar: new AppBar(
           //2
-          title: new Text("Enter Email",
-              style: myStyle.whiteText(context)),
+          title: new Text("Enter Email", style: myStyle.whiteText(context)),
         ),
         body: new ListView(
             padding: const EdgeInsets.only(left: 25.0, right: 25.0),
@@ -205,7 +200,9 @@ class EnterEmail extends StatelessWidget {
                     child: new FlatButton(
                         onPressed: () async {
                           sent = true;
-                          await serverFunctions.resetPassword(_controller.text).catchError((e) {
+                          await serverFunctions
+                              .resetPassword(_controller.text)
+                              .catchError((e) {
                             sent = false;
                           });
                           if (sent) {
@@ -262,15 +259,13 @@ class EnterEmail extends StatelessWidget {
 }
 
 class Login extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
         // 1
         appBar: new AppBar(
           //2
-          title: new Text("Enter Email",
-              style: myStyle.whiteText(context)),
+          title: new Text("Enter Email", style: myStyle.whiteText(context)),
         ),
         body: new ListView(
             padding: const EdgeInsets.only(left: 25.0, right: 25.0),
@@ -318,7 +313,8 @@ class Login extends StatelessWidget {
                     alignment: Alignment.bottomCenter,
                     child: new FlatButton(
                         onPressed: () async {
-                          await userInfo.handleSignIn(_controller.text, _controller2.text)
+                          await userInfo
+                              .handleSignIn(_controller.text, _controller2.text)
                               .then((FirebaseUser user) {
                             if (user != null) {
                               Navigator.pushReplacementNamed(
@@ -356,8 +352,6 @@ class Login extends StatelessWidget {
   }
 }
 
-
-
 class LoadingState extends StatefulWidget {
   LoadingState({Key key, this.title}) : super(key: key);
 
@@ -373,7 +367,7 @@ class Loading extends State<LoadingState> {
   @override
   void initState() {
     super.initState();
-    if(!userInfo.signedIn) {
+    if (!userInfo.signedIn) {
       userInfo.handleSignInMain();
     }
     weatherHandler.getWeather();
@@ -387,6 +381,7 @@ class Loading extends State<LoadingState> {
             userInfo.user != null &&
             userInfo.imageProvider != null) ||
         (userInfo.isBeach)) {
+      eventHandler.getSaved(userInfo.saved);
       Navigator.pushReplacementNamed(context, "/screen5");
     } else
       new Future.delayed(new Duration(seconds: 1), _menu);
@@ -398,8 +393,7 @@ class Loading extends State<LoadingState> {
       // 1
       appBar: new AppBar(
         //2
-        title: new Text("Loading",
-            style: myStyle.normalText(context)),
+        title: new Text("Loading", style: myStyle.normalText(context)),
       ),
       body: new Container(
         child: new Stack(
@@ -463,14 +457,17 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
     with SingleTickerProviderStateMixin {
   final DatabaseReference listenerReference = userInfo.isBeach
       ? null
-      : FirebaseDatabase.instance.reference().child("users/" + userInfo.user.uid);
+      : FirebaseDatabase.instance
+          .reference()
+          .child("users/" + userInfo.user.uid);
 
   final DatabaseReference beachListener = userInfo.isBeach
       ? null
       : FirebaseDatabase.instance.reference().child("beach status");
 
-  final DatabaseReference weatherListener =
-      userInfo.isBeach ? null : FirebaseDatabase.instance.reference().child("weather");
+  final DatabaseReference weatherListener = userInfo.isBeach
+      ? null
+      : FirebaseDatabase.instance.reference().child("weather");
 
   final DatabaseReference weatherClosureListener = userInfo.isBeach
       ? null
@@ -536,13 +533,15 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
     try {
       setState(() {
         weatherHandler.weather = event.snapshot.value;
-        weatherHandler.weatherDescription = weatherHandler.weather['longDesc'].toString().split(" ");
+        weatherHandler.weatherDescription =
+            weatherHandler.weather['longDesc'].toString().split(" ");
         weatherHandler.weatherDescriptionFixed = "";
         for (final i in weatherHandler.weatherDescription) {
           if (weatherHandler.weatherDescriptionFixed != "") {
             weatherHandler.weatherDescriptionFixed += " ";
           }
-          weatherHandler.weatherDescriptionFixed += i.substring(0, 1).toUpperCase();
+          weatherHandler.weatherDescriptionFixed +=
+              i.substring(0, 1).toUpperCase();
           weatherHandler.weatherDescriptionFixed += i.substring(1, i.length);
         }
       });
@@ -552,7 +551,8 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   _editWeatherClosure(Event event) {
     try {
       setState(() {
-        weatherHandler.weatherClosure = event.snapshot.value == "true" ? true : false;
+        weatherHandler.weatherClosure =
+            event.snapshot.value == "true" ? true : false;
       });
     } catch (e) {}
   }
@@ -710,19 +710,24 @@ class ChoiceCard extends State<ChoiceState> {
     heightApp = MediaQuery.of(context).size.height;
     myStyle.fontSize = (widthApp / 18).round() * 1.0;
     if (choice.title == "Check-In") {
-      return new Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Center(
-            child: new QrImage(version: 3, data: userInfo.user.uid, size: widthApp / 2),
-          ),
-          Container(
-              padding: const EdgeInsets.only(top: 50.0),
-              child: Center(
-                  child: new Text(userInfo.badgeNumber.toString(),
-                      style: new TextStyle(
-                          fontFamily: "Raleway", fontSize: myStyle.fontSize*3))))
-        ],
+      return new SingleChildScrollView(
+        padding: EdgeInsets.only(top: heightApp / 6),
+        child: new Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Center(
+              child: new QrImage(
+                  version: 3, data: userInfo.user.uid, size: widthApp / 2),
+            ),
+            Container(
+                padding: const EdgeInsets.only(top: 50.0),
+                child: Center(
+                    child: new Text(userInfo.badgeNumber.toString(),
+                        style: new TextStyle(
+                            fontFamily: "Raleway",
+                            fontSize: myStyle.fontSize * 3))))
+          ],
+        ),
       );
     } else if (choice.title == "Weather") {
       if (weatherHandler.weather == null) {
@@ -743,7 +748,8 @@ class ChoiceCard extends State<ChoiceState> {
         if (weatherHandler.beachOpen && !weatherHandler.weatherClosure) {
           barColor = Colors.green;
           alertText = "Open";
-        } else if (!weatherHandler.beachOpen && !weatherHandler.weatherClosure) {
+        } else if (!weatherHandler.beachOpen &&
+            !weatherHandler.weatherClosure) {
           barColor = Colors.blueAccent;
           alertText = "Closed - Off Hours";
         } else {
@@ -776,7 +782,9 @@ class ChoiceCard extends State<ChoiceState> {
             break;
 
           default:
-            weatherImg = "assets/png/" + weatherHandler.weather['icon'].toString() + ".png";
+            weatherImg = "assets/png/" +
+                weatherHandler.weather['icon'].toString() +
+                ".png";
             break;
         }
 
@@ -833,7 +841,9 @@ class ChoiceCard extends State<ChoiceState> {
                     new Expanded(
                       child: new Center(
                           child: new Text(
-                        "Wind:\n" + weatherHandler.weather['wind'].round().toString() + " mph",
+                        "Wind:\n" +
+                            weatherHandler.weather['wind'].round().toString() +
+                            " mph",
                         style: new TextStyle(
                             fontSize: 11.25 * (heightApp / 200),
                             fontFamily: "Raleway"),
@@ -847,37 +857,24 @@ class ChoiceCard extends State<ChoiceState> {
         // with winds of " + weatherHandler.weather[3].round().toString() + " mph. " + "\u000a\u000a
       }
     } else if (choice.title == "Events") {
-      int month = new DateTime.now().month;
-      int day = new DateTime.now().day;
-      List<int> current = new List();
-      for (final i in eventHandler.events) {
-        if (int.parse(i['eventDate'].toString()[0]) > month) {
-          current.add(i['eventNum']);
-        } else if (int.parse(i['eventDate'].toString()[0]) == month &&
-            int.parse(i['eventDate'].toString()[2]) >= day) {
-          current.add(i['eventNum']);
-        }
-      }
+      eventHandler.setChosen(userInfo.favorites);
+      List shown = eventHandler.eventsShown;
       return new Scaffold(
         appBar: new AppBar(
             elevation: 0.0,
             backgroundColor: Colors.white,
-            title: userInfo.favorites
+            title: eventHandler.chosen == "Favorites Only"
                 ? new Text(
-                    (current.length - userInfo.saved.length).toString() +
+                    (eventHandler.events.length - userInfo.saved.length)
+                            .toString() +
                         " events hidden",
                     style: new TextStyle(color: Colors.black),
                   )
                 : new Text(""),
             actions: <Widget>[
               new DropdownButton(
-                  hint: userInfo.favorites
-                      ? new Text("Favorites Only")
-                      : eventHandler.showCurrent
-                          ? new Text("Upcoming")
-                          : new Text("Show All"),
-                  items: <String>["Upcoming", "Favorites Only", "Show All"]
-                      .map((String value) {
+                  hint: new Text(eventHandler.chosen),
+                  items: eventHandler.sorting.map((String value) {
                     return new DropdownMenuItem<String>(
                       value: value,
                       child: new Text(value),
@@ -885,55 +882,144 @@ class ChoiceCard extends State<ChoiceState> {
                   }).toList(),
                   onChanged: (v) {
                     setState(() {
-                      if (v == "Show All") {
-                        userInfo.toggleFavorite(false);
-                        userInfo.favorites = false;
-                        eventHandler.showCurrent = false;
-                      } else if (v == "Favorites Only") {
-                        userInfo.toggleFavorite(true);
-                        userInfo.favorites = true;
-                        eventHandler.showCurrent = true;
-                      } else {
-                        userInfo.toggleFavorite(false);
-                        userInfo.favorites = false;
-                        eventHandler.showCurrent = true;
-                      }
+                      userInfo.favorites = v;
+                      eventHandler.setChosen(v);
+                      userInfo.toggleFavorite(v);
+                      shown = eventHandler.eventsShown;
                     });
                   }),
             ]),
         body: new ListView.builder(
           itemBuilder: (BuildContext context, int index) {
             return new GestureDetector(
-                onLongPress: () {
-                  setState(() {
-                    if (userInfo.saved.contains((eventHandler.events[index]['eventNum']))) {
-                      userInfo.saved.remove(eventHandler.events[index]['eventNum']);
-                      eventHandler.handleEvent(
-                          eventHandler.events[index]['eventNum'],
-                          'remove',
-                          eventHandler.events[index]['eventDate'],
-                          eventHandler.events[index]['eventName'],
-                      userInfo);
-                    } else {
-                      userInfo.saved.add(eventHandler.events[index]['eventNum']);
-                      eventHandler.handleEvent(
-                          eventHandler.events[index]['eventNum'],
-                          'add',
-                          eventHandler.events[index]['eventDate'],
-                          eventHandler.events[index]['eventName'],
-                      userInfo);
-                    }
-                  });
-                },
-                child: eventHandler.showCurrent
-                    ? current.contains(eventHandler.events[index]['eventNum'])
-                        ? !userInfo.favorites
-                            ? new Card(
-                                child: new Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    new ExpansionTile(
+              onTap: () {
+                if (userInfo.saved
+                    .contains((eventHandler.eventsShown[index]['eventNum']))) {
+                  userInfo.saved
+                      .remove(eventHandler.eventsShown[index]['eventNum']);
+                  eventHandler.handleEvent(index,
+                      eventHandler.eventsShown[index], 'remove', userInfo);
+                } else {
+                  userInfo.saved
+                      .add(eventHandler.eventsShown[index]['eventNum']);
+                  eventHandler.handleEvent(
+                      index, eventHandler.eventsShown[index], 'add', userInfo);
+                }
+                setState(() {
+                  if (eventHandler.chosen == "Favorites Only") {
+                    shown = eventHandler.favorites;
+                  }
+                });
+              },
+              child: Card(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                new ListTile(
+                leading: new Text(
+                (shown[index]['eventDate'])),
+                title: new Text(
+                  (shown[index]['eventName']).toString(), style: myStyle.eventText(context),
+                ),
+                subtitle: (shown[index]['location'] != "" && shown[index]['startTime'] != "") ? Text(shown[index]['location'] != "" ?
+                (shown[index]['location'] + " - " + shown[index]['startTime'] + shown[index]['time']): "",
+                  style: myStyle.eventTextSub(context),
+                ) : null,
+                trailing: new Icon(
+                    userInfo.saved.contains(
+                        shown[index]['eventNum'])
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: userInfo.saved.contains(
+                        shown[index]['eventNum'])
+                        ? Colors.red
+                        : null),
+                ),
+            new ButtonTheme.bar( // make buttons use the appropriate styles for cards
+            child: new ButtonBar(
+            children: <Widget>[
+              FlatButton(
+                  onPressed: () {
+                    serverFunctions.launchURL(shown[index]['url'].toString());
+                  },
+                  child: new Text("More Information", style: myStyle.smallerFlatButton(context),)
+              )
+            ])),]))
+            );
+          },
+          itemCount: shown.length,
+        ),
+      );
+                    /*
+                                        Row(
+                      children: <Widget>[
+                        Container(
+                            padding: const EdgeInsets.only(left: 4.0, top: 2.0),
+                            child: Text(
+                              (shown[index]['eventDate']),
+                              style: myStyle.eventText(context),
+                            )),
+                        Expanded(
+                            child: Text(
+                          (shown[index]['eventName']).toString(),
+                          textAlign: TextAlign.center,
+                          style: myStyle.eventText(context),
+                        )),
+                        Container(
+                            padding:
+                                const EdgeInsets.only(right: 4.0, top: 2.0),
+                            child: Icon(
+                              Icons.favorite,
+                              color: userInfo.saved
+                                      .contains(shown[index]['eventNum'])
+                                  ? Colors.red
+                                  : Colors.black12,
+                              size: 50.0,
+                            )),
+                      ],
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Container(
+                            padding:
+                                const EdgeInsets.only(left: 4.0, bottom: 4.0),
+                            child: Text(shown[index]['location'] != "" ?
+                              (shown[index]['location'] + " - "): "",
+                              style: myStyle.eventTextSub(context),
+                            )),
+                        Container(
+                            padding:
+                                const EdgeInsets.only(left: 4.0, bottom: 4.0),
+                            child: Text(
+                              (shown[index]['startTime']) +
+                                  shown[index]['time'],
+                              style: myStyle.eventTextSub(context),
+                            )),
+                      ],
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Container(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Text(
+                                (shown[index]['eventDescription']),
+                                style: myStyle.eventTextSub(context),
+                              )),
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: <Widget>[
+                      FlatButton(
+                      onPressed: () {
+                        serverFunctions.launchURL(shown[index]['url'].toString());
+                      },
+                      child: new Text("Click Here for More Information", style: myStyle.smallerFlatButton(context),)
+                      )
+                      ],
+                    ),
+                      new ExpansionTile(
                                       leading: new Text(
                                           (eventHandler.events[index]['eventDate'])),
                                       title: new Text(
@@ -956,90 +1042,11 @@ class ChoiceCard extends State<ChoiceState> {
                                               right: 16.0,
                                               bottom: 16.0),
                                           child: new Text((eventHandler.events[index]
-                                              ['eventDescription'])),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : (userInfo.saved.contains(eventHandler.events[index]['eventNum'])
-                                ? new Card(
-                                    child: new Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: <Widget>[
-                                        new ExpansionTile(
-                                          leading: new Text(
-                                              (eventHandler.events[index]['eventDate'])),
-                                          title: new Text(
-                                            (eventHandler.events[index]['eventName'])
-                                                .toString(),
-                                            textAlign: TextAlign.left,
-                                          ),
-                                          trailing: new Icon(
-                                              userInfo.saved.contains(
-                                                      eventHandler.events[index]['eventNum'])
-                                                  ? Icons.favorite
-                                                  : Icons.favorite_border,
-                                              color: userInfo.saved.contains(
-                                                      eventHandler.events[index]['eventNum'])
-                                                  ? Colors.red
-                                                  : null),
-                                          children: <Widget>[
-                                            new Container(
-                                              padding: new EdgeInsets.only(
-                                                  left: 16.0,
-                                                  right: 16.0,
-                                                  bottom: 16.0),
-                                              child: new Text((eventHandler.events[index]
-                                                  ['eventDescription'])),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                : new Container(width: 0.0, height: 0.0))
-                        : new Container(width: 0.0, height: 0.0)
-                    : new Card(
-                        child: new Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            new ExpansionTile(
-                              leading: new Text((eventHandler.events[index]['eventDate'])),
-                              title: new Text(
-                                (eventHandler.events[index]['eventName']).toString(),
-                                textAlign: TextAlign.left,
-                              ),
-                              trailing: new Icon(
-                                  userInfo.saved.contains(eventHandler.events[index]['eventNum'])
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  color:
-                                      userInfo.saved.contains(eventHandler.events[index]['eventNum'])
-                                          ? Colors.red
-                                          : null),
-                              children: <Widget>[
-                                new Container(
-                                  padding: new EdgeInsets.only(
-                                      left: 16.0, right: 16.0, bottom: 16.0),
-                                  child: new Text(
-                                      (eventHandler.events[index]['eventDescription'])),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ));
-          },
-          itemCount: eventHandler.events.length,
-          //new eventHandler.eventsPage(),
-        ),
-      );
+                                              ['eventDescription'])),*/
+
     } else if (choice.title == 'Profile') {
-      List<Widget> children = new List.generate(
-          userInfo.family.length, (int i) => new FamilyWidget(i, context, userInfo));
+      List<Widget> children = new List.generate(userInfo.family.length,
+          (int i) => new FamilyWidget(i, context, userInfo));
       return new ListView(
         children: <Widget>[
           new Row(
@@ -1071,20 +1078,27 @@ class ChoiceCard extends State<ChoiceState> {
               ),
               new Expanded(
                 child: new Column(children: <Widget>[
-                  new Text(userInfo.user.displayName, textAlign: TextAlign.center,
+                  new Text(userInfo.user.displayName,
+                      textAlign: TextAlign.center,
                       style: new TextStyle(
                           fontFamily: 'Roboto', fontSize: myStyle.fontSize)),
-                  new Text(userInfo.userSnapshot.value['email'], textAlign: TextAlign.center,
+                  new Text(userInfo.userSnapshot.value['email'],
+                      textAlign: TextAlign.center,
                       style: new TextStyle(
-                          fontFamily: 'Roboto', fontSize: myStyle.fontSize * .5)),
-                  new Text(userInfo.userSnapshot.value['type'], textAlign: TextAlign.center,
+                          fontFamily: 'Roboto',
+                          fontSize: myStyle.fontSize * .5)),
+                  new Text(userInfo.userSnapshot.value['type'],
+                      textAlign: TextAlign.center,
                       style: new TextStyle(
-                          fontFamily: 'Roboto', fontSize: myStyle.fontSize * .75)),
+                          fontFamily: 'Roboto',
+                          fontSize: myStyle.fontSize * .75)),
                   new Text(
                       "Guest Badges - " +
-                          userInfo.userSnapshot.value['guest'].toString(), textAlign: TextAlign.center,
+                          userInfo.userSnapshot.value['guest'].toString(),
+                      textAlign: TextAlign.center,
                       style: new TextStyle(
-                          fontFamily: 'Roboto', fontSize: myStyle.fontSize * .75)),
+                          fontFamily: 'Roboto',
+                          fontSize: myStyle.fontSize * .75)),
                 ]),
               ),
             ],
@@ -1135,25 +1149,29 @@ class ChoiceCard extends State<ChoiceState> {
                         actions: <Widget>[
                           new FlatButton(
                               onPressed: () async {
-                                showDialog(context: context,
+                                showDialog(
+                                    context: context,
                                     barrierDismissible: false,
                                     builder: (BuildContext context) =>
-                                    new AlertDialog(
-                                      title: new Text("Sending Message"),
-                                      content: new Container(
-                                        height: 200.0,
-                                        child: new Center(
-                                          child: new SizedBox(
-                                            height: 50.0,
-                                            width: 50.0,
-                                            child: new CircularProgressIndicator(
-                                              value: null,
-                                              strokeWidth: 7.0,
+                                        new AlertDialog(
+                                          title: new Text("Sending Message"),
+                                          content: new Container(
+                                            height: 200.0,
+                                            child: new Center(
+                                              child: new SizedBox(
+                                                height: 50.0,
+                                                width: 50.0,
+                                                child:
+                                                    new CircularProgressIndicator(
+                                                  value: null,
+                                                  strokeWidth: 7.0,
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),),)
-                                );
-                                await serverFunctions.closeBeach(weatherHandler.weatherClosure);
+                                        ));
+                                await serverFunctions
+                                    .closeBeach(weatherHandler.weatherClosure);
                                 Navigator.pop(context);
                                 Navigator.pop(context);
                               },
@@ -1161,10 +1179,15 @@ class ChoiceCard extends State<ChoiceState> {
                         ],
                       ),
                 );
-              },color: Colors.white,
+              },
+              color: Colors.white,
               child: weatherHandler.weatherClosure
-                  ? new Text("Open Beach", style: new TextStyle(fontSize: myStyle.fontSize),)
-                  : new Text("Close Beach", style: new TextStyle(fontSize: myStyle.fontSize))),
+                  ? new Text(
+                      "Open Beach",
+                      style: new TextStyle(fontSize: myStyle.fontSize),
+                    )
+                  : new Text("Close Beach",
+                      style: new TextStyle(fontSize: myStyle.fontSize))),
         ],
       );
     } else if (choice.title == "Sign-In") {
@@ -1223,4 +1246,3 @@ class ChoiceCard extends State<ChoiceState> {
     }
   }
 }
-

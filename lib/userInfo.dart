@@ -11,14 +11,13 @@ import 'main.dart';
 
 class AppUserInfo {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
   DatabaseReference mainReference;
   DatabaseReference userReference;
   DataSnapshot userSnapshot;
   DataSnapshot snapshot;
   bool isHead;
   bool isManager;
-  bool favorites;
+  String favorites;
   int badgeNumber;
   List<Family> family = new List<Family>();
   Map familyList;
@@ -79,7 +78,16 @@ class AppUserInfo {
           });
         }
         Map family = snapshot.value['family'];
-        family.forEach(updateVerified);
+        family.forEach((key, value) async{
+            var url = 'https://membershipme.ddns.net/node/updateVerified';
+            await http
+                .post(url,
+                body: {"uid": value, "name": user.displayName},
+                encoding: Encoding.getByName("utf-8"))
+                .then((response) {
+            });
+          });
+
         getVars();
       } catch (e) {}
     }else if (user != null && user.email == "beachmanager@lake-parsippany.org"){
@@ -102,7 +110,7 @@ class AppUserInfo {
     familyList = userSnapshot.value['family'];
     isHead = userSnapshot.value['isHead'];
     isManager = userSnapshot.value['isManager'];
-    favorites = userSnapshot.value['favorites'] == "true";
+    favorites = userSnapshot.value['favorites'];
     badgeNumber = userSnapshot.value['badge'];
 
     try {
@@ -123,13 +131,6 @@ class AppUserInfo {
     signedIn = true;
   }
 
-  void updateVerified(key, value) {
-    try {
-      mainReference = FirebaseDatabase.instance.reference().child("users/" + key);
-      mainReference.child("/family/").update({user.displayName: "v"});
-    } catch (e) {}
-  }
-
   void createFamily(key, value) {
     family.add(new Family(key, value));
   }
@@ -148,7 +149,7 @@ class AppUserInfo {
     storage.write(key: "password", value: pass);
   }
 
-  toggleFavorite(bool f) {
+  toggleFavorite(String f) {
     mainReference =
         FirebaseDatabase.instance.reference().child("users/" + userInfo.user.uid);
     mainReference.update({"favorites": f.toString()});
@@ -170,7 +171,7 @@ class AppUserInfo {
     snapshot = null;
     isHead = false;
     isManager = false;
-    favorites = false;
+    favorites = "";
     badgeNumber = 0;
     family = new List<Family>();
     familyList = null;
