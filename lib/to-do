@@ -1,13 +1,5 @@
-have events sort chronologically (maybe do that serverside)
-
 Need to put on description page - Icons made by Freepik from www.flaticon.com
-
-seperate file for common textstyles?
-
-see about moving functions out to seperate class?
-
-clear all vars on sign out
 
 Have loading bounce back eventually
 
-In Enteremail maybe set firstRun later? After signin works.
+Add membership type to check in table
