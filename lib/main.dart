@@ -16,12 +16,14 @@ import 'familyWidget.dart';
 import 'serverFunctions.dart';
 import 'events.dart';
 import 'weather.dart';
+import 'guests.dart';
 
 final MembershipTextStyle myStyle = new MembershipTextStyle();
 final AppUserInfo userInfo = new AppUserInfo();
 final ServerFunctions serverFunctions = new ServerFunctions();
 final Events eventHandler = new Events();
 final Weather weatherHandler = new Weather();
+final Guest guestHandler = new Guest();
 final double devicePixelRatio = ui.window.devicePixelRatio;
 final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller2 = new TextEditingController();
@@ -372,6 +374,8 @@ class Loading extends State<LoadingState> {
     }
     weatherHandler.getWeather();
     eventHandler.getEvents();
+    guestHandler.getGuests();
+    guestHandler.getFamily();
     new Future.delayed(new Duration(milliseconds: 500), _menu);
   }
 
@@ -455,6 +459,7 @@ class TabbedAppBarMenu extends StatefulWidget {
 
 class TabbedAppBarState extends State<TabbedAppBarMenu>
     with SingleTickerProviderStateMixin {
+  DateTime date = new DateTime.now();
   final DatabaseReference listenerReference = userInfo.isBeach
       ? null
       : FirebaseDatabase.instance
@@ -473,6 +478,15 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
       ? null
       : FirebaseDatabase.instance.reference().child("weatherDelay");
 
+  final DatabaseReference guestListener = userInfo.isBeach
+      ? null
+      : FirebaseDatabase.instance.reference().child("beachCheckIn/" +
+          new DateTime.now().year.toString() +
+          "/" +
+          new DateTime.now().month.toString() +
+          "/" +
+          new DateTime.now().day.toString());
+
   Map familyChanges;
 
   TabbedAppBarState() {
@@ -481,6 +495,7 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
       beachListener.onValue.listen(_editBeachStatus);
       weatherListener.onValue.listen(_editWeather);
       weatherClosureListener.onValue.listen(_editWeatherClosure);
+      guestListener.onChildAdded.listen(_guestsEdited);
     }
   }
 
@@ -528,6 +543,13 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   }
 
   int changeCheck = 0;
+
+  _guestsEdited(Event event) {
+    setState(() {
+      guestHandler.getGuests();
+      guestHandler.getFamily();
+    });
+  }
 
   _editWeather(Event event) {
     try {
@@ -896,65 +918,75 @@ class ChoiceCard extends State<ChoiceState> {
         body: new ListView.builder(
           itemBuilder: (BuildContext context, int index) {
             return new GestureDetector(
-              onTap: () {
-                if (userInfo.saved
-                    .contains((eventHandler.eventsShown[index]['eventNum']))) {
-                  userInfo.saved
-                      .remove(eventHandler.eventsShown[index]['eventNum']);
-                  eventHandler.handleEvent(index,
-                      eventHandler.eventsShown[index], 'remove', userInfo);
-                } else {
-                  userInfo.saved
-                      .add(eventHandler.eventsShown[index]['eventNum']);
-                  eventHandler.handleEvent(
-                      index, eventHandler.eventsShown[index], 'add', userInfo);
-                }
-                setState(() {
-                  if (eventHandler.chosen == "Favorites Only") {
-                    shown = eventHandler.favorites;
+                onTap: () {
+                  if (userInfo.saved.contains(
+                      (eventHandler.eventsShown[index]['eventNum']))) {
+                    userInfo.saved
+                        .remove(eventHandler.eventsShown[index]['eventNum']);
+                    eventHandler.handleEvent(index,
+                        eventHandler.eventsShown[index], 'remove', userInfo);
+                  } else {
+                    userInfo.saved
+                        .add(eventHandler.eventsShown[index]['eventNum']);
+                    eventHandler.handleEvent(index,
+                        eventHandler.eventsShown[index], 'add', userInfo);
                   }
-                });
-              },
-              child: Card(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                new ListTile(
-                leading: new Text(
-                (shown[index]['eventDate'])),
-                title: new Text(
-                  (shown[index]['eventName']).toString(), style: myStyle.eventText(context),
-                ),
-                subtitle: (shown[index]['location'] != "" && shown[index]['startTime'] != "") ? Text(shown[index]['location'] != "" ?
-                (shown[index]['location'] + " - " + shown[index]['startTime'] + shown[index]['time']): "",
-                  style: myStyle.eventTextSub(context),
-                ) : null,
-                trailing: new Icon(
-                    userInfo.saved.contains(
-                        shown[index]['eventNum'])
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: userInfo.saved.contains(
-                        shown[index]['eventNum'])
-                        ? Colors.red
-                        : null),
-                ),
-            new ButtonTheme.bar( // make buttons use the appropriate styles for cards
-            child: new ButtonBar(
-            children: <Widget>[
-              FlatButton(
-                  onPressed: () {
-                    serverFunctions.launchURL(shown[index]['url'].toString());
-                  },
-                  child: new Text("More Information", style: myStyle.smallerFlatButton(context),)
-              )
-            ])),]))
-            );
+                  setState(() {
+                    if (eventHandler.chosen == "Favorites Only") {
+                      shown = eventHandler.favorites;
+                    }
+                  });
+                },
+                child: Card(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                      new ListTile(
+                        leading: new Text((shown[index]['eventDate'])),
+                        title: new Text(
+                          (shown[index]['eventName']).toString(),
+                          style: myStyle.eventText(context),
+                        ),
+                        subtitle: (shown[index]['location'] != "" &&
+                                shown[index]['startTime'] != "")
+                            ? Text(
+                                shown[index]['location'] != ""
+                                    ? (shown[index]['location'] +
+                                        " - " +
+                                        shown[index]['startTime'] +
+                                        shown[index]['time'])
+                                    : "",
+                                style: myStyle.eventTextSub(context),
+                              )
+                            : null,
+                        trailing: new Icon(
+                            userInfo.saved.contains(shown[index]['eventNum'])
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: userInfo.saved
+                                    .contains(shown[index]['eventNum'])
+                                ? Colors.red
+                                : null),
+                      ),
+                      new ButtonTheme.bar(
+                          // make buttons use the appropriate styles for cards
+                          child: new ButtonBar(children: <Widget>[
+                        FlatButton(
+                            onPressed: () {
+                              serverFunctions
+                                  .launchURL(shown[index]['url'].toString());
+                            },
+                            child: new Text(
+                              "More Information",
+                              style: myStyle.smallerFlatButton(context),
+                            ))
+                      ])),
+                    ])));
           },
           itemCount: shown.length,
         ),
       );
-                    /*
+      /*
                                         Row(
                       children: <Widget>[
                         Container(
@@ -1133,10 +1165,34 @@ class ChoiceCard extends State<ChoiceState> {
         ],
       );
     } else if (choice.title == "Manager") {
-      return new Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          new RaisedButton(
+      return SingleChildScrollView(
+        child:
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: new Text(
+                    guestHandler.guestNumber.toString() + "\n People Today",
+                    style: new TextStyle(
+                        fontFamily: "Raleway",
+                        fontSize: 11.25 * (heightApp / 200)),
+                    textAlign: TextAlign.center),
+              ),
+              Expanded(
+                child: new Text(
+                    guestHandler.familyNumbers.toString() + "\n Families Today",
+                    style: new TextStyle(
+                        fontFamily: "Raleway",
+                        fontSize: 11.25 * (heightApp / 200)),
+                    textAlign: TextAlign.center),
+              )
+            ],
+          ),
+            new Align(
+            heightFactor: 3.2, child:
+          FlatButton(
               onPressed: () async {
                 showDialog(
                   context: context,
@@ -1184,16 +1240,14 @@ class ChoiceCard extends State<ChoiceState> {
                       ),
                 );
               },
-              color: Colors.white,
               child: weatherHandler.weatherClosure
                   ? new Text(
                       "Open Beach",
-                      style: new TextStyle(fontSize: myStyle.fontSize),
+                      style: myStyle.smallFlatButton(context), textAlign: TextAlign.center,
                     )
                   : new Text("Close Beach",
-                      style: new TextStyle(fontSize: myStyle.fontSize))),
-        ],
-      );
+                      style: myStyle.smallFlatButton(context), textAlign: TextAlign.center,)),
+            )],));
     } else if (choice.title == "Sign-In") {
       return new Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
