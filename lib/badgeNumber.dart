@@ -76,7 +76,7 @@ class _BadgeNumber extends State<BadgeNumber> {
     DatabaseReference mainReference =
     FirebaseDatabase.instance.reference().child("users/" + barcode);
     DataSnapshot snapshot = await mainReference.once();
-    DatabaseReference guestReference = FirebaseDatabase.instance.reference().child("users/" + barcode + "/guests");
+    DatabaseReference guestReference = FirebaseDatabase.instance.reference().child("users/" + barcode + "/guest");
     DataSnapshot guests = await guestReference.once();
     Map family = snapshot.value['family'];
     family[snapshot.value['name']] = "";

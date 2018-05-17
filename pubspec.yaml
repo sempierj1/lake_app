@@ -23,6 +23,7 @@ dependencies:
   firebase_storage: "^0.3.3"
   barcode_scan: "^0.0.4"
   url_launcher: "^3.0.1"
+  firebase_analytics: "^0.3.3"
   #flutter_local_notifications: "^0.1.0"
 
 

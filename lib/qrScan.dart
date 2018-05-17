@@ -62,7 +62,7 @@ class _QrScanner extends State<QrScanner> {
     DatabaseReference mainReference =
         FirebaseDatabase.instance.reference().child("users/" + barcode);
     DataSnapshot snapshot = await mainReference.once();
-    DatabaseReference guestReference = FirebaseDatabase.instance.reference().child("users/" + barcode + "/guests");
+    DatabaseReference guestReference = FirebaseDatabase.instance.reference().child("users/" + barcode + "/guest");
     DataSnapshot guests = await guestReference.once();
     print(guests);
     Map family = snapshot.value['family'];

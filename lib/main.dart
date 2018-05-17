@@ -781,6 +781,10 @@ class ChoiceCard extends State<ChoiceState> {
             weatherImg = 'assets/png/13d.png';
             break;
 
+          case "50n":
+            weatherImg = 'assets/png/50d.png';
+            break;
+
           default:
             weatherImg = "assets/png/" +
                 weatherHandler.weather['icon'].toString() +
