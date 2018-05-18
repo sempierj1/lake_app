@@ -11,7 +11,7 @@ dependencies:
   shared_preferences: "^0.4.1"
   firebase_database: "^0.4.6"
   flutter_secure_storage: "^3.0.0"
-  firebase_auth: "^0.5.7"
+  firebase_auth: "^0.5.10"
   qr_flutter: "^1.1.1"
   pub_mediator: "^1.0.1"
   camera: "^0.1.2"
