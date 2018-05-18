@@ -8,6 +8,57 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:783595274967:android:c3bbef3bb0e4f250",
+        "android_client_info": {
+          "package_name": "com.membershipme.lakeapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "783595274967-2kk12v5qvagm2505d1hr9klq7e59c126.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.membershipme.lakeapp",
+            "certificate_hash": "7bdb3753263371d54b9f66188e610ad17414f13e"
+          }
+        },
+        {
+          "client_id": "783595274967-p0o31slhi7dcj51h2iji51corqgmj81g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTyc1YfAO6DUXx8beAKUYl1VSD3AyZ6q0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "783595274967-q93nm0j8vs8tuvmh9dt4o3ticvhcvd2k.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.yourcompany.lakeApp"
+              }
+            },
+            {
+              "client_id": "783595274967-p0o31slhi7dcj51h2iji51corqgmj81g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:783595274967:android:b3dec98909ab3e96",
         "android_client_info": {
           "package_name": "com.yourcompany.lakeapp"
@@ -39,6 +90,13 @@
         "appinvite_service": {
           "status": 2,
           "other_platform_oauth_client": [
+            {
+              "client_id": "783595274967-q93nm0j8vs8tuvmh9dt4o3ticvhcvd2k.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.yourcompany.lakeApp"
+              }
+            },
             {
               "client_id": "783595274967-p0o31slhi7dcj51h2iji51corqgmj81g.apps.googleusercontent.com",
               "client_type": 3
