@@ -24,7 +24,7 @@ class FamilyWidget extends StatelessWidget {
                 style: myStyle.normalText(context)),
           ),
         ),
-        userInfo.isHead
+        userInfo.isHead == "true"
             ? new Align(
                 alignment: Alignment.bottomRight,
                 child: userInfo.family[index].invited == "v"

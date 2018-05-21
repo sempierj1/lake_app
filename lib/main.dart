@@ -390,6 +390,10 @@ class Loading extends State<LoadingState> {
       eventHandler.getSaved(userInfo.saved);
       Navigator.pushReplacementNamed(context, "/screen5");
     } else {
+      print(eventHandler.events);
+      print(weatherHandler.finished);
+      print(userInfo.user.photoUrl);
+      print(userInfo.imageProvider);
       count++;
       if (count > 10) {
         showDialog(
@@ -632,7 +636,7 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new DefaultTabController(
-        length: userInfo.isManager
+        length: userInfo.isManager == "true"
             ? choicesManager.length
             : userInfo.isBeach ? choicesBeach.length : choices.length,
         child: new Scaffold(
@@ -645,7 +649,7 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
             ),
             bottom: new TabBar(
               //isScrollable: true,
-              tabs: userInfo.isManager
+              tabs: userInfo.isManager == "true"
                   ? choicesManager.map((Choice choice) {
                       return new Tab(
                         text: choice.title,
@@ -668,7 +672,7 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
             ),
           ),
           body: new TabBarView(
-            children: userInfo.isManager
+            children: userInfo.isManager == "true"
                 ? choicesManager.map((Choice choice) {
                     return new Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -1135,7 +1139,7 @@ class ChoiceCard extends State<ChoiceState> {
               ),
               new Expanded(
                 child: new Column(children: <Widget>[
-                  new Text(userInfo.user.displayName,
+                  new Text(userInfo.user.displayName ?? "Test User",
                       textAlign: TextAlign.center,
                       style: new TextStyle(
                           fontFamily: 'Roboto', fontSize: myStyle.fontSize)),
@@ -1166,6 +1170,8 @@ class ChoiceCard extends State<ChoiceState> {
               alignment: Alignment.bottomCenter,
               child: new FlatButton(
                   onPressed: () {
+                    _controller.value = new TextEditingValue();
+                    _controller2.value = new TextEditingValue();
                     userInfo.signOut();
                     try {
                       Navigator.of(context, rootNavigator: true).pop(context);
@@ -1306,6 +1312,8 @@ class ChoiceCard extends State<ChoiceState> {
               alignment: Alignment.bottomCenter,
               child: new FlatButton(
                   onPressed: () {
+                    _controller.value = new TextEditingValue();
+                    _controller2.value = new TextEditingValue();
                     userInfo.signOut();
                     try {
                       Navigator.of(context, rootNavigator: true).pop(context);

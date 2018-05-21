@@ -64,21 +64,29 @@ class _QrScanner extends State<QrScanner> {
     DataSnapshot snapshot = await mainReference.once();
     DatabaseReference guestReference = FirebaseDatabase.instance.reference().child("users/" + barcode + "/guest");
     DataSnapshot guests = await guestReference.once();
-    print(guests);
-    Map family = snapshot.value['family'];
-    family[snapshot.value['name']] = "";
-    List familyList = new List();
-    family.forEach((key, value) {
-      familyList.add(key.toString());
-    });
-    familyList.sort();
 
-    for(int i = 0; i < guests.value; i++)
-      {
+    Map family = snapshot.value['family'];
+    List familyList = new List();
+    if (family != null){
+      family[snapshot.value['name']] = "";
+      family.forEach((key, value) {
+        familyList.add(key.toString());
+      });
+      familyList.sort();
+
+      for (int i = 0; i < guests.value; i++) {
         familyList.add("Guest " + (i + 1).toString());
       }
-    for (final i in familyList) {
-      values[i] = false;
+      for (final i in familyList) {
+        values[i] = false;
+      }
+    }
+    else
+    {
+      familyList.add(snapshot.value['name']);
+      for (final i in familyList) {
+        values[i] = false;
+      }
     }
     setState(() {
       this.children = new List.generate(

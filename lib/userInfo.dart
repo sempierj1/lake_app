@@ -15,8 +15,8 @@ class AppUserInfo {
   DatabaseReference userReference;
   DataSnapshot userSnapshot;
   DataSnapshot snapshot;
-  bool isHead;
-  bool isManager;
+  String isHead;
+  String isManager;
   String favorites;
   int badgeNumber;
   List<Family> family = new List<Family>();
@@ -41,7 +41,7 @@ class AppUserInfo {
         DeviceOrientation.landscapeRight
       ]);*/
       isBeach = true;
-      isManager = false;
+      isManager = "false";
     }
   }
 
@@ -78,21 +78,21 @@ class AppUserInfo {
           });
         }
         Map family = snapshot.value['family'];
-        family.forEach((key, value) async{
+        if(family != null) {
+          family.forEach((key, value) async {
             var url = 'https://membershipme.ddns.net/node/updateVerified';
             await http
                 .post(url,
                 body: {"uid": value, "name": user.displayName},
                 encoding: Encoding.getByName("utf-8"))
-                .then((response) {
-            });
+                .then((response) {});
           });
-
+        }
         getVars();
       } catch (e) {}
     }else if (user != null && user.email == "beachmanager@lake-parsippany.org"){
       isBeach = true;
-      isManager = false;
+      isManager = "false";
       await setFirstRun();
       await storeInfo(uName[0], p);
     }
@@ -169,8 +169,8 @@ class AppUserInfo {
     userReference = null;
     userSnapshot = null;
     snapshot = null;
-    isHead = false;
-    isManager = false;
+    isHead = "false";
+    isManager = "false";
     favorites = "";
     badgeNumber = 0;
     family = new List<Family>();
