@@ -366,6 +366,8 @@ class LoadingState extends StatefulWidget {
 class Loading extends State<LoadingState> {
   Loading();
 
+  int count = 0;
+
   @override
   void initState() {
     super.initState();
@@ -383,12 +385,34 @@ class Loading extends State<LoadingState> {
     if ((eventHandler.events != null &&
             weatherHandler.finished != null &&
             userInfo.user != null &&
-            userInfo.imageProvider != null) ||
+            userInfo.imageProvider != null)  ||
         (userInfo.isBeach)) {
       eventHandler.getSaved(userInfo.saved);
       Navigator.pushReplacementNamed(context, "/screen5");
-    } else
-      new Future.delayed(new Duration(seconds: 1), _menu);
+    } else {
+      count++;
+      if (count > 10) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) => new AlertDialog(
+                title: Text("Login Failed"),
+                content: Text("Login Failed - Try Again"),
+                actions: <Widget>[
+                  FlatButton(
+                      onPressed: () {
+                        Navigator.popAndPushNamed(context, "/screen3");
+                      },
+                      child: Text("Try Again",
+                          style: myStyle.smallFlatButton(context)))
+                ],
+              ),
+        );
+      }
+      else {
+        new Future.delayed(new Duration(seconds: 1), _menu);
+      }
+    }
   }
 
   @override
@@ -516,9 +540,9 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
     });
     _firebaseMessaging.subscribeToTopic("beach");
     _firebaseMessaging.configure(onLaunch: (Map<String, dynamic> message) {
-      goToWeather();
+
     }, onResume: (Map<String, dynamic> message) {
-      goToWeather();
+
     }, onMessage: (Map<String, dynamic> message) {
       showDialog(
         context: context,
@@ -538,9 +562,6 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
     });
   }
 
-  void goToWeather() {
-    Navigator.pushNamed(context, "/screen6");
-  }
 
   int changeCheck = 0;
 
@@ -1166,10 +1187,9 @@ class ChoiceCard extends State<ChoiceState> {
       );
     } else if (choice.title == "Manager") {
       return SingleChildScrollView(
-        child:
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
+          child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
           Row(
             children: <Widget>[
               Expanded(
@@ -1190,64 +1210,70 @@ class ChoiceCard extends State<ChoiceState> {
               )
             ],
           ),
-            new Align(
-            heightFactor: 3.2, child:
-          FlatButton(
-              onPressed: () async {
-                showDialog(
-                  context: context,
-                  barrierDismissible: true,
-                  builder: (BuildContext context) => new AlertDialog(
-                        title: weatherHandler.weatherClosure
-                            ? new Text("Open the Beach?")
-                            : new Text("Close the Beach?"),
-                        content: weatherHandler.weatherClosure
-                            ? new Text(
-                                "Are you sure you want to open the beach?")
-                            : new Text(
-                                'Are you sure you want to close the beach?'),
-                        actions: <Widget>[
-                          new FlatButton(
-                              onPressed: () async {
-                                showDialog(
-                                    context: context,
-                                    barrierDismissible: false,
-                                    builder: (BuildContext context) =>
-                                        new AlertDialog(
-                                          title: new Text("Sending Message"),
-                                          content: new Container(
-                                            height: 200.0,
-                                            child: new Center(
-                                              child: new SizedBox(
-                                                height: 50.0,
-                                                width: 50.0,
-                                                child:
-                                                    new CircularProgressIndicator(
-                                                  value: null,
-                                                  strokeWidth: 7.0,
+          new Align(
+            heightFactor: 3.2,
+            child: FlatButton(
+                onPressed: () async {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    builder: (BuildContext context) => new AlertDialog(
+                          title: weatherHandler.weatherClosure
+                              ? new Text("Open the Beach?")
+                              : new Text("Close the Beach?"),
+                          content: weatherHandler.weatherClosure
+                              ? new Text(
+                                  "Are you sure you want to open the beach?")
+                              : new Text(
+                                  'Are you sure you want to close the beach?'),
+                          actions: <Widget>[
+                            new FlatButton(
+                                onPressed: () async {
+                                  showDialog(
+                                      context: context,
+                                      barrierDismissible: false,
+                                      builder: (BuildContext context) =>
+                                          new AlertDialog(
+                                            title: new Text("Sending Message"),
+                                            content: new Container(
+                                              height: 200.0,
+                                              child: new Center(
+                                                child: new SizedBox(
+                                                  height: 50.0,
+                                                  width: 50.0,
+                                                  child:
+                                                      new CircularProgressIndicator(
+                                                    value: null,
+                                                    strokeWidth: 7.0,
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ));
-                                await serverFunctions
-                                    .closeBeach(weatherHandler.weatherClosure);
-                                Navigator.pop(context);
-                                Navigator.pop(context);
-                              },
-                              child: new Text("Confirm"))
-                        ],
-                      ),
-                );
-              },
-              child: weatherHandler.weatherClosure
-                  ? new Text(
-                      "Open Beach",
-                      style: myStyle.smallFlatButton(context), textAlign: TextAlign.center,
-                    )
-                  : new Text("Close Beach",
-                      style: myStyle.smallFlatButton(context), textAlign: TextAlign.center,)),
-            )],));
+                                          ));
+                                  await serverFunctions.closeBeach(
+                                      weatherHandler.weatherClosure);
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                },
+                                child: new Text("Confirm"))
+                          ],
+                        ),
+                  );
+                },
+                child: weatherHandler.weatherClosure
+                    ? new Text(
+                        "Open Beach",
+                        style: myStyle.smallFlatButton(context),
+                        textAlign: TextAlign.center,
+                      )
+                    : new Text(
+                        "Close Beach",
+                        style: myStyle.smallFlatButton(context),
+                        textAlign: TextAlign.center,
+                      )),
+          )
+        ],
+      ));
     } else if (choice.title == "Sign-In") {
       return new Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

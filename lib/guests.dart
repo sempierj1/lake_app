@@ -13,9 +13,11 @@ class Guest{
     guestSnapshot = await mainReference.once();
 
     Map numGuests = guestSnapshot.value;
-    guestNumber =  numGuests.length;
+    if(numGuests != null) {
+      guestNumber = numGuests.length;
 
-    return numGuests.length;
+      return numGuests.length;
+    }
   }
 
   getFamily() async
@@ -31,12 +33,13 @@ class Guest{
           badgeNums.add(k.split("-")[0]);
         }
     }
+    if(numGuests != null) {
+      numGuests.forEach((k, v) => sort(k));
 
-    numGuests.forEach((k,v)=> sort(k));
+      familyNumbers = badgeNums.length;
 
-    familyNumbers = badgeNums.length;
-
-    return badgeNums.length;
+      return badgeNums.length;
+    }
   }
 
 }

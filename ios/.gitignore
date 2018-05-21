@@ -38,7 +38,8 @@ Icon?
 /Flutter/Flutter.framework
 /Flutter/Generated.xcconfig
 /ServiceDefinitions.json
-
+/ios/Runner/GoogleService-Info.plist
+/android/app/google-services.json
 /lib/serverFunctions.dart
 
 Pods/
