@@ -43,10 +43,7 @@ class _QrScanner extends State<QrScanner> {
           ),
           body: new Center(
             child: new ListView(
-              children: children ??
-                  <Widget>[
-                    new Container(height: 0.0)
-                            ],
+              children: children ?? <Widget>[new Container(height: 0.0)],
             ),
           )),
     );
@@ -62,12 +59,14 @@ class _QrScanner extends State<QrScanner> {
     DatabaseReference mainReference =
         FirebaseDatabase.instance.reference().child("users/" + barcode);
     DataSnapshot snapshot = await mainReference.once();
-    DatabaseReference guestReference = FirebaseDatabase.instance.reference().child("users/" + barcode + "/guest");
+    DatabaseReference guestReference = FirebaseDatabase.instance
+        .reference()
+        .child("users/" + barcode + "/guest");
     DataSnapshot guests = await guestReference.once();
 
     Map family = snapshot.value['family'];
     List familyList = new List();
-    if (family != null){
+    if (family != null) {
       family[snapshot.value['name']] = "";
       family.forEach((key, value) {
         familyList.add(key.toString());
@@ -80,9 +79,7 @@ class _QrScanner extends State<QrScanner> {
       for (final i in familyList) {
         values[i] = false;
       }
-    }
-    else
-    {
+    } else {
       familyList.add(snapshot.value['name']);
       for (final i in familyList) {
         values[i] = false;
@@ -136,88 +133,115 @@ class _CheckInWidget extends State<CheckInWidget> {
     }
     return new Column(children: <Widget>[
       new Row(children: <Widget>[
-      new Expanded(
-        child: new Container(
-          padding: new EdgeInsets.only(left: 25.0, top: 25.0),
-          child: new Align(
-              alignment: Alignment.centerLeft,
-              child: new Text(family[index],
-                  style: new TextStyle(fontFamily: 'Roboto', fontSize: 20.0))),
+        new Expanded(
+          child: new Container(
+            padding: new EdgeInsets.only(left: 25.0, top: 25.0),
+            child: new Align(
+                alignment: Alignment.centerLeft,
+                child: new Text(family[index],
+                    style:
+                        new TextStyle(fontFamily: 'Roboto', fontSize: 20.0))),
+          ),
         ),
-      ),
-      new Expanded(
-          child: isGuest ? new Container(width: 50.0) : isPic
-              ? new FutureBuilder(
-                  future: ref.getDownloadURL(),
-                  builder: (BuildContext context, AsyncSnapshot url) {
-                    if (url.hasData) {
-                      if (url.data != null) {
-                        return new Container(
-                            padding: new EdgeInsets.only(top: 25.0),
-                            child: new Center(
-                                child: new GestureDetector(onTap: (){
-                                  List<String> tempList = new List();
-                                  tempList.add(family[index]);
-                                  tempList.add(barcode);
-                                  Navigator.push(
-                                      context,
-                                      new MaterialPageRoute(
-                                          builder: (context) =>
-                                          new CameraState(
-                                              list: tempList)));
-                                }, child: new CircleAvatar(
-                              backgroundImage: new NetworkImage(url.data),
-                              radius: 50.0,
-                            ))));
-                      }
-                    } else {
-                      return Container(
-                          padding: new EdgeInsets.only(top: 25.0),
-                          child: new Center(
-                              child: new IconButton(
-                                  icon: new Icon(Icons.add_a_photo),
-                                  iconSize: 50.0,
-                                  onPressed: () async {
-                                    List<String> tempList = new List();
-                                    tempList.add(family[index]);
-                                    tempList.add(barcode);
-                                    Navigator.push(
-                                        context,
-                                        new MaterialPageRoute(
-                                            builder: (context) =>
-                                                new CameraState(
-                                                    list: tempList)));
-                                  })));
+        new Expanded(
+            child: isGuest
+                ? new Container(width: 50.0)
+                : isPic
+                    ? new FutureBuilder(
+                        future: ref.getDownloadURL(),
+                        builder: (BuildContext context, AsyncSnapshot url) {
+                          if (url.hasData) {
+                            if (url.data != null) {
+                              return new Container(
+                                  padding: new EdgeInsets.only(top: 25.0),
+                                  child: new Center(
+                                      child: new GestureDetector(
+                                          onTap: () {
+                                            List<String> tempList = new List();
+                                            tempList.add(family[index]);
+                                            tempList.add(barcode);
+                                            Navigator.push(
+                                                context,
+                                                new MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        new CameraState(
+                                                            list: tempList)));
+                                          },
+                                          child: new CircleAvatar(
+                                            backgroundImage:
+                                                new NetworkImage(url.data),
+                                            radius: 50.0,
+                                          ))));
+                            }
+                          } else {
+                            return Container(
+                                padding: new EdgeInsets.only(top: 25.0),
+                                child: new Center(
+                                    child: new IconButton(
+                                        icon: new Icon(Icons.add_a_photo),
+                                        iconSize: 50.0,
+                                        onPressed: () async {
+                                          List<String> tempList = new List();
+                                          tempList.add(family[index]);
+                                          tempList.add(barcode);
+                                          Navigator.push(
+                                              context,
+                                              new MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      new CameraState(
+                                                          list: tempList)));
+                                        })));
+                          }
+                        })
+                    : new Container(height: 0.0)),
+        new Expanded(
+            child: new Container(
+                padding: new EdgeInsets.only(right: 25.0, top: 25.0),
+                child: new Align(
+                    alignment: Alignment.centerRight,
+                    child: new Checkbox(
+                        value: values[family[index]],
+                        onChanged: (bool newValue) {
+                          setState(() {
+                            values[family[index]] = newValue;
+                          });
+                        })))),
+      ]),
+      index == family.length - 1
+          ? new Container(
+              padding: new EdgeInsets.only(top: 45.0),
+              child: new RaisedButton(
+                onPressed: () async {
+                  DatabaseReference checkInReference = FirebaseDatabase.instance
+                      .reference()
+                      .child("beachCheckIn/" +
+                          new DateTime.now().year.toString() +
+                          "/" +
+                          new DateTime.now().month.toString() +
+                          "/" +
+                          new DateTime.now().day.toString());
+                  DatabaseReference badgeReference = FirebaseDatabase.instance
+                      .reference()
+                      .child("users/" + barcode + "/badge");
+                  DataSnapshot badgeNumber = await badgeReference.once();
+                  for (final i in family) {
+                    if (values[i] == true) {
+                      await checkInReference.update({
+                        badgeNumber.value.toString() + "-" + i:
+                            new DateTime.now().hour.toString() +
+                                ":" +
+                                new DateTime.now().minute.toString()
+                      });
                     }
-                  })
-              : new Container(height: 0.0)),
-      new Expanded(child: new Container(
-    padding: new EdgeInsets.only(right: 25.0, top: 25.0),
-    child: new Align(
-    alignment: Alignment.centerRight, child: new Checkbox(value: values[family[index]], onChanged: (bool newValue){
-        setState(() {
-            values[family[index]] = newValue;
-        });
-      })))),
-
-    ]),
-      index == family.length - 1 ?
-      new Container(
-          padding: new EdgeInsets.only(top: 45.0), child:
-      new RaisedButton(onPressed: () async{
-        DatabaseReference checkInReference = FirebaseDatabase.instance.reference().child("beachCheckIn/" + new DateTime.now().year.toString() + "/"+ new DateTime.now().month.toString() + "/" + new DateTime.now().day.toString());
-        DatabaseReference badgeReference = FirebaseDatabase.instance.reference().child("users/" + barcode + "/badge");
-        DataSnapshot badgeNumber = await badgeReference.once();
-        for(final i in family)
-        {
-          if(values[i] == true)
-          {
-            await checkInReference.update({badgeNumber.value.toString() + "-" + i: new DateTime.now().hour.toString() + ":" +  new DateTime.now().minute.toString()});
-          }
-        }
-        Navigator
-            .of(context, rootNavigator: true)
-            .pushNamed("/screen6");
-      }, child: new Text("Check In"), color: Colors.lightBlue,)) :  new Container(height: 0.0)]);
+                  }
+                  Navigator
+                      .of(context, rootNavigator: true)
+                      .pushNamed("/screen6");
+                },
+                child: new Text("Check In"),
+                color: Colors.lightBlue,
+              ))
+          : new Container(height: 0.0)
+    ]);
   }
 }

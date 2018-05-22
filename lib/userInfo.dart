@@ -27,7 +27,6 @@ class AppUserInfo {
   bool isBeach = false;
   bool signedIn = false;
 
-
   Future handleSignInMain() async {
     final storage = new FlutterSecureStorage();
     String uName = await storage.read(key: "username");
@@ -46,63 +45,61 @@ class AppUserInfo {
   }
 
   Future<FirebaseUser> handleSignIn(String u, String p) async {
-
-
     try {
       List<String> uName = u.split(" ");
       user = await _auth.signInWithEmailAndPassword(
         email: uName[0],
         password: p,
       );
-    if (user != null && user.email != "beachmanager@lake-parsippany.org") {
-      await setFirstRun();
-      await storeInfo(uName[0], p);
-      try {
-        mainReference =
-            FirebaseDatabase.instance.reference().child("users/" + user.uid);
-        mainReference.update({"email": uName[0]});
-        snapshot = await mainReference.once();
-        if (snapshot.value['firstLogin'] == "true") {
-          mainReference.update({'firstLogin': "false"});
-          var url = 'https://membershipme.ddns.net/node/emailVerified';
-          await http
-              .post(url,
-              body: {
-                "email": uName[0],
-              },
-              encoding: Encoding.getByName("utf-8"))
-              .then((response) async {
-            if (response.body.toString() != "Done") {
-              return false;
-            }
-          });
-        }
-        Map family = snapshot.value['family'];
-        if(family != null) {
-          family.forEach((key, value) async {
-            var url = 'https://membershipme.ddns.net/node/updateVerified';
+      if (user != null && user.email != "beachmanager@lake-parsippany.org") {
+        await setFirstRun();
+        await storeInfo(uName[0], p);
+        try {
+          mainReference =
+              FirebaseDatabase.instance.reference().child("users/" + user.uid);
+          mainReference.update({"email": uName[0]});
+          snapshot = await mainReference.once();
+          if (snapshot.value['firstLogin'] == "true") {
+            mainReference.update({'firstLogin': "false"});
+            var url = 'https://membershipme.ddns.net/node/emailVerified';
             await http
                 .post(url,
-                body: {"uid": value, "name": user.displayName},
-                encoding: Encoding.getByName("utf-8"))
-                .then((response) {});
-          });
-        }
-        getVars();
-      } catch (e) {}
-    }else if (user != null && user.email == "beachmanager@lake-parsippany.org"){
-      isBeach = true;
-      isManager = "false";
-      await setFirstRun();
-      await storeInfo(uName[0], p);
-    }
-    } catch (e) {
-    }
+                    body: {
+                      "email": uName[0],
+                    },
+                    encoding: Encoding.getByName("utf-8"))
+                .then((response) async {
+              if (response.body.toString() != "Done") {
+                return false;
+              }
+            });
+          }
+          Map family = snapshot.value['family'];
+          if (family != null) {
+            family.forEach((key, value) async {
+              var url = 'https://membershipme.ddns.net/node/updateVerified';
+              await http
+                  .post(url,
+                      body: {"uid": value, "name": user.displayName},
+                      encoding: Encoding.getByName("utf-8"))
+                  .then((response) {});
+            });
+          }
+          getVars();
+        } catch (e) {}
+      } else if (user != null &&
+          user.email == "beachmanager@lake-parsippany.org") {
+        isBeach = true;
+        isManager = "false";
+        await setFirstRun();
+        await storeInfo(uName[0], p);
+      }
+    } catch (e) {}
 
     return user;
   }
 
-  void getVars() async{
+  void getVars() async {
     userReference =
         FirebaseDatabase.instance.reference().child("users/" + user.uid);
     userSnapshot = await userReference.once();
@@ -135,7 +132,6 @@ class AppUserInfo {
     family.add(new Family(key, value));
   }
 
-
   setFirstRun() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('firstRun', false);
@@ -150,12 +146,13 @@ class AppUserInfo {
   }
 
   toggleFavorite(String f) {
-    mainReference =
-        FirebaseDatabase.instance.reference().child("users/" + userInfo.user.uid);
+    mainReference = FirebaseDatabase.instance
+        .reference()
+        .child("users/" + userInfo.user.uid);
     mainReference.update({"favorites": f.toString()});
   }
 
-  signOut() async{
+  signOut() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('firstRun', true);
 
@@ -181,7 +178,4 @@ class AppUserInfo {
     isBeach = false;
     signedIn = false;
   }
-
 }
-
-

@@ -56,8 +56,9 @@ class FamilyWidget extends StatelessWidget {
                                         new FlatButton(
                                             child: new Text('Invite'),
                                             onPressed: () async {
-                                              await serverFunctions.createUser(
-                                                      _controller, index, userInfo.user.uid)
+                                              await serverFunctions
+                                                  .createUser(_controller,
+                                                      index, userInfo.user.uid)
                                                   .then((FirebaseUser user) {
                                                 if (user != null) {
                                                   Navigator
@@ -139,7 +140,8 @@ class FamilyWidget extends StatelessWidget {
                                         new FlatButton(
                                             child: new Text('Yes'),
                                             onPressed: () async {
-                                              await serverFunctions.deleteUser(index)
+                                              await serverFunctions
+                                                  .deleteUser(index)
                                                   .then((value) {
                                                 if (value) {
                                                   Navigator
