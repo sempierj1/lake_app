@@ -962,7 +962,7 @@ class ChoiceCard extends State<ChoiceState> {
                       child: new Text(alertText,
                           textAlign: TextAlign.center,
                           style: new TextStyle(
-                              fontSize: myStyle.fontSize, fontFamily: "Alert")),
+                              fontSize: widthApp > 700 ? 20.0: myStyle.fontSize, fontFamily: "Alert")),
                     ),
                   ),
                   new Container(
@@ -1091,7 +1091,7 @@ class ChoiceCard extends State<ChoiceState> {
                           new ListTile(
                             leading: new Text((shown[index]['eventDate']),
                                 style: new TextStyle(
-                                    fontSize: widthApp > 600 ? 25.0 :
+                                    fontSize: widthApp > 600 ? 12.0 :
                                         myStyle.fontSize * (widthApp / 755))),
                             title: new Text(
                               (shown[index]['eventName']).toString(),
