@@ -65,7 +65,7 @@ PODS:
     - FirebaseCore (~> 5.0)
     - GTMSessionFetcher/Core (~> 1.1)
   - Flutter (1.0.0)
-  - flutter_secure_storage (3.0.0):
+  - flutter_secure_storage (3.1.0):
     - Flutter
   - GoogleToolboxForMac/Defines (2.1.4)
   - GoogleToolboxForMac/Logger (2.1.4):
@@ -171,7 +171,7 @@ SPEC CHECKSUMS:
   FirebaseMessaging: f2360a966ecfb0d14facf0fbdf306efc2df0ddbe
   FirebaseStorage: 7ca4bb7b58a25fa647b04f524033fc7cb7eb272b
   Flutter: 9d0fac939486c9aba2809b7982dfdbb47a7b0296
-  flutter_secure_storage: 294dc6fe9a6ae15cdeae9807a68a779b5cbec27d
+  flutter_secure_storage: d4325a21207f620bfb3bf48068f04b71df269f93
   GoogleToolboxForMac: 91c824d21e85b31c2aae9bb011c5027c9b4e738f
   GTMSessionFetcher: 5fa5b80fd20e439ef5f545fb2cb3ca6c6714caa2
   image_picker: ee00aab0487cedc80a304085219503cc6d0f2e22
