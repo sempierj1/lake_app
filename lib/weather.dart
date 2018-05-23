@@ -11,7 +11,6 @@ class Weather {
   bool finished;
 
   getWeather() async {
-    print("MADE IT");
     mainReference = FirebaseDatabase.instance.reference().child("beach status");
     statusSnapshot = await mainReference.once();
     beachOpen = statusSnapshot.value == "open" ? true : false;

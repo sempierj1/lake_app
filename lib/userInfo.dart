@@ -8,18 +8,16 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:http/http.dart' as http;
 import 'family.dart';
 import 'main.dart';
-import 'package:flutter/services.dart';
 
 class AppUserInfo {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
   DatabaseReference mainReference;
   DatabaseReference userReference;
   DataSnapshot userSnapshot;
   DataSnapshot snapshot;
-  bool isHead;
-  bool isManager;
-  bool favorites;
+  String isHead;
+  String isManager;
+  String favorites;
   int badgeNumber;
   List<Family> family = new List<Family>();
   Map familyList;
@@ -28,7 +26,6 @@ class AppUserInfo {
   List<int> saved = new List();
   bool isBeach = false;
   bool signedIn = false;
-
 
   Future handleSignInMain() async {
     final storage = new FlutterSecureStorage();
@@ -43,59 +40,66 @@ class AppUserInfo {
         DeviceOrientation.landscapeRight
       ]);*/
       isBeach = true;
-      isManager = false;
+      isManager = "false";
     }
   }
 
   Future<FirebaseUser> handleSignIn(String u, String p) async {
-
-
     try {
       List<String> uName = u.split(" ");
       user = await _auth.signInWithEmailAndPassword(
         email: uName[0],
         password: p,
       );
-    if (user != null && user.email != "beachmanager@lake-parsippany.org") {
-      await setFirstRun();
-      await storeInfo(uName[0], p);
-      try {
-        mainReference =
-            FirebaseDatabase.instance.reference().child("users/" + user.uid);
-        mainReference.update({"email": uName[0]});
-        snapshot = await mainReference.once();
-        if (snapshot.value['firstLogin'] == "true") {
-          mainReference.update({'firstLogin': "false"});
-          var url = 'https://membershipme.ddns.net/node/emailVerified';
-          await http
-              .post(url,
-              body: {
-                "email": uName[0],
-              },
-              encoding: Encoding.getByName("utf-8"))
-              .then((response) async {
-            if (response.body.toString() != "Done") {
-              return false;
-            }
-          });
-        }
-        Map family = snapshot.value['family'];
-        family.forEach(updateVerified);
-        getVars();
-      } catch (e) {}
-    }else if (user != null && user.email == "beachmanager@lake-parsippany.org"){
-      isBeach = true;
-      isManager = false;
-      await setFirstRun();
-      await storeInfo(uName[0], p);
-    }
-    } catch (e) {
-    }
+      if (user != null && user.email != "beachmanager@lake-parsippany.org") {
+        await setFirstRun();
+        await storeInfo(uName[0], p);
+        try {
+          mainReference =
+              FirebaseDatabase.instance.reference().child("users/" + user.uid);
+          mainReference.update({"email": uName[0]});
+          snapshot = await mainReference.once();
+          if (snapshot.value['firstLogin'] == "true") {
+            mainReference.update({'firstLogin': "false"});
+            var url = 'https://membershipme.ddns.net/node/emailVerified';
+            await http
+                .post(url,
+                    body: {
+                      "email": uName[0],
+                    },
+                    encoding: Encoding.getByName("utf-8"))
+                .then((response) async {
+              if (response.body.toString() != "Done") {
+                return false;
+              }
+            });
+          }
+          Map family = snapshot.value['family'];
+          if (family != null) {
+            family.forEach((key, value) async {
+              var url = 'https://membershipme.ddns.net/node/updateVerified';
+              await http
+                  .post(url,
+                      body: {"uid": value, "name": user.displayName},
+                      encoding: Encoding.getByName("utf-8"))
+                  .then((response) {});
+            });
+          }
+          getVars();
+        } catch (e) {}
+      } else if (user != null &&
+          user.email == "beachmanager@lake-parsippany.org") {
+        isBeach = true;
+        isManager = "false";
+        await setFirstRun();
+        await storeInfo(uName[0], p);
+      }
+    } catch (e) {}
 
     return user;
   }
 
-  void getVars() async{
+  void getVars() async {
     userReference =
         FirebaseDatabase.instance.reference().child("users/" + user.uid);
     userSnapshot = await userReference.once();
@@ -103,7 +107,7 @@ class AppUserInfo {
     familyList = userSnapshot.value['family'];
     isHead = userSnapshot.value['isHead'];
     isManager = userSnapshot.value['isManager'];
-    favorites = userSnapshot.value['favorites'] == "true";
+    favorites = userSnapshot.value['favorites'];
     badgeNumber = userSnapshot.value['badge'];
 
     try {
@@ -124,17 +128,9 @@ class AppUserInfo {
     signedIn = true;
   }
 
-  void updateVerified(key, value) {
-    try {
-      mainReference = FirebaseDatabase.instance.reference().child("users/" + key);
-      mainReference.child("/family/").update({user.displayName: "v"});
-    } catch (e) {}
-  }
-
   void createFamily(key, value) {
     family.add(new Family(key, value));
   }
-
 
   setFirstRun() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -149,13 +145,14 @@ class AppUserInfo {
     storage.write(key: "password", value: pass);
   }
 
-  toggleFavorite(bool f) {
-    mainReference =
-        FirebaseDatabase.instance.reference().child("users/" + userInfo.user.uid);
+  toggleFavorite(String f) {
+    mainReference = FirebaseDatabase.instance
+        .reference()
+        .child("users/" + userInfo.user.uid);
     mainReference.update({"favorites": f.toString()});
   }
 
-  signOut() async{
+  signOut() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('firstRun', true);
 
@@ -169,9 +166,9 @@ class AppUserInfo {
     userReference = null;
     userSnapshot = null;
     snapshot = null;
-    isHead = false;
-    isManager = false;
-    favorites = false;
+    isHead = "false";
+    isManager = "false";
+    favorites = "";
     badgeNumber = 0;
     family = new List<Family>();
     familyList = null;
@@ -181,7 +178,4 @@ class AppUserInfo {
     isBeach = false;
     signedIn = false;
   }
-
 }
-
-

@@ -1,4 +1,4 @@
-package com.yourcompany.lakeapp;
+package com.membershipme.lakeapp;
 
 import android.os.Bundle;
 
