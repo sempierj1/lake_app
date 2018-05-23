@@ -36,22 +36,18 @@ class Events {
     int day = new DateTime.now().day;
     for (int i = 0; i < events.length; i++) {
       List tempTime = events[i]['startTime'].split(":");
-      if(int.parse(tempTime[0]) > 12)
-      {
+      if (int.parse(tempTime[0]) > 12) {
         tempTime[0] = (int.parse(tempTime[0]) - 12).toString();
         events[i]['startTime'] = tempTime[0] + ":" + tempTime[1];
         events[i]['time'] = "PM";
-      }
-      else
-      {
+      } else {
         events[i]['time'] = "AM";
       }
 
-      if(events[i]['startTime'] == "00:00")
-        {
-          events[i]['startTime'] = "";
-          events[i]['time'] = "";
-        }
+      if (events[i]['startTime'] == "00:00") {
+        events[i]['startTime'] = "";
+        events[i]['time'] = "";
+      }
       if (int.parse(events[i]['eventDate'].toString().split("-")[0]) > month) {
         current.add(events[i]);
         switch (events[i]['tag']) {
@@ -68,7 +64,6 @@ class Events {
             sports.add(events[i]);
             break;
         }
-
       } else if (int.parse(events[i]['eventDate'].toString().split("-")[0]) ==
               month &&
           int.parse(events[i]['eventDate'].toString().split("-")[1]) >= day) {
@@ -91,16 +86,14 @@ class Events {
     }
   }
 
-  getSaved(List saved)
-  {
-    for(int i = 0; i < events.length; i++)
-      {
-        if(saved.contains(i))
-          {
-            favorites.add(events[i]);
-          }
+  getSaved(List saved) {
+    for (int i = 0; i < events.length; i++) {
+      if (saved.contains(i)) {
+        favorites.add(events[i]);
       }
+    }
   }
+
   setChosen(String v) {
     chosen = v;
     switch (v) {
@@ -133,25 +126,25 @@ class Events {
     String eventsSnap = eventSnapshot.value['events'];
     if (type == "add") {
       favorites.add(event);
-      mainReference.update({"events": eventsSnap + event['eventNum'].toString() + "/"});
+      mainReference
+          .update({"events": eventsSnap + event['eventNum'].toString() + "/"});
     } else {
       try {
         favorites.remove(event);
+      } catch (e) {
+        print("error");
+        eventsShown = favorites;
       }
-      catch (e)
-    {
-      print("error");
-      eventsShown = favorites;
-    }
-      if(chosen == "Favorites Only")
-        {
-          eventsShown = favorites;
-        }
-      String newEvents = eventsSnap.replaceAll("/" + event['eventNum'].toString() + "/", "/");
+      if (chosen == "Favorites Only") {
+        eventsShown = favorites;
+      }
+      String newEvents =
+          eventsSnap.replaceAll("/" + event['eventNum'].toString() + "/", "/");
       newEvents = eventsSnap.replaceAll(event['eventNum'].toString() + "/", "");
       mainReference.update({"events": newEvents});
     }
-    favorites.sort((a, b) => int.parse(a['eventDate'].toString().replaceAll("-", "")).compareTo(int.parse(b['eventDate'].toString().replaceAll("-", ""))));
-
+    favorites.sort((a, b) => int
+        .parse(a['eventDate'].toString().replaceAll("-", ""))
+        .compareTo(int.parse(b['eventDate'].toString().replaceAll("-", ""))));
   }
 }
