@@ -87,9 +87,11 @@ class Events {
   }
 
   getSaved(List saved) {
-    for (int i = 0; i < events.length; i++) {
-      if (saved.contains(i)) {
-        favorites.add(events[i]);
+    if(events!=null) {
+      for (int i = 0; i < events.length; i++) {
+        if (saved.contains(i)) {
+          favorites.add(events[i]);
+        }
       }
     }
   }

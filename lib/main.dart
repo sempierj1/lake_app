@@ -568,6 +568,8 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   /*
   Database listeners are set to update information shown on the various tabs in real time.
    */
+
+
   DateTime date = new DateTime.now();
   final DatabaseReference listenerReference = userInfo.isBeach
       ? null
