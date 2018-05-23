@@ -1089,7 +1089,7 @@ class ChoiceCard extends State<ChoiceState> {
                           new ListTile(
                             leading: new Text((shown[index]['eventDate']),
                                 style: new TextStyle(
-                                    fontSize:
+                                    fontSize: widthApp > 600 ? 25.0 :
                                         myStyle.fontSize * (widthApp / 755))),
                             title: new Text(
                               (shown[index]['eventName']).toString(),
