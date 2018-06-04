@@ -96,7 +96,7 @@ class ServerFunctions {
   }
 
   Future deleteUser(int index) async {
-    var url = 'https://membershipme.ddns.net/node';
+    var url = 'https://membershipme.ddns.net/node/removeUser';
     var success = false;
     await http
         .post(url,
