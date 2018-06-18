@@ -18,10 +18,63 @@ class Guest {
     guestSnapshot = await mainReference.once();
 
     Map numGuests = guestSnapshot.value;
+    int guestCount = 0;
+    int others = 0;
     if (numGuests != null) {
-      guestNumber = numGuests.length;
 
-      return numGuests.length;
+      if(guestSnapshot.value['10-11'] != null)
+        {
+          others++;
+        }
+        if(guestSnapshot.value['11-12'] != null)
+          {
+            others++;
+          }
+      if(guestSnapshot.value['12-1'] != null)
+      {
+        others++;
+      }
+      if(guestSnapshot.value['1-2'] != null)
+      {
+        others++;
+      }
+      if(guestSnapshot.value['2-3'] != null)
+      {
+        others++;
+      }
+      if(guestSnapshot.value['3-4'] != null)
+      {
+        others++;
+      }
+      if(guestSnapshot.value['4-5'] != null)
+      {
+        others++;
+      }
+      if(guestSnapshot.value['5-6'] != null)
+      {
+        others++;
+      }
+      if(guestSnapshot.value['6-7'] != null)
+      {
+        others++;
+      }
+      if(guestSnapshot.value['raw'] !=null)
+        {
+          others++;
+        }
+    void count(key, value)
+      {
+        try {
+          guestCount += numGuests[key].length;
+        }
+        catch (e)
+        {
+          guestCount++;
+        }
+      }
+     numGuests.forEach(count);
+      guestNumber = guestCount - others;
+      return guestNumber;
     }
   }
 
@@ -35,20 +88,52 @@ class Guest {
             date.day.toString());
     guestSnapshot = await mainReference.once();
     Map numGuests = guestSnapshot.value;
-    List badgeNums = new List();
-
-    sort(String k) {
-      if (!badgeNums.contains(k.split("-")[0])) {
-        badgeNums.add(k.split("-")[0]);
+    int others = 0;
+    if(numGuests != null)
+      {
+        if(guestSnapshot.value['10-11'] != null)
+        {
+          others++;
+        }
+        if(guestSnapshot.value['11-12'] != null)
+        {
+          others++;
+        }
+        if(guestSnapshot.value['12-1'] != null)
+        {
+          others++;
+        }
+        if(guestSnapshot.value['1-2'] != null)
+        {
+          others++;
+        }
+        if(guestSnapshot.value['2-3'] != null)
+        {
+          others++;
+        }
+        if(guestSnapshot.value['3-4'] != null)
+        {
+          others++;
+        }
+        if(guestSnapshot.value['4-5'] != null)
+        {
+          others++;
+        }
+        if(guestSnapshot.value['5-6'] != null)
+        {
+          others++;
+        }
+        if(guestSnapshot.value['6-7'] != null)
+        {
+          others++;
+        }
+        if(guestSnapshot.value['raw'] !=null)
+        {
+          others++;
+        }
       }
-    }
+      familyNumbers = numGuests.length - others;
+    return familyNumbers;
 
-    if (numGuests != null) {
-      numGuests.forEach((k, v) => sort(k));
-
-      familyNumbers = badgeNums.length;
-
-      return badgeNums.length;
-    }
   }
 }

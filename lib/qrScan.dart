@@ -264,79 +264,150 @@ class _CheckInWidget extends State<CheckInWidget> {
                   switch (new DateTime.now().hour) {
                     case 10:
                       {
-                        int tempVal =
-                            int.parse(countSnapShot.value['10-11']) ?? 0;
+                        int tempVal;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['10-11']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
                         tempVal += count;
                         await countReference.update({'10-11': tempVal});
                         break;
                       }
                     case 11:
                       {
-                        int tempVal =
-                            int.parse(countSnapShot.value['11-12']) ?? 0;
+                        int tempVal;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['11-12']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
                         tempVal += count;
                         await countReference.update({'11-12': tempVal});
                         break;
                       }
                     case 12:
                       {
-                        int tempVal =
-                            int.parse(countSnapShot.value['12-1']) ?? 0;
+                        int tempVal;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['12-1']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
                         tempVal += count;
                         await countReference.update({'12-1': tempVal});
                         break;
                       }
                     case 13:
                       {
-                        int tempVal =
-                            int.parse(countSnapShot.value['1-2']) ?? 0;
+                        int tempVal;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['1-2']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
                         tempVal += count;
                         await countReference.update({'1-2': tempVal});
                         break;
                       }
                     case 14:
                       {
-                        int tempVal =
-                            int.parse(countSnapShot.value['2-3']) ?? 0;
+                        int tempVal;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['2-3']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
                         tempVal += count;
                         await countReference.update({'2-3': tempVal});
                         break;
                       }
                     case 15:
                       {
-                        int tempVal =
-                            int.parse(countSnapShot.value['3-4']) ?? 0;
+                        int tempVal;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['3-4']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
                         tempVal += count;
                         await countReference.update({'3-4': tempVal});
                         break;
                       }
                     case 16:
                       {
-                        int tempVal =
-                            int.parse(countSnapShot.value['4-5']) ?? 0;
+                        int tempVal;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['4-5']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
                         tempVal += count;
                         await countReference.update({'4-5': tempVal});
                         break;
                       }
                     case 17:
                       {
-                        int tempVal =
-                            int.parse(countSnapShot.value['5-6']) ?? 0;
+                        int tempVal;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['5-6']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
                         tempVal += count;
                         await countReference.update({'5-6': tempVal});
                         break;
                       }
                     case 18:
                       {
-                        int tempVal =
-                            int.parse(countSnapShot.value['6-7']) ?? 0;
+                        int tempVal;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['6-7']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
                         tempVal += count;
                         await countReference.update({'6-7': tempVal});
                         break;
                       }
+                    default:{}
                   }
-                  int tempRawCount = int.parse(countSnapShot.value['raw']) ?? 0;
-                  tempRawCount+= count;
+                  int tempRawCount;
+                  try {
+                    tempRawCount = (countSnapShot.value['raw']);
+                  }
+                  catch (e)
+                  {
+                    tempRawCount = 0;
+                  }
+                  tempRawCount += count;
                   await countReference.update({'raw': tempRawCount});
 
                   Navigator
