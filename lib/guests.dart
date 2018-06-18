@@ -21,58 +21,45 @@ class Guest {
     int guestCount = 0;
     int others = 0;
     if (numGuests != null) {
-
-      if(guestSnapshot.value['10-11'] != null)
-        {
-          others++;
-        }
-        if(guestSnapshot.value['11-12'] != null)
-          {
-            others++;
-          }
-      if(guestSnapshot.value['12-1'] != null)
-      {
+      if (guestSnapshot.value['10-11'] != null) {
         others++;
       }
-      if(guestSnapshot.value['1-2'] != null)
-      {
+      if (guestSnapshot.value['11-12'] != null) {
         others++;
       }
-      if(guestSnapshot.value['2-3'] != null)
-      {
+      if (guestSnapshot.value['12-1'] != null) {
         others++;
       }
-      if(guestSnapshot.value['3-4'] != null)
-      {
+      if (guestSnapshot.value['1-2'] != null) {
         others++;
       }
-      if(guestSnapshot.value['4-5'] != null)
-      {
+      if (guestSnapshot.value['2-3'] != null) {
         others++;
       }
-      if(guestSnapshot.value['5-6'] != null)
-      {
+      if (guestSnapshot.value['3-4'] != null) {
         others++;
       }
-      if(guestSnapshot.value['6-7'] != null)
-      {
+      if (guestSnapshot.value['4-5'] != null) {
         others++;
       }
-      if(guestSnapshot.value['raw'] !=null)
-        {
-          others++;
-        }
-    void count(key, value)
-      {
+      if (guestSnapshot.value['5-6'] != null) {
+        others++;
+      }
+      if (guestSnapshot.value['6-7'] != null) {
+        others++;
+      }
+      if (guestSnapshot.value['raw'] != null) {
+        others++;
+      }
+      void count(key, value) {
         try {
           guestCount += numGuests[key].length;
-        }
-        catch (e)
-        {
+        } catch (e) {
           guestCount++;
         }
       }
-     numGuests.forEach(count);
+
+      numGuests.forEach(count);
       guestNumber = guestCount - others;
       return guestNumber;
     }
@@ -89,51 +76,39 @@ class Guest {
     guestSnapshot = await mainReference.once();
     Map numGuests = guestSnapshot.value;
     int others = 0;
-    if(numGuests != null)
-      {
-        if(guestSnapshot.value['10-11'] != null)
-        {
-          others++;
-        }
-        if(guestSnapshot.value['11-12'] != null)
-        {
-          others++;
-        }
-        if(guestSnapshot.value['12-1'] != null)
-        {
-          others++;
-        }
-        if(guestSnapshot.value['1-2'] != null)
-        {
-          others++;
-        }
-        if(guestSnapshot.value['2-3'] != null)
-        {
-          others++;
-        }
-        if(guestSnapshot.value['3-4'] != null)
-        {
-          others++;
-        }
-        if(guestSnapshot.value['4-5'] != null)
-        {
-          others++;
-        }
-        if(guestSnapshot.value['5-6'] != null)
-        {
-          others++;
-        }
-        if(guestSnapshot.value['6-7'] != null)
-        {
-          others++;
-        }
-        if(guestSnapshot.value['raw'] !=null)
-        {
-          others++;
-        }
+    if (numGuests != null) {
+      if (guestSnapshot.value['10-11'] != null) {
+        others++;
       }
-      familyNumbers = numGuests.length - others;
+      if (guestSnapshot.value['11-12'] != null) {
+        others++;
+      }
+      if (guestSnapshot.value['12-1'] != null) {
+        others++;
+      }
+      if (guestSnapshot.value['1-2'] != null) {
+        others++;
+      }
+      if (guestSnapshot.value['2-3'] != null) {
+        others++;
+      }
+      if (guestSnapshot.value['3-4'] != null) {
+        others++;
+      }
+      if (guestSnapshot.value['4-5'] != null) {
+        others++;
+      }
+      if (guestSnapshot.value['5-6'] != null) {
+        others++;
+      }
+      if (guestSnapshot.value['6-7'] != null) {
+        others++;
+      }
+      if (guestSnapshot.value['raw'] != null) {
+        others++;
+      }
+    }
+    familyNumbers = numGuests.length - others;
     return familyNumbers;
-
   }
 }
