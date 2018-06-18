@@ -182,7 +182,7 @@ cropImage(BuildContext context, String n, String uid) async {
                                   .child(name + ".png");
                               final StorageUploadTask uploadTask = ref.putFile(
                                   image,
-                                  const StorageMetadata(contentLanguage: "en"));
+                                  StorageMetadata(contentLanguage: "en"));
                               final Uri downloadUrl =
                                   (await uploadTask.future).downloadUrl;
                               var url =
