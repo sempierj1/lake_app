@@ -287,160 +287,200 @@ class _CheckInWidget extends State<CheckInWidget> {
                   DatabaseReference countReference = FirebaseDatabase.instance
                       .reference()
                       .child("beachCheckIn/" +
-                          new DateTime.now().year.toString() +
-                          "/" +
-                          new DateTime.now().month.toString() +
-                          "/" +
-                          new DateTime.now().day.toString());
+                      new DateTime.now().year.toString() +
+                      "/" +
+                      new DateTime.now().month.toString() +
+                      "/" +
+                      new DateTime.now().day.toString());
                   DataSnapshot countSnapShot = await countReference.once();
-                    switch (new DateTime.now().hour) {
-                      case 10:
-                        {
-                          int tempVal;
-                          try {
-                            tempVal =
-                            (countSnapShot.value['10-11']);
-                          }
-                          catch (e)
-                          {
-                            tempVal = 0;
-                          }
-                          tempVal += count;
-                          await countReference.update({'10-11': tempVal});
-                          break;
+                  switch (new DateTime.now().hour) {
+                    case 10:
+                      {
+                        int tempVal = 0;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['10-11']);
                         }
-                      case 11:
+                        catch (e)
                         {
-                          int tempVal;
-                          try {
-                            tempVal =
-                                (countSnapShot.value['11-12']);
-                          }
-                          catch (e)
-                          {
-                            tempVal = 0;
-                          }
-                          tempVal += count;
-                          await countReference.update({'11-12': tempVal});
-                          break;
+                          tempVal = 0;
                         }
-                      case 12:
+                        if(tempVal == null)
                         {
-                          int tempVal;
-                          try {
-                            tempVal =
-                                (countSnapShot.value['12-1']);
-                          }
-                          catch (e)
-                          {
-                            tempVal = 0;
-                          }
-                          tempVal += count;
-                          await countReference.update({'12-1': tempVal});
-                          break;
+                          tempVal = 0;
                         }
-                      case 13:
+                        tempVal += count;
+                        await countReference.update({'10-11': tempVal});
+                        break;
+                      }
+                    case 11:
+                      {
+                        int tempVal = 0;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['11-12']);
+                        }
+                        catch (e)
                         {
-                          int tempVal;
-                          try {
-                            tempVal =
-                                (countSnapShot.value['1-2']);
-                          }
-                          catch (e)
-                          {
-                            tempVal = 0;
-                          }
-                          tempVal += count;
-                          await countReference.update({'1-2': tempVal});
-                          break;
+                          tempVal = 0;
                         }
-                      case 14:
+                        if(tempVal == null)
                         {
-                          int tempVal;
-                          try {
-                            tempVal =
-                                (countSnapShot.value['2-3']);
-                          }
-                          catch (e)
-                          {
-                            tempVal = 0;
-                          }
-                          tempVal += count;
-                          await countReference.update({'2-3': tempVal});
-                          break;
+                          tempVal = 0;
                         }
-                      case 15:
+                        tempVal += count;
+                        await countReference.update({'11-12': tempVal});
+                        break;
+                      }
+                    case 12:
+                      {
+                        int tempVal = 0;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['12-1']);
+                        }
+                        catch (e)
                         {
-                          int tempVal;
-                          try {
-                            tempVal =
-                                (countSnapShot.value['3-4']);
-                          }
-                          catch (e)
-                          {
-                            tempVal = 0;
-                          }
-                          tempVal += count;
-                          await countReference.update({'3-4': tempVal});
-                          break;
+                          tempVal = 0;
                         }
-                      case 16:
+                        if(tempVal == null)
                         {
-                          int tempVal;
-                          try {
-                            tempVal =
-                                (countSnapShot.value['4-5']);
-                          }
-                          catch (e)
-                          {
-                            tempVal = 0;
-                          }
-                          tempVal += count;
-                          await countReference.update({'4-5': tempVal});
-                          break;
+                          tempVal = 0;
                         }
-                      case 17:
+                        tempVal += count;
+                        await countReference.update({'12-1': tempVal});
+                        break;
+                      }
+                    case 13:
+                      {
+                        int tempVal = 0;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['1-2']);
+                        }
+                        catch (e)
                         {
-                          int tempVal;
-                          try {
-                            tempVal =
-                                (countSnapShot.value['5-6']);
-                          }
-                          catch (e)
-                          {
-                            tempVal = 0;
-                          }
-                          tempVal += count;
-                          await countReference.update({'5-6': tempVal});
-                          break;
+                          tempVal = 0;
                         }
-                      case 18:
+                        if(tempVal == null)
                         {
-                          int tempVal;
-                          try {
-                            tempVal =
-                                (countSnapShot.value['6-7']);
-                          }
-                          catch (e)
-                          {
-                            tempVal = 0;
-                          }
-                          tempVal += count;
-                          await countReference.update({'6-7': tempVal});
-                          break;
+                          tempVal = 0;
                         }
-                      default:{}
-                    }
-                  int tempRawCount;
+                        tempVal += count;
+                        await countReference.update({'1-2': tempVal});
+                        break;
+                      }
+                    case 14:
+                      {
+                        int tempVal = 0;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['2-3']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
+                        {
+                          tempVal = 0;
+                        }
+                        tempVal += count;
+                        await countReference.update({'2-3': tempVal});
+                        break;
+                      }
+                    case 15:
+                      {
+                        int tempVal = 0;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['3-4']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
+                        {
+                          tempVal = 0;
+                        }
+                        tempVal += count;
+                        await countReference.update({'3-4': tempVal});
+                        break;
+                      }
+                    case 16:
+                      {
+                        int tempVal = 0;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['4-5']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
+                        {
+                          tempVal = 0;
+                        }
+                        tempVal += count;
+                        await countReference.update({'4-5': tempVal});
+                        break;
+                      }
+                    case 17:
+                      {
+                        int tempVal = 0;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['5-6']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
+                        {
+                          tempVal = 0;
+                        }
+                        tempVal += count;
+                        await countReference.update({'5-6': tempVal});
+                        break;
+                      }
+                    case 18:
+                      {
+                        int tempVal = 0;
+                        try {
+                          tempVal =
+                          (countSnapShot.value['6-7']);
+                        }
+                        catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
+                        {
+                          tempVal = 0;
+                        }
+                        tempVal += count;
+                        await countReference.update({'6-7': tempVal});
+                        break;
+                      }
+                    default:{}
+                  }
+                  int tempRawCount = 0;
                   try {
-                      tempRawCount = (countSnapShot.value['raw']);
-                    }
-                    catch (e)
+                    tempRawCount = (countSnapShot.value['raw']);
+                  }
+                  catch (e)
                   {
                     tempRawCount = 0;
                   }
-                    tempRawCount += count;
-                    await countReference.update({'raw': tempRawCount});
+                  if(tempRawCount == null)
+                  {
+                    tempRawCount = 0;
+                  }
+                  tempRawCount += count;
+                  await countReference.update({'raw': tempRawCount});
 
                   Navigator
                       .of(context, rootNavigator: true)

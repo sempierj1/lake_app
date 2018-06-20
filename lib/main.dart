@@ -658,10 +658,12 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
     This will update the information shown on the manager tab of the application
    */
   _guestsEdited(Event event) {
-    setState(() {
-      guestHandler.getGuests();
-      guestHandler.getFamily();
-    });
+    if(!userInfo.isBeach) {
+      setState(() {
+        guestHandler.getGuests();
+        guestHandler.getFamily();
+      });
+    }
   }
 
   /*

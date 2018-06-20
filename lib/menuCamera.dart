@@ -139,7 +139,7 @@ cropImage(BuildContext context, String n, String uid) async {
                     new Center(
                       child: new CircleAvatar(
                         backgroundImage: FileImage(image),
-                        radius: widthApp / 7,
+                        radius: widthApp / 8,
                       ),
                       //child: new Image(image: new FileImage(new File(appDocPath))),
                     ),

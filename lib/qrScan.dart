@@ -255,21 +255,25 @@ class _CheckInWidget extends State<CheckInWidget> {
                   DatabaseReference countReference = FirebaseDatabase.instance
                       .reference()
                       .child("beachCheckIn/" +
-                          new DateTime.now().year.toString() +
-                          "/" +
-                          new DateTime.now().month.toString() +
-                          "/" +
-                          new DateTime.now().day.toString());
+                      new DateTime.now().year.toString() +
+                      "/" +
+                      new DateTime.now().month.toString() +
+                      "/" +
+                      new DateTime.now().day.toString());
                   DataSnapshot countSnapShot = await countReference.once();
                   switch (new DateTime.now().hour) {
                     case 10:
                       {
-                        int tempVal;
+                        int tempVal = 0;
                         try {
                           tempVal =
                           (countSnapShot.value['10-11']);
                         }
                         catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
                         {
                           tempVal = 0;
                         }
@@ -279,12 +283,16 @@ class _CheckInWidget extends State<CheckInWidget> {
                       }
                     case 11:
                       {
-                        int tempVal;
+                        int tempVal = 0;
                         try {
                           tempVal =
                           (countSnapShot.value['11-12']);
                         }
                         catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
                         {
                           tempVal = 0;
                         }
@@ -294,12 +302,16 @@ class _CheckInWidget extends State<CheckInWidget> {
                       }
                     case 12:
                       {
-                        int tempVal;
+                        int tempVal = 0;
                         try {
                           tempVal =
                           (countSnapShot.value['12-1']);
                         }
                         catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
                         {
                           tempVal = 0;
                         }
@@ -309,12 +321,16 @@ class _CheckInWidget extends State<CheckInWidget> {
                       }
                     case 13:
                       {
-                        int tempVal;
+                        int tempVal = 0;
                         try {
                           tempVal =
                           (countSnapShot.value['1-2']);
                         }
                         catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
                         {
                           tempVal = 0;
                         }
@@ -324,12 +340,16 @@ class _CheckInWidget extends State<CheckInWidget> {
                       }
                     case 14:
                       {
-                        int tempVal;
+                        int tempVal = 0;
                         try {
                           tempVal =
                           (countSnapShot.value['2-3']);
                         }
                         catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
                         {
                           tempVal = 0;
                         }
@@ -339,12 +359,16 @@ class _CheckInWidget extends State<CheckInWidget> {
                       }
                     case 15:
                       {
-                        int tempVal;
+                        int tempVal = 0;
                         try {
                           tempVal =
                           (countSnapShot.value['3-4']);
                         }
                         catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
                         {
                           tempVal = 0;
                         }
@@ -354,12 +378,16 @@ class _CheckInWidget extends State<CheckInWidget> {
                       }
                     case 16:
                       {
-                        int tempVal;
+                        int tempVal = 0;
                         try {
                           tempVal =
                           (countSnapShot.value['4-5']);
                         }
                         catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
                         {
                           tempVal = 0;
                         }
@@ -369,12 +397,16 @@ class _CheckInWidget extends State<CheckInWidget> {
                       }
                     case 17:
                       {
-                        int tempVal;
+                        int tempVal = 0;
                         try {
                           tempVal =
                           (countSnapShot.value['5-6']);
                         }
                         catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
                         {
                           tempVal = 0;
                         }
@@ -384,12 +416,16 @@ class _CheckInWidget extends State<CheckInWidget> {
                       }
                     case 18:
                       {
-                        int tempVal;
+                        int tempVal = 0;
                         try {
                           tempVal =
                           (countSnapShot.value['6-7']);
                         }
                         catch (e)
+                        {
+                          tempVal = 0;
+                        }
+                        if(tempVal == null)
                         {
                           tempVal = 0;
                         }
@@ -399,7 +435,7 @@ class _CheckInWidget extends State<CheckInWidget> {
                       }
                     default:{}
                   }
-                  int tempRawCount;
+                  int tempRawCount = 0;
                   try {
                     tempRawCount = (countSnapShot.value['raw']);
                   }
@@ -407,9 +443,12 @@ class _CheckInWidget extends State<CheckInWidget> {
                   {
                     tempRawCount = 0;
                   }
+                  if(tempRawCount == null)
+                  {
+                    tempRawCount = 0;
+                  }
                   tempRawCount += count;
                   await countReference.update({'raw': tempRawCount});
-
                   Navigator
                       .of(context, rootNavigator: true)
                       .pushNamed("/screen6");
