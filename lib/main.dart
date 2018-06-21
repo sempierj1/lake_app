@@ -865,6 +865,7 @@ class ChoiceCard extends State<ChoiceState> {
     heightApp = MediaQuery.of(context).size.height;
     myStyle.fontSize = (widthApp / 18).round() * 1.0;
     switch (choice.title) {
+      //Check In Screen. Displays Users badge number and a QR code containing the UID of the user.
       case "Check-In":
         {
           return new SingleChildScrollView(
@@ -888,6 +889,8 @@ class ChoiceCard extends State<ChoiceState> {
           );
         }
         break;
+        //Displays the weather widget. Bar color and message is based on database info on beach
+        //Also shows temperature, weather icon and wind speed. Updated every minute from server.
       case "Weather":
         {
           if (weatherHandler.weather == null) {
@@ -1027,6 +1030,8 @@ class ChoiceCard extends State<ChoiceState> {
           }
         }
         break;
+        //Events Widget. Displays a scrolling list of events from database. Can change events shown via dropdown
+        //Can favorite events by tapping on their event card.
       case "Events":
         {
           eventHandler.setChosen(userInfo.favorites);
@@ -1141,6 +1146,9 @@ class ChoiceCard extends State<ChoiceState> {
           );
         }
         break;
+        //Shows the users profile. Will display name, email, membership type
+        //Also shows the family widget that allows for inviting family members
+
       case "Profile":
         {
           List<Widget> children = new List.generate(userInfo.family.length,
@@ -1234,6 +1242,8 @@ class ChoiceCard extends State<ChoiceState> {
           );
         }
         break;
+        //Manager view. Displays information on beach use for the day.
+        //Allows the manager to close the beach via button push.
       case "Manager":
         {
           return SingleChildScrollView(
@@ -1328,6 +1338,9 @@ class ChoiceCard extends State<ChoiceState> {
           ));
         }
         break;
+
+        //Sign In view for the app
+        //Shows an option to sign in via QR code or badge number.
       case "Sign-In":
         {
           return new Column(

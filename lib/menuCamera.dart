@@ -72,6 +72,10 @@ class _CameraState extends State<CameraState> {
   @override
   Widget build(BuildContext context) {
     widthApp = MediaQuery.of(context).size.width;
+    if(widthApp > 700.0)
+      {
+        widthApp = 700.0;
+      }
     heightApp = MediaQuery.of(context).size.height;
     if (controller == null) {
       return new Container();
@@ -139,7 +143,7 @@ cropImage(BuildContext context, String n, String uid) async {
                     new Center(
                       child: new CircleAvatar(
                         backgroundImage: FileImage(image),
-                        radius: widthApp / 8,
+                        radius: widthApp / 7,
                       ),
                       //child: new Image(image: new FileImage(new File(appDocPath))),
                     ),
