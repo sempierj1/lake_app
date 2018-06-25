@@ -254,7 +254,7 @@ class _CheckInWidget extends State<CheckInWidget> {
       ]),
       index == family.length - 1
           ? new Container(
-              padding: new EdgeInsets.only(top: 45.0),
+              padding: new EdgeInsets.only(top: 45.0, bottom: 20.0),
               child: new RaisedButton(
                 onPressed: () async {
                   DatabaseReference badgeReference = FirebaseDatabase.instance
