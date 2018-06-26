@@ -187,6 +187,7 @@ class _CheckInWidget extends State<CheckInWidget> {
                                           ))));
                             }
                           } else {
+                            /*
                             return Container(
                                 padding: new EdgeInsets.only(top: 25.0),
                                 child: new Center(
@@ -203,7 +204,8 @@ class _CheckInWidget extends State<CheckInWidget> {
                                                   builder: (context) =>
                                                       new CameraState(
                                                           list: tempList)));
-                                        })));
+                                        })));*/
+                            return Container(width: 1.0, height: 1.0);
                           }
                         })
                     : new Container(height: 0.0)),

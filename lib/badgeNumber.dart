@@ -219,6 +219,7 @@ class _CheckInWidget extends State<CheckInWidget> {
                                           ))));
                             }
                           } else {
+                            /*
                             return Container(
                                 padding: new EdgeInsets.only(top: 25.0),
                                 child: new Center(
@@ -236,6 +237,8 @@ class _CheckInWidget extends State<CheckInWidget> {
                                                       new CameraState(
                                                           list: tempList)));
                                         })));
+                                        */
+                            return Container(width: 1.0, height: 1.0);
                           }
                         })
                     : new Container(height: 0.0)),
@@ -293,6 +296,7 @@ class _CheckInWidget extends State<CheckInWidget> {
                       "/" +
                       new DateTime.now().day.toString());
                   DataSnapshot countSnapShot = await countReference.once();
+                  print(new DateTime.now().hour);
                   switch (new DateTime.now().hour) {
                     case 10:
                       {

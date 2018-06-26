@@ -569,7 +569,6 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   Database listeners are set to update information shown on the various tabs in real time.
    */
 
-
   DateTime date = new DateTime.now();
   final DatabaseReference listenerReference = userInfo.isBeach
       ? null
@@ -658,7 +657,7 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
     This will update the information shown on the manager tab of the application
    */
   _guestsEdited(Event event) {
-    if(!userInfo.isBeach) {
+    if (!userInfo.isBeach) {
       setState(() {
         guestHandler.getGuests();
         guestHandler.getFamily();
@@ -889,8 +888,8 @@ class ChoiceCard extends State<ChoiceState> {
           );
         }
         break;
-        //Displays the weather widget. Bar color and message is based on database info on beach
-        //Also shows temperature, weather icon and wind speed. Updated every minute from server.
+      //Displays the weather widget. Bar color and message is based on database info on beach
+      //Also shows temperature, weather icon and wind speed. Updated every minute from server.
       case "Weather":
         {
           if (weatherHandler.weather == null) {
@@ -967,7 +966,9 @@ class ChoiceCard extends State<ChoiceState> {
                       child: new Text(alertText,
                           textAlign: TextAlign.center,
                           style: new TextStyle(
-                              fontSize: widthApp > 700 ? 20.0: myStyle.fontSize, fontFamily: "Alert")),
+                              fontSize:
+                                  widthApp > 700 ? 20.0 : myStyle.fontSize,
+                              fontFamily: "Alert")),
                     ),
                   ),
                   new Container(
@@ -1030,8 +1031,8 @@ class ChoiceCard extends State<ChoiceState> {
           }
         }
         break;
-        //Events Widget. Displays a scrolling list of events from database. Can change events shown via dropdown
-        //Can favorite events by tapping on their event card.
+      //Events Widget. Displays a scrolling list of events from database. Can change events shown via dropdown
+      //Can favorite events by tapping on their event card.
       case "Events":
         {
           eventHandler.setChosen(userInfo.favorites);
@@ -1098,8 +1099,9 @@ class ChoiceCard extends State<ChoiceState> {
                           new ListTile(
                             leading: new Text((shown[index]['eventDate']),
                                 style: new TextStyle(
-                                    fontSize: widthApp > 600 ? 12.0 :
-                                        myStyle.fontSize * (widthApp / 755))),
+                                    fontSize: widthApp > 600
+                                        ? 12.0
+                                        : myStyle.fontSize * (widthApp / 755))),
                             title: new Text(
                               (shown[index]['eventName']).toString(),
                               style: myStyle.eventText(context),
@@ -1146,8 +1148,8 @@ class ChoiceCard extends State<ChoiceState> {
           );
         }
         break;
-        //Shows the users profile. Will display name, email, membership type
-        //Also shows the family widget that allows for inviting family members
+      //Shows the users profile. Will display name, email, membership type
+      //Also shows the family widget that allows for inviting family members
 
       case "Profile":
         {
@@ -1242,8 +1244,8 @@ class ChoiceCard extends State<ChoiceState> {
           );
         }
         break;
-        //Manager view. Displays information on beach use for the day.
-        //Allows the manager to close the beach via button push.
+      //Manager view. Displays information on beach use for the day.
+      //Allows the manager to close the beach via button push.
       case "Manager":
         {
           return SingleChildScrollView(
@@ -1271,6 +1273,93 @@ class ChoiceCard extends State<ChoiceState> {
                   )
                 ],
               ),
+              Row(children: <Widget>[
+                Expanded(
+                    child: IconButton(
+                      iconSize: 100.0,
+                  icon: Icon(Icons.account_circle),
+                  onPressed: () async {
+                    showDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (BuildContext context) => new AlertDialog(
+                              title:
+                                  new Text("Enter WildApricot Contact Number"),
+                              content: new TextField(
+                                controller: _controller,
+                                decoration: new InputDecoration(
+                                  hintText: '12345678',
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              actions: <Widget>[
+                                FlatButton(
+                                    onPressed: () async {
+                                      await serverFunctions
+                                          .updateMember(
+                                              _controller.text)
+                                          .then((success) {
+                                        if (success) {
+                                          Navigator
+                                              .of(context, rootNavigator: true)
+                                              .pop();
+                                          showDialog(
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (BuildContext context) =>
+                                                new AlertDialog(
+                                                    title: new Text("Success!"),
+                                                    content: new Text(
+                                                        "User updated"),
+                                                    actions: <Widget>[
+                                                      new FlatButton(
+                                                          child:
+                                                              new Text('Okay'),
+                                                          onPressed: () {
+                                                            Navigator
+                                                                .of(context,
+                                                                    rootNavigator:
+                                                                        true)
+                                                                .pop();
+                                                            //Navigator.of(context).pop();
+                                                          })
+                                                    ]),
+                                          );
+                                        } else {
+                                          Navigator
+                                              .of(context, rootNavigator: true)
+                                              .pop();
+                                          showDialog(
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (BuildContext context) =>
+                                                new AlertDialog(
+                                                    title: new Text("Failure!"),
+                                                    content: new Text(
+                                                        "User has not been updated"),
+                                                    actions: <Widget>[
+                                                      new FlatButton(
+                                                          child:
+                                                              new Text('Okay'),
+                                                          onPressed: () {
+                                                            Navigator
+                                                                .of(context,
+                                                                    rootNavigator:
+                                                                        true)
+                                                                .pop();
+                                                            //Navigator.of(context).pop();
+                                                          })
+                                                    ]),
+                                          );
+                                        }
+                                      });
+                                    },
+                                    child: Text("Submit"))
+                              ],
+                            ));
+                  },
+                ))
+              ]),
               new Align(
                 heightFactor: 3.2,
                 child: FlatButton(
@@ -1339,8 +1428,8 @@ class ChoiceCard extends State<ChoiceState> {
         }
         break;
 
-        //Sign In view for the app
-        //Shows an option to sign in via QR code or badge number.
+      //Sign In view for the app
+      //Shows an option to sign in via QR code or badge number.
       case "Sign-In":
         {
           return new Column(

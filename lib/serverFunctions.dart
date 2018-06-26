@@ -95,6 +95,23 @@ class ServerFunctions {
     return success;
   }
 
+  Future updateMember(String num) async{
+    var url = 'https://membershipme.ddns.net/node/updateContact';
+    var success = false;
+    await http
+        .post(url,
+        body: {
+          "contact": num
+        },
+        encoding: Encoding.getByName("utf-8"))
+        .then((response) {
+      if (response.body.toString() == "Success") {
+        success = true;
+      }
+    });
+    return success;
+  }
+
   Future deleteUser(int index) async {
     var url = 'https://membershipme.ddns.net/node/removeUser';
     var success = false;

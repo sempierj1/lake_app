@@ -117,7 +117,13 @@ class Guest {
         others++;
       }
     }
-    familyNumbers = numGuests.length - others;
+    if(numGuests != null) {
+      familyNumbers = numGuests.length - others;
+    }
+    else
+      {
+        familyNumbers = 0;
+      }
     return familyNumbers;
   }
 }
