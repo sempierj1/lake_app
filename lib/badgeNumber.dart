@@ -5,6 +5,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'menuCamera.dart';
 
+/*Handles checkins with badgenumber. Takes in a badge number and will provide a list of all
+family members associated with that badge, allowing for the user to check in.
+ */
+
 class BadgeNumber extends StatefulWidget {
   BadgeNumber({Key key, this.title, this.uid}) : super(key: key);
 
@@ -16,6 +20,9 @@ class BadgeNumber extends StatefulWidget {
   @override
   _BadgeNumber createState() => new _BadgeNumber(uid);
 }
+
+//Checks if a uid has been provided, if not, user will be prompted for one before continuing.
+//Once a uid has been provided it will load the family members associated with that badge.
 
 class _BadgeNumber extends State<BadgeNumber> {
   String barcode = "";
@@ -84,6 +91,9 @@ class _BadgeNumber extends State<BadgeNumber> {
           )),
     );
   }
+
+  //Grabs all family associated with a given uid (found via badge number) and creates a list of them.
+  //The list is passed to the next function and the list is displayed with check boxes to allow for check in
 
   Future scan(String s) async {
     String barcode = s;
