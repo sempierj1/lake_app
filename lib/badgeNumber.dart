@@ -162,6 +162,19 @@ class _BadgeNumber extends State<BadgeNumber> {
                                                     .parse(_controller2.text);
                                                 await countReference.update(
                                                     {'raw': tempRawCount});
+                                                DatabaseReference checkInReference = FirebaseDatabase.instance
+                                                    .reference()
+                                                    .child("beachCheckIn/" +
+                                                    new DateTime.now().year.toString() +
+                                                    "/" +
+                                                    new DateTime.now().month.toString() +
+                                                    "/" +
+                                                    new DateTime.now().day.toString() +
+                                                    "/" +
+                                                    _controller.text.toString() +
+                                                    "- UNKNOWN"
+                                                    );
+                                                checkInReference.update({_controller2.text: tempHour.toString() + ":" + new DateTime.now().minute.toString()});
                                                 Navigator
                                                     .of(context,
                                                         rootNavigator: true)
@@ -411,146 +424,35 @@ class _CheckInWidget extends State<CheckInWidget> {
                           "/" +
                           new DateTime.now().day.toString());
                   DataSnapshot countSnapShot = await countReference.once();
-                  print(new DateTime.now().hour);
-                  switch (new DateTime.now().hour) {
-                    case 10:
-                      {
-                        int tempVal = 0;
-                        try {
-                          tempVal = (countSnapShot.value['10-11']);
-                        } catch (e) {
-                          tempVal = 0;
-                        }
-                        if (tempVal == null) {
-                          tempVal = 0;
-                        }
-                        tempVal += count;
-                        await countReference.update({'10-11': tempVal});
-                        break;
-                      }
-                    case 11:
-                      {
-                        int tempVal = 0;
-                        try {
-                          tempVal = (countSnapShot.value['11-12']);
-                        } catch (e) {
-                          tempVal = 0;
-                        }
-                        if (tempVal == null) {
-                          tempVal = 0;
-                        }
-                        tempVal += count;
-                        await countReference.update({'11-12': tempVal});
-                        break;
-                      }
-                    case 12:
-                      {
-                        int tempVal = 0;
-                        try {
-                          tempVal = (countSnapShot.value['12-1']);
-                        } catch (e) {
-                          tempVal = 0;
-                        }
-                        if (tempVal == null) {
-                          tempVal = 0;
-                        }
-                        tempVal += count;
-                        await countReference.update({'12-1': tempVal});
-                        break;
-                      }
-                    case 13:
-                      {
-                        int tempVal = 0;
-                        try {
-                          tempVal = (countSnapShot.value['1-2']);
-                        } catch (e) {
-                          tempVal = 0;
-                        }
-                        if (tempVal == null) {
-                          tempVal = 0;
-                        }
-                        tempVal += count;
-                        await countReference.update({'1-2': tempVal});
-                        break;
-                      }
-                    case 14:
-                      {
-                        int tempVal = 0;
-                        try {
-                          tempVal = (countSnapShot.value['2-3']);
-                        } catch (e) {
-                          tempVal = 0;
-                        }
-                        if (tempVal == null) {
-                          tempVal = 0;
-                        }
-                        tempVal += count;
-                        await countReference.update({'2-3': tempVal});
-                        break;
-                      }
-                    case 15:
-                      {
-                        int tempVal = 0;
-                        try {
-                          tempVal = (countSnapShot.value['3-4']);
-                        } catch (e) {
-                          tempVal = 0;
-                        }
-                        if (tempVal == null) {
-                          tempVal = 0;
-                        }
-                        tempVal += count;
-                        await countReference.update({'3-4': tempVal});
-                        break;
-                      }
-                    case 16:
-                      {
-                        int tempVal = 0;
-                        try {
-                          tempVal = (countSnapShot.value['4-5']);
-                        } catch (e) {
-                          tempVal = 0;
-                        }
-                        if (tempVal == null) {
-                          tempVal = 0;
-                        }
-                        tempVal += count;
-                        await countReference.update({'4-5': tempVal});
-                        break;
-                      }
-                    case 17:
-                      {
-                        int tempVal = 0;
-                        try {
-                          tempVal = (countSnapShot.value['5-6']);
-                        } catch (e) {
-                          tempVal = 0;
-                        }
-                        if (tempVal == null) {
-                          tempVal = 0;
-                        }
-                        tempVal += count;
-                        await countReference.update({'5-6': tempVal});
-                        break;
-                      }
-                    case 18:
-                      {
-                        int tempVal = 0;
-                        try {
-                          tempVal = (countSnapShot.value['6-7']);
-                        } catch (e) {
-                          tempVal = 0;
-                        }
-                        if (tempVal == null) {
-                          tempVal = 0;
-                        }
-                        tempVal += count;
-                        await countReference.update({'6-7': tempVal});
-                        break;
-                      }
-                    default:
-                      {}
+                  int tempHour =
+                      new DateTime.now().hour;
+                  int tempCount = 0;
+                  if (tempHour > 12) {
+                    tempHour -= 12;
                   }
+                  int secondHour = tempHour + 1;
+                  if (secondHour > 12) {
+                    secondHour = 1;
+                  }
+                  try {
+                    tempCount = countSnapShot
+                        .value[tempHour
+                        .toString() +
+                        "-" +
+                        secondHour.toString()];
+                  } catch (e) {
+                    tempCount = 0;
+                  }
+                  if (tempCount == null) {
+                    tempCount = 0;
+                  }
+                  tempCount += count;
+                  await countReference.update({
+                    tempHour.toString() +
+                        "-" +
+                        secondHour.toString():
+                    tempCount
+                  });
                   int tempRawCount = 0;
                   try {
                     tempRawCount = (countSnapShot.value['raw']);
