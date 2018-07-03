@@ -42,6 +42,7 @@ class _BadgeNumber extends State<BadgeNumber> {
 
   List<Widget> children;
   TextEditingController _controller = new TextEditingController();
+  TextEditingController _controller2 = new TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -73,12 +74,116 @@ class _BadgeNumber extends State<BadgeNumber> {
                                 .child("badges/" + _controller.text);
                             DataSnapshot uidSnapshot =
                                 await badgeReference.once();
-                            Map badgeNumbers = uidSnapshot.value;
+                            if (uidSnapshot.value == null) {
+                              showDialog(
+                                  context: context,
+                                  barrierDismissible: true,
+                                  builder: (BuildContext context) =>
+                                      new AlertDialog(
+                                        title:
+                                            new Text("Badge Number Not Found"),
+                                        content: new TextField(
+                                          keyboardType: TextInputType.number,
+                                          controller: _controller2,
+                                          decoration: new InputDecoration(
+                                            hintText: 'Number of People',
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        actions: <Widget>[
+                                          new FlatButton(
+                                              onPressed: () async {
+                                                DatabaseReference errors =
+                                                    FirebaseDatabase.instance
+                                                        .reference()
+                                                        .child("errors");
+                                                errors.update({
+                                                  _controller.text: "Not Found"
+                                                });
+                                                DatabaseReference
+                                                    countReference =
+                                                    FirebaseDatabase.instance
+                                                        .reference()
+                                                        .child("beachCheckIn/" +
+                                                            new DateTime.now()
+                                                                .year
+                                                                .toString() +
+                                                            "/" +
+                                                            new DateTime.now()
+                                                                .month
+                                                                .toString() +
+                                                            "/" +
+                                                            new DateTime.now()
+                                                                .day
+                                                                .toString());
+                                                DataSnapshot countSnapShot =
+                                                    await countReference.once();
+                                                int tempHour =
+                                                    new DateTime.now().hour;
+                                                int tempCount = 0;
+                                                if (tempHour > 12) {
+                                                  tempHour -= 12;
+                                                }
+                                                int secondHour = tempHour + 1;
+                                                if (secondHour > 12) {
+                                                  secondHour = 1;
+                                                }
+                                                try {
+                                                  tempCount = countSnapShot
+                                                      .value[tempHour
+                                                          .toString() +
+                                                      "-" +
+                                                      secondHour.toString()];
+                                                } catch (e) {
+                                                  tempCount = 0;
+                                                }
+                                                if (tempCount == null) {
+                                                  tempCount = 0;
+                                                }
+                                                tempCount += int
+                                                    .parse(_controller2.text);
+                                                await countReference.update({
+                                                  tempHour.toString() +
+                                                          "-" +
+                                                          secondHour.toString():
+                                                      tempCount
+                                                });
+                                                int tempRawCount = 0;
+                                                try {
+                                                  tempRawCount = (countSnapShot
+                                                      .value['raw']);
+                                                } catch (e) {
+                                                  tempRawCount = 0;
+                                                }
+                                                if (tempRawCount == null) {
+                                                  tempRawCount = 0;
+                                                }
+                                                tempRawCount += int
+                                                    .parse(_controller2.text);
+                                                await countReference.update(
+                                                    {'raw': tempRawCount});
+                                                Navigator
+                                                    .of(context,
+                                                        rootNavigator: true)
+                                                    .pushNamed("/screen6");
+                                              },
+                                              child: Text(
+                                                "Continue",
+                                                textAlign: TextAlign.center,
+                                                style: new TextStyle(
+                                                    fontSize: 15.0,
+                                                    color: Colors.lightBlue),
+                                              ))
+                                        ],
+                                      ));
+                            } else {
+                              Map badgeNumbers = uidSnapshot.value;
 
-                            badgeNumbers.forEach((key, value) {
-                              barcode = key;
-                            });
-                            scan(barcode);
+                              badgeNumbers.forEach((key, value) {
+                                barcode = key;
+                              });
+                              scan(barcode);
+                            }
                           },
                           child: new Text(
                             "Continue",
@@ -300,11 +405,11 @@ class _CheckInWidget extends State<CheckInWidget> {
                   DatabaseReference countReference = FirebaseDatabase.instance
                       .reference()
                       .child("beachCheckIn/" +
-                      new DateTime.now().year.toString() +
-                      "/" +
-                      new DateTime.now().month.toString() +
-                      "/" +
-                      new DateTime.now().day.toString());
+                          new DateTime.now().year.toString() +
+                          "/" +
+                          new DateTime.now().month.toString() +
+                          "/" +
+                          new DateTime.now().day.toString());
                   DataSnapshot countSnapShot = await countReference.once();
                   print(new DateTime.now().hour);
                   switch (new DateTime.now().hour) {
@@ -312,15 +417,11 @@ class _CheckInWidget extends State<CheckInWidget> {
                       {
                         int tempVal = 0;
                         try {
-                          tempVal =
-                          (countSnapShot.value['10-11']);
-                        }
-                        catch (e)
-                        {
+                          tempVal = (countSnapShot.value['10-11']);
+                        } catch (e) {
                           tempVal = 0;
                         }
-                        if(tempVal == null)
-                        {
+                        if (tempVal == null) {
                           tempVal = 0;
                         }
                         tempVal += count;
@@ -331,15 +432,11 @@ class _CheckInWidget extends State<CheckInWidget> {
                       {
                         int tempVal = 0;
                         try {
-                          tempVal =
-                          (countSnapShot.value['11-12']);
-                        }
-                        catch (e)
-                        {
+                          tempVal = (countSnapShot.value['11-12']);
+                        } catch (e) {
                           tempVal = 0;
                         }
-                        if(tempVal == null)
-                        {
+                        if (tempVal == null) {
                           tempVal = 0;
                         }
                         tempVal += count;
@@ -350,15 +447,11 @@ class _CheckInWidget extends State<CheckInWidget> {
                       {
                         int tempVal = 0;
                         try {
-                          tempVal =
-                          (countSnapShot.value['12-1']);
-                        }
-                        catch (e)
-                        {
+                          tempVal = (countSnapShot.value['12-1']);
+                        } catch (e) {
                           tempVal = 0;
                         }
-                        if(tempVal == null)
-                        {
+                        if (tempVal == null) {
                           tempVal = 0;
                         }
                         tempVal += count;
@@ -369,15 +462,11 @@ class _CheckInWidget extends State<CheckInWidget> {
                       {
                         int tempVal = 0;
                         try {
-                          tempVal =
-                          (countSnapShot.value['1-2']);
-                        }
-                        catch (e)
-                        {
+                          tempVal = (countSnapShot.value['1-2']);
+                        } catch (e) {
                           tempVal = 0;
                         }
-                        if(tempVal == null)
-                        {
+                        if (tempVal == null) {
                           tempVal = 0;
                         }
                         tempVal += count;
@@ -388,15 +477,11 @@ class _CheckInWidget extends State<CheckInWidget> {
                       {
                         int tempVal = 0;
                         try {
-                          tempVal =
-                          (countSnapShot.value['2-3']);
-                        }
-                        catch (e)
-                        {
+                          tempVal = (countSnapShot.value['2-3']);
+                        } catch (e) {
                           tempVal = 0;
                         }
-                        if(tempVal == null)
-                        {
+                        if (tempVal == null) {
                           tempVal = 0;
                         }
                         tempVal += count;
@@ -407,15 +492,11 @@ class _CheckInWidget extends State<CheckInWidget> {
                       {
                         int tempVal = 0;
                         try {
-                          tempVal =
-                          (countSnapShot.value['3-4']);
-                        }
-                        catch (e)
-                        {
+                          tempVal = (countSnapShot.value['3-4']);
+                        } catch (e) {
                           tempVal = 0;
                         }
-                        if(tempVal == null)
-                        {
+                        if (tempVal == null) {
                           tempVal = 0;
                         }
                         tempVal += count;
@@ -426,15 +507,11 @@ class _CheckInWidget extends State<CheckInWidget> {
                       {
                         int tempVal = 0;
                         try {
-                          tempVal =
-                          (countSnapShot.value['4-5']);
-                        }
-                        catch (e)
-                        {
+                          tempVal = (countSnapShot.value['4-5']);
+                        } catch (e) {
                           tempVal = 0;
                         }
-                        if(tempVal == null)
-                        {
+                        if (tempVal == null) {
                           tempVal = 0;
                         }
                         tempVal += count;
@@ -445,15 +522,11 @@ class _CheckInWidget extends State<CheckInWidget> {
                       {
                         int tempVal = 0;
                         try {
-                          tempVal =
-                          (countSnapShot.value['5-6']);
-                        }
-                        catch (e)
-                        {
+                          tempVal = (countSnapShot.value['5-6']);
+                        } catch (e) {
                           tempVal = 0;
                         }
-                        if(tempVal == null)
-                        {
+                        if (tempVal == null) {
                           tempVal = 0;
                         }
                         tempVal += count;
@@ -464,33 +537,27 @@ class _CheckInWidget extends State<CheckInWidget> {
                       {
                         int tempVal = 0;
                         try {
-                          tempVal =
-                          (countSnapShot.value['6-7']);
-                        }
-                        catch (e)
-                        {
+                          tempVal = (countSnapShot.value['6-7']);
+                        } catch (e) {
                           tempVal = 0;
                         }
-                        if(tempVal == null)
-                        {
+                        if (tempVal == null) {
                           tempVal = 0;
                         }
                         tempVal += count;
                         await countReference.update({'6-7': tempVal});
                         break;
                       }
-                    default:{}
+                    default:
+                      {}
                   }
                   int tempRawCount = 0;
                   try {
                     tempRawCount = (countSnapShot.value['raw']);
-                  }
-                  catch (e)
-                  {
+                  } catch (e) {
                     tempRawCount = 0;
                   }
-                  if(tempRawCount == null)
-                  {
+                  if (tempRawCount == null) {
                     tempRawCount = 0;
                   }
                   tempRawCount += count;

@@ -1284,7 +1284,7 @@ class ChoiceCard extends State<ChoiceState> {
                         barrierDismissible: true,
                         builder: (BuildContext context) => new AlertDialog(
                               title:
-                                  new Text("Enter WildApricot Contact Number"),
+                                  Text("Enter WildApricot Contact Number"),
                               content: new TextField(
                                 controller: _controller,
                                 decoration: new InputDecoration(
