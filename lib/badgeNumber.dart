@@ -291,6 +291,7 @@ class _CheckInWidget extends State<CheckInWidget> {
   final String barcode;
   final Map values;
   final String type;
+  TextEditingController _controller = new TextEditingController();
 
   _CheckInWidget(this.index, this.family, this.barcode, this.values, this.type);
 
@@ -384,7 +385,21 @@ class _CheckInWidget extends State<CheckInWidget> {
                         })))),
       ]),
       index == family.length - 1
-          ? new Container(
+          ?   Column(children: <Widget>[
+            Row(children: <Widget>[
+              Expanded(child:
+              Container(padding: new EdgeInsets.only(left: 25.0), child: Text("Family Members Not Listed - "))),
+    Expanded(child: Container(padding: new EdgeInsets.only(right: 55.0, left: 55.0),width: 50.0, child: TextField(
+    keyboardType: TextInputType.number,
+    controller: _controller,
+      decoration: new InputDecoration(
+        hintText: 'Extras',
+      ),
+    style: new TextStyle(
+    fontSize: 25.0, color: Colors.black),
+    textAlign: TextAlign.center,
+    ))),],),
+              new Container(
               padding: new EdgeInsets.only(top: 45.0, bottom: 20.0),
               child: new RaisedButton(
                 onPressed: () async {
@@ -447,6 +462,16 @@ class _CheckInWidget extends State<CheckInWidget> {
                     tempCount = 0;
                   }
                   tempCount += count;
+                  int extras = 0;
+                  try{
+                    extras = int.parse(_controller.text);
+                  }
+                  catch (e)
+                  {
+                    extras = 0;
+                  }
+                  tempCount += extras;
+
                   await countReference.update({
                     tempHour.toString() +
                         "-" +
@@ -463,6 +488,13 @@ class _CheckInWidget extends State<CheckInWidget> {
                     tempRawCount = 0;
                   }
                   tempRawCount += count;
+                  tempRawCount += extras;
+                  if(extras > 0)
+                    {
+                      DatabaseReference errorReference = FirebaseDatabase.instance
+                          .reference().child("errors");
+                      await errorReference.update({badgeNumber.value.toString(): "Family Members"});
+                    }
                   await countReference.update({'raw': tempRawCount});
 
                   Navigator
@@ -471,7 +503,7 @@ class _CheckInWidget extends State<CheckInWidget> {
                 },
                 child: new Text("Check In"),
                 color: Colors.lightBlue,
-              ))
+              ))],)
           : new Container(height: 0.0)
     ]);
   }
