@@ -1081,6 +1081,7 @@ class ChoiceCard extends State<ChoiceState> {
                             'remove',
                             userInfo);
                       } else {
+
                         userInfo.saved
                             .add(eventHandler.eventsShown[index]['eventNum']);
                         eventHandler.handleEvent(index,

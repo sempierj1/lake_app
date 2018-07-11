@@ -175,6 +175,7 @@ class _BadgeNumber extends State<BadgeNumber> {
                                                     "- UNKNOWN"
                                                     );
                                                 checkInReference.update({_controller2.text: tempHour.toString() + ":" + new DateTime.now().minute.toString()});
+                                                _controller2.clear();
                                                 Navigator
                                                     .of(context,
                                                         rootNavigator: true)
@@ -496,7 +497,7 @@ class _CheckInWidget extends State<CheckInWidget> {
                       await errorReference.update({badgeNumber.value.toString(): "Family Members"});
                     }
                   await countReference.update({'raw': tempRawCount});
-
+                  _controller.clear();
                   Navigator
                       .of(context, rootNavigator: true)
                       .pushNamed("/screen6");
