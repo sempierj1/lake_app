@@ -46,18 +46,17 @@ class AppUserInfo {
 
   Future<FirebaseUser> handleSignIn(String u, String p) async {
     try {
-      List<String> uName = u.split(" ");
       user = await _auth.signInWithEmailAndPassword(
-        email: uName[0],
+        email: u.trim(),
         password: p,
       );
       if (user != null && user.email != "beachmanager@lake-parsippany.org") {
         await setFirstRun();
-        await storeInfo(uName[0], p);
+        await storeInfo(u.trim(), p);
         try {
           mainReference =
               FirebaseDatabase.instance.reference().child("users/" + user.uid);
-          mainReference.update({"email": uName[0]});
+          mainReference.update({"email": u.trim()});
           snapshot = await mainReference.once();
           if (snapshot.value['firstLogin'] == "true") {
             mainReference.update({'firstLogin': "false"});
@@ -65,7 +64,7 @@ class AppUserInfo {
             await http
                 .post(url,
                     body: {
-                      "email": uName[0],
+                      "email": u.trim(),
                     },
                     encoding: Encoding.getByName("utf-8"))
                 .then((response) async {
@@ -92,7 +91,7 @@ class AppUserInfo {
         isBeach = true;
         isManager = "false";
         await setFirstRun();
-        await storeInfo(uName[0], p);
+        await storeInfo(u.trim(), p);
       }
     } catch (e) {}
 

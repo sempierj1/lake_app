@@ -1249,8 +1249,8 @@ class ChoiceCard extends State<ChoiceState> {
       //Allows the manager to close the beach via button push.
       case "Manager":
         {
-          return SingleChildScrollView(
-              child: Column(
+          return ListView(
+              children: <Widget>[ Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Row(
@@ -1425,7 +1425,7 @@ class ChoiceCard extends State<ChoiceState> {
                           )),
               )
             ],
-          ));
+          ),]);
         }
         break;
 
