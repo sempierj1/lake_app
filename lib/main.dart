@@ -892,6 +892,7 @@ class ChoiceCard extends State<ChoiceState> {
       //Also shows temperature, weather icon and wind speed. Updated every minute from server.
       case "Weather":
         {
+          DateTime d = new DateTime.now();
           if (weatherHandler.weather == null) {
             return new ListView(children: <Widget>[
               new Container(
@@ -909,11 +910,11 @@ class ChoiceCard extends State<ChoiceState> {
             String alertText;
             if (weatherHandler.beachOpen && !weatherHandler.weatherClosure) {
               barColor = Colors.green;
-              alertText = "Open";
+              alertText = "Open Until " + weatherHandler.close + "PM";
             } else if (!weatherHandler.beachOpen &&
                 !weatherHandler.weatherClosure) {
               barColor = Colors.blueAccent;
-              alertText = "Closed - Off Hours";
+              alertText = "Closed Until " + weatherHandler.open + (d.weekday == 7 ? "PM" : "AM");
             } else {
               barColor = Colors.red;
               alertText = "Closed - Inclement Weather";

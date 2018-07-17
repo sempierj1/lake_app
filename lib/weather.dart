@@ -7,6 +7,9 @@ class Weather {
   bool weatherClosure;
   Map weather;
   List weatherDescription;
+  List hours;
+  String open;
+  String close;
   String weatherDescriptionFixed = "";
   bool finished;
 
@@ -22,6 +25,19 @@ class Weather {
     statusSnapshot = await mainReference.once();
     weather = statusSnapshot.value;
     weatherDescription = weather['longDesc'].toString().split(" ");
+    mainReference = FirebaseDatabase.instance.reference().child("hours");
+    statusSnapshot = await mainReference.once();
+    hours = statusSnapshot.value;
+
+    DateTime d = new DateTime.now();
+
+    close = hours[d.weekday == 7 ? 0 : d.weekday].toString().split("-")[1].substring(0, 2);
+    close = (int.parse(close) - 12).toString();
+
+    if(d.hour > int.parse(close))
+      {
+        open = hours[d.weekday == 7 ? 1 : d.weekday == 6 ? 0 : d.weekday + 1].toString().substring(0, 2);
+      }
 
     for (final i in weatherDescription) {
       if (weatherDescriptionFixed != "") {
