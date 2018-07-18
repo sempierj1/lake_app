@@ -17,6 +17,7 @@ import 'serverFunctions.dart';
 import 'events.dart';
 import 'weather.dart';
 import 'guests.dart';
+import 'checkInQueue.dart';
 
 final MembershipTextStyle myStyle = new MembershipTextStyle();
 final AppUserInfo userInfo = new AppUserInfo();
@@ -63,6 +64,8 @@ void runCheck() async {
         '/screen7': (BuildContext context) => new CameraState(),
         '/screen8': (BuildContext context) => new QrScanner(),
         '/screen9': (BuildContext context) => new BadgeNumber(),
+        '/screen10': (BuildContext context) => new CheckInQueue(),
+        '/screen11': (BuildContext context) => new LoadingQueueState()
       },
     ));
   } else {
@@ -77,6 +80,8 @@ void runCheck() async {
         '/screen7': (BuildContext context) => new CameraState(),
         '/screen8': (BuildContext context) => new QrScanner(),
         '/screen9': (BuildContext context) => new BadgeNumber(),
+        '/screen10': (BuildContext context) => new CheckInQueue(),
+        '/screen11': (BuildContext context) => new LoadingQueueState()
       },
     ));
   }
@@ -856,7 +861,7 @@ class ChoiceCard extends State<ChoiceState> {
   ChoiceCard({Key key, this.choice});
 
   final Choice choice;
-
+  //new QrImage(  version: 3, data: userInfo.user.uid, size: widthApp / 2)
   @override
   Widget build(BuildContext context) {
     //Gets width and height of screen, used for sizing or certain components.
@@ -873,8 +878,67 @@ class ChoiceCard extends State<ChoiceState> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Center(
-                  child: new QrImage(
-                      version: 3, data: userInfo.user.uid, size: widthApp / 2),
+                  child: new RaisedButton(child: Text("Check-In"), onPressed: ()async {
+                    _controller.clear();
+                    showDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (BuildContext context) => new AlertDialog(
+                          title:
+                          Text("Number of People"),
+                          content: new TextField(
+                            controller: _controller,
+                            decoration: new InputDecoration(
+                              hintText: '# of People',
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          actions: <Widget>[
+                            FlatButton(
+                                onPressed: () async {
+                                  await serverFunctions
+                                      .checkIn(
+                                     userInfo.user, int.parse(_controller.text), DateTime.now().hour, userInfo.badgeNumber)
+                                      .then((success) {
+                                        print(success);
+                                    if (success) {
+                                      _controller.clear();
+                                      Navigator
+                                          .of(context, rootNavigator: true)
+                                          .pop();
+                                    } else {
+                                      Navigator
+                                          .of(context, rootNavigator: true)
+                                          .pop();
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (BuildContext context) =>
+                                        new AlertDialog(
+                                            title: new Text("Failure!"),
+                                            content: new Text(
+                                                "Check In Failed, Please Try Again"),
+                                            actions: <Widget>[
+                                              new FlatButton(
+                                                  child:
+                                                  new Text('Okay'),
+                                                  onPressed: () {
+                                                    Navigator
+                                                        .of(context,
+                                                        rootNavigator:
+                                                        true)
+                                                        .pop();
+                                                    //Navigator.of(context).pop();
+                                                  })
+                                            ]),
+                                      );
+                                    }
+                                  });
+                                },
+                                child: Text("Submit"))
+                          ],
+                        ));
+                  })
                 ),
                 Container(
                     padding: const EdgeInsets.only(top: 50.0),
@@ -1439,7 +1503,7 @@ class ChoiceCard extends State<ChoiceState> {
             children: <Widget>[
               new Row(children: <Widget>[
                 new Expanded(
-                    child: new IconButton(
+                    /*child: new IconButton(
                         icon: new Icon(Icons.camera_alt),
                         iconSize: 70.0,
                         color: Colors.lightBlue,
@@ -1447,6 +1511,15 @@ class ChoiceCard extends State<ChoiceState> {
                           Navigator
                               .of(context, rootNavigator: true)
                               .pushNamed("/screen8");
+                        })),*/
+                    child: new IconButton(
+                        icon: new Icon(Icons.list),
+                        iconSize: 70.0,
+                        color: Colors.lightBlue,
+                        onPressed: () {
+                          Navigator
+                              .of(context, rootNavigator: true)
+                              .pushNamed("/screen11");
                         })),
                 new Expanded(
                     child: new FlatButton(
