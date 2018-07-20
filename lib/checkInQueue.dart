@@ -7,7 +7,7 @@ import 'queue.dart';
 import 'membershipTextStyles.dart';
 
 final MembershipTextStyle myStyle = new MembershipTextStyle();
-final Queue queue = new Queue();
+final Queue myQueue = new Queue();
 
 class LoadingQueueState extends StatefulWidget {
   LoadingQueueState({Key key, this.title}) : super(key: key);
@@ -27,7 +27,7 @@ class LoadingQueue extends State<LoadingQueueState> {
   @override
   void initState() {
     super.initState();
-    queue.getQueue();
+    myQueue.getQueue();
     new Future.delayed(new Duration(milliseconds: 500), _menu);
   }
 
@@ -36,8 +36,11 @@ class LoadingQueue extends State<LoadingQueueState> {
     Collection generally takes between 2 and 5 seconds to complete, depending on connection speed.
    */
   Future _menu() async {
-    if (queue.queueKeys != null){
-      Navigator.pushReplacementNamed(context, "/screen10");
+    if (myQueue.queueKeys != null && myQueue.queue != null) {
+      print("ONE");
+      if (myQueue.queueKeys.length != 0) {
+        Navigator.pushReplacementNamed(context, "/screen10");
+      }
     } else {
       count++;
       print(count);
@@ -46,23 +49,24 @@ class LoadingQueue extends State<LoadingQueueState> {
           context: context,
           barrierDismissible: false,
           builder: (BuildContext context) => new AlertDialog(
-            title: Text("Load Failed"),
-            content: Text("Load Failed - Try Again"),
-            actions: <Widget>[
-              FlatButton(
-                  onPressed: () {
-                    Navigator.popAndPushNamed(context, "/screen6");
-                  },
-                  child: Text("Try Again",
-                      style: myStyle.smallFlatButton(context)))
-            ],
-          ),
+                title: Text("Load Failed"),
+                content: Text("Load Failed Or No One has Signed In- Try Again"),
+                actions: <Widget>[
+                  FlatButton(
+                      onPressed: () {
+                        Navigator.popAndPushNamed(context, "/screen6");
+                      },
+                      child: Text("Try Again",
+                          style: myStyle.smallFlatButton(context)))
+                ],
+              ),
         );
       } else {
         new Future.delayed(new Duration(seconds: 1), _menu);
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -141,7 +145,6 @@ class _CheckInQueue extends State<CheckInQueue> {
       FirebaseDatabase.instance.reference().child("queue");
   DataSnapshot queueSnapShot;
 
-
   @override
   initState() {
     super.initState();
@@ -153,114 +156,156 @@ class _CheckInQueue extends State<CheckInQueue> {
 
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-        home: new Scaffold(
-            appBar: new AppBar(
-              title: new Text('Check-In Queue'),
-            ),
-            body:
-       queue.queueKeys == null ? Container(width: 50.0, height: 50.0, child: Text("No Signins")) : ListView.builder(
-      itemBuilder: (BuildContext context, int index) {
-        Row(
-          children: <Widget>[
-            Expanded(child: Text("Badge - " + queue.queue[queue.queueKeys[index]][2][0])),
-            Expanded(child: Text(queue.queue[queue.queueKeys[index]][0][0] + " people")),
-            Expanded(
-                child: FlatButton(
-                    onPressed: () async {
-                      DatabaseReference checkInReference = FirebaseDatabase
-                          .instance
-                          .reference()
-                          .child("beachCheckIn/" +
-                              new DateTime.now().year.toString() +
-                              "/" +
-                              new DateTime.now().month.toString() +
-                              "/" +
-                              new DateTime.now().day.toString() +
-                              "/" +
-                              queue.queue[queue.queueKeys[index]][2][0].value.toString());
-                      checkInReference.update({
-                        queue.queue[queue.queueKeys[index]][0][0]: queue.queue[queue.queueKeys[index]][1][0]
-                      });
-                      DatabaseReference countReference = FirebaseDatabase
-                          .instance
-                          .reference()
-                          .child("beachCheckIn/" +
-                              new DateTime.now().year.toString() +
-                              "/" +
-                              new DateTime.now().month.toString() +
-                              "/" +
-                              new DateTime.now().day.toString());
-                      DataSnapshot countSnapShot = await countReference.once();
-                      int tempHour = queue.queue[queue.queueKeys[index]][1][0];
-                      int tempCount = 0;
-                      if (tempHour > 12) {
-                        tempHour -= 12;
-                      }
-                      int secondHour = tempHour + 1;
-                      if (secondHour > 12) {
-                        secondHour = 1;
-                      }
-                      try {
-                        tempCount = countSnapShot.value[
-                            tempHour.toString() + "-" + secondHour.toString()];
-                      } catch (e) {
-                        tempCount = 0;
-                      }
-                      if (tempCount == null) {
-                        tempCount = 0;
-                      }
-                      tempCount += queue.queue[queue.queueKeys[index]][0][0];
+    return new Scaffold(
+        appBar: new AppBar(
+          title: new Text('Check-In Queue'),
+        ),
+        body: myQueue.queueKeys == null || myQueue.queueKeys.length == 0
+            ? Container(width: 50.0, height: 50.0, child: Text("No Signins"))
+            : ListView.builder(
+                itemCount: myQueue.queueKeys.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Expanded(
+                          child: Text("Badge - " +
+                              myQueue.queue[myQueue.queueKeys[index]][2][0])),
+                      Expanded(
+                          child: Text(myQueue.queue[myQueue.queueKeys[index]][0]
+                                  [0] +
+                              " person(s)")),
+                      Expanded(
+                          child: FlatButton(
+                              onPressed: () async {
+                                DatabaseReference checkInReference =
+                                    FirebaseDatabase
+                                        .instance
+                                        .reference()
+                                        .child("beachCheckIn/" +
+                                            new DateTime.now().year.toString() +
+                                            "/" +
+                                            new DateTime.now()
+                                                .month
+                                                .toString() +
+                                            "/" +
+                                            new DateTime.now().day.toString() +
+                                            "/" +
+                                            myQueue
+                                                .queue[myQueue.queueKeys[index]]
+                                                    [2][0]
+                                                .toString());
+                                print(myQueue.queue);
+                                checkInReference.update({
+                                  myQueue.queue[myQueue.queueKeys[index]][0][0]:
+                                      myQueue.queue[myQueue.queueKeys[index]][1]
+                                          [0]
+                                });
+                                DatabaseReference countReference =
+                                    FirebaseDatabase.instance.reference().child(
+                                        "beachCheckIn/" +
+                                            new DateTime.now().year.toString() +
+                                            "/" +
+                                            new DateTime.now()
+                                                .month
+                                                .toString() +
+                                            "/" +
+                                            new DateTime.now().day.toString());
+                                DataSnapshot countSnapShot =
+                                    await countReference.once();
+                                int tempHour = int.parse(myQueue
+                                    .queue[myQueue.queueKeys[index]][1][0]);
+                                int tempCount = 0;
+                                if (tempHour > 12) {
+                                  tempHour -= 12;
+                                }
+                                int secondHour = tempHour + 1;
+                                if (secondHour > 12) {
+                                  secondHour = 1;
+                                }
+                                try {
+                                  tempCount = countSnapShot.value[
+                                      tempHour.toString() +
+                                          "-" +
+                                          secondHour.toString()];
+                                } catch (e) {
+                                  tempCount = 0;
+                                }
+                                if (tempCount == null) {
+                                  tempCount = 0;
+                                }
+                                tempCount += int.parse(myQueue
+                                    .queue[myQueue.queueKeys[index]][0][0]);
 
-                      await countReference.update({
-                        tempHour.toString() + "-" + secondHour.toString():
-                            tempCount
-                      });
-                      int tempRawCount = 0;
-                      try {
-                        tempRawCount = (countSnapShot.value['raw']);
-                      } catch (e) {
-                        tempRawCount = 0;
-                      }
-                      if (tempRawCount == null) {
-                        tempRawCount = 0;
-                      }
-                      tempRawCount += queue.queue[queue.queueKeys[index]][0][0];
-                      await countReference.update({'raw': tempRawCount});
-                      await queueReference.child(queue.queueKeys[index]).remove();
-                      setState(() async {
-                        queue.getQueue();
-                      });
-                    },
-                    child: Text("Check-In"))),
-            Expanded(
-                child: FlatButton(
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          builder: (BuildContext context) => new AlertDialog(
-                                title: Text("Remove From Queue?"),
-                                content: new Text("Are You Sure?"),
-                                actions: <Widget>[
-                                  FlatButton(
-                                      onPressed: () async {
-                                        await queueReference
-                                            .child(queue.queueKeys[index])
-                                            .remove();
-                                        setState(() async {
-                                          queue.getQueue();
-                                        });
-                                      },
-                                      child: Text("Remove"))
-                                ],
-                              ));
-                    },
-                    child: Text("Remove")))
-          ],
-        );
-      },
-      itemCount: queue.queueKeys.length,
-    )));
+                                await countReference.update({
+                                  tempHour.toString() +
+                                      "-" +
+                                      secondHour.toString(): tempCount
+                                });
+                                int tempRawCount = 0;
+                                try {
+                                  tempRawCount = (countSnapShot.value['raw']);
+                                } catch (e) {
+                                  tempRawCount = 0;
+                                }
+                                if (tempRawCount == null) {
+                                  tempRawCount = 0;
+                                }
+                                tempRawCount += int.parse(myQueue
+                                    .queue[myQueue.queueKeys[index]][0][0]);
+                                await countReference
+                                    .update({'raw': tempRawCount});
+                                await queueReference
+                                    .child(myQueue.queueKeys[index])
+                                    .remove();
+                                myQueue.queueKeys.removeAt(index);
+                                print(myQueue.queueKeys);
+                                if (myQueue.queueKeys.length == 0) {
+                                  Navigator.popAndPushNamed(
+                                      context, "/screen5");
+                                } else {
+                                  setState(() {});
+                                }
+                              },
+                              child: Text("Check-In"))),
+                      Expanded(
+                          child: FlatButton(
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    barrierDismissible: true,
+                                    builder: (BuildContext context) =>
+                                        new AlertDialog(
+                                          title: Text("Remove From Queue?"),
+                                          content: new Text("Are You Sure?"),
+                                          actions: <Widget>[
+                                            FlatButton(
+                                                onPressed: () async {
+                                                  await queueReference
+                                                      .child(myQueue
+                                                          .queueKeys[index])
+                                                      .remove();
+                                                  myQueue.queueKeys.removeAt(index);
+                                                  print(myQueue.queueKeys);
+                                                  if (myQueue
+                                                          .queueKeys.length ==
+                                                      0) {
+                                                    Navigator.popAndPushNamed(
+                                                        context, "/screen5");
+                                                  } else {
+                                                    setState(() {
+                                                      Navigator.pop(context);
+                                                    });
+                                                  }
+                                                },
+                                                child: Text("Remove"))
+                                          ],
+                                        ));
+                              },
+                              child: Text("Remove")))
+                    ],
+                  );
+                },
+              ));
   }
 }

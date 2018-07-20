@@ -16,7 +16,11 @@ class Queue{
 
   getQueue() async {
       queueSnapShot = await queueReference.once();
-      queue = queueSnapShot.value;
+      try {
+        queue = queueSnapShot.value;
+      }
+      catch (e)
+    {}
       if (queue != null)
         queueKeys = queue.keys.toList();
   }
