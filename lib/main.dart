@@ -18,6 +18,7 @@ import 'events.dart';
 import 'weather.dart';
 import 'guests.dart';
 import 'checkInQueue.dart';
+import 'queue.dart';
 
 final MembershipTextStyle myStyle = new MembershipTextStyle();
 final AppUserInfo userInfo = new AppUserInfo();
@@ -28,7 +29,7 @@ final Guest guestHandler = new Guest();
 final double devicePixelRatio = ui.window.devicePixelRatio;
 final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller2 = new TextEditingController();
-
+final Queue queueHandler = new Queue();
 /*
   Application to manager LPPOA Membership
   Allows users to:
@@ -64,8 +65,8 @@ void runCheck() async {
         '/screen7': (BuildContext context) => new CameraState(),
         '/screen8': (BuildContext context) => new QrScanner(),
         '/screen9': (BuildContext context) => new BadgeNumber(),
-        '/screen10': (BuildContext context) => new CheckInQueue(),
-        '/screen11': (BuildContext context) => new LoadingQueueState()
+        //'/screen10': (BuildContext context) => new CheckInQueue(),
+        //'/screen11': (BuildContext context) => new LoadingQueueState()
       },
     ));
   } else {
@@ -80,8 +81,8 @@ void runCheck() async {
         '/screen7': (BuildContext context) => new CameraState(),
         '/screen8': (BuildContext context) => new QrScanner(),
         '/screen9': (BuildContext context) => new BadgeNumber(),
-        '/screen10': (BuildContext context) => new CheckInQueue(),
-        '/screen11': (BuildContext context) => new LoadingQueueState()
+        //'/screen10': (BuildContext context) => new CheckInQueue(),
+        //'/screen11': (BuildContext context) => new LoadingQueueState()
       },
     ));
   }
@@ -602,6 +603,10 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
           "/" +
           new DateTime.now().day.toString());
 
+  final DatabaseReference queueListener = userInfo.isBeach
+      ? FirebaseDatabase.instance.reference().child("queue/")
+      : null;
+
   Map familyChanges;
 
   TabbedAppBarState() {
@@ -612,6 +617,10 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
       weatherClosureListener.onValue.listen(_editWeatherClosure);
       guestListener.onChildAdded.listen(_guestsEdited);
     }
+    else
+      {
+        queueListener.onChildAdded.listen(_queueEdited);
+      }
   }
 
   final FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
@@ -668,6 +677,13 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
         guestHandler.getFamily();
       });
     }
+  }
+
+  _queueEdited(Event event) {
+   setState(() {
+       queueHandler.queue.addAll(event.snapshot.value);
+      });
+
   }
 
   /*

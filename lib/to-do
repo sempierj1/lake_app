@@ -1,6 +1,5 @@
-Change sign-in to notifiy if badge number wasn't found but then allow # entry anyway.
+Switch Sign-In main page to the checkInQueue view but add a floating button to check someone in the old badge number way (maybe just ignore the family list since no one cares)
+Have it take badge number in dialog, search, pop, display new dialog with list of family members? and textarea for number of people to be entered and submit.
 
-If badge is found have box at bottom for "additional" for families who aren't updated in apricot.
-
-When invited person signs in the first time need to mark them verified for other family members.
+Need to figure out security fix though because it would be bypassing the pictures.
 

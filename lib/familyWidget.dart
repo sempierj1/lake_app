@@ -5,6 +5,7 @@ import 'userInfo.dart';
 import 'serverFunctions.dart';
 
 class FamilyWidget extends StatelessWidget {
+
   final int index;
   final AppUserInfo userInfo;
   final MembershipTextStyle myStyle = new MembershipTextStyle();

@@ -7,8 +7,20 @@ import 'queue.dart';
 import 'membershipTextStyles.dart';
 
 final MembershipTextStyle myStyle = new MembershipTextStyle();
-final Queue myQueue = new Queue();
 
+class CheckInQueue extends StatelessWidget{
+
+  final Queue myQueue;
+  final int index;
+
+  CheckInQueue(this.myQueue, this.index);
+
+  @override
+  Widget build(BuildContext context) {
+    return null;
+  }
+}
+/*
 class LoadingQueueState extends StatefulWidget {
   LoadingQueueState({Key key, this.title}) : super(key: key);
 
@@ -37,7 +49,6 @@ class LoadingQueue extends State<LoadingQueueState> {
    */
   Future _menu() async {
     if (myQueue.queueKeys != null && myQueue.queue != null) {
-      print("ONE");
       if (myQueue.queueKeys.length != 0) {
         Navigator.pushReplacementNamed(context, "/screen10");
       }
@@ -308,4 +319,4 @@ class _CheckInQueue extends State<CheckInQueue> {
                 },
               ));
   }
-}
+}*/
