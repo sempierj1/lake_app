@@ -7,7 +7,8 @@ class Queue{
   DatabaseReference queueReference =
   FirebaseDatabase.instance.reference().child("queue");
   DataSnapshot queueSnapShot;
-  List queueKeys;
+  List queueKeys = new List();
+  List checked = new List();
 
   Queue();
 
@@ -17,8 +18,18 @@ class Queue{
         queue = queueSnapShot.value;
       }
       catch (e)
-    {}
-      if (queue != null)
+    {
+      print(e);
+    }
+    if(queue != null)
+      {
         queueKeys = queue.keys.toList();
+        for(int i = 0; i < queueKeys.length; i++)
+          {
+            checked.add(false);
+          }
+      }
+      //if (queue != null)
+        //queueKeys = queue.keys.toList();
   }
 }

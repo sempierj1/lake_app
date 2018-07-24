@@ -8,7 +8,7 @@ import 'membershipTextStyles.dart';
 
 final MembershipTextStyle myStyle = new MembershipTextStyle();
 
-class CheckInQueue extends StatelessWidget{
+/*class CheckInQueue extends StatelessWidget {
 
   final Queue myQueue;
   final int index;
@@ -17,7 +17,135 @@ class CheckInQueue extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    return null;
+    return new Card(
+        child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+        ListTile(
+        leading: Text((myQueue.queue[index][2])
+            .toString()),title: Text(myQueue.queue[index][1].toString()),
+    trailing: Text
+    (myQueue.queue[index
+    ][0].toString
+    ()),
+    ),
+    !myQueue.checked[index] ?
+    ButtonTheme.bar(
+    child: ButtonBar(
+    children: <Widget>[
+    FlatButton(
+    onPressed: () async
+    {
+    DatabaseReference checkInReference =
+    FirebaseDatabase
+        .instance
+        .reference()
+        .child("beachCheckIn/" +
+    new DateTime.now().year.toString() +
+    "/" +
+    new DateTime.now()
+        .month
+        .toString() +
+    "/" +
+    new DateTime.now().day.toString() +
+    "/" +
+    myQueue
+        .queue[index]
+    [2]
+        .toString());
+    checkInReference.update({
+    myQueue.queue[index][0]:
+    myQueue.queue[index][1]
+    });
+    DatabaseReference countReference =
+    FirebaseDatabase.instance.reference().child(
+    "beachCheckIn/" +
+    new DateTime.now().year.toString() +
+    "/" +
+    new DateTime.now()
+        .month
+        .toString() +
+    "/" +
+    new DateTime.now().day.toString());
+    DataSnapshot countSnapShot =
+    await countReference.once();
+    int tempHour = int.parse(myQueue
+        .queue[index][1]);
+    int tempCount = 0;
+    if (tempHour > 12) {
+    tempHour -= 12;
+    }
+    int secondHour = tempHour + 1;
+    if (secondHour > 12) {
+    secondHour = 1;
+    }
+    try {
+    tempCount = countSnapShot.value[
+    tempHour.toString() +
+    "-" +
+    secondHour.toString()];
+    } catch (e) {
+    tempCount = 0;
+    }
+    if (tempCount == null) {
+    tempCount = 0;
+    }
+    tempCount += int.parse(myQueue
+        .queue[index][0]);
+
+    await countReference.update({
+    tempHour.toString() +
+    "-" +
+    secondHour.toString(): tempCount
+    });
+    int tempRawCount = 0;
+    try {
+    tempRawCount = (countSnapShot.value['raw']);
+    } catch (e) {
+    tempRawCount = 0;
+    }
+    if (tempRawCount == null) {
+    tempRawCount = 0;
+    }
+    tempRawCount += int.parse(myQueue
+        .queue[index][0]);
+    await countReference
+        .update({
+    'raw': tempRawCount
+    });
+    myQueue.checked[index] = true;
+    }
+    ,
+    child: Text("Check-In")),
+
+    FlatButton(
+        onPressed: () {
+          showDialog(
+              context: context,
+              barrierDismissible: true,
+              builder: (BuildContext context) =>
+              new AlertDialog(
+                title: Text("Remove From Queue?"),
+                content: new Text("Are You Sure?"),
+                actions: <Widget>[
+                  FlatButton(
+                      onPressed: () async{
+
+                        myQueue.queue.removeAt(index);
+                      },
+                      child: Text("Remove"))
+                ],
+              ));
+        },
+        child: Text("Remove"))
+
+    ]
+    ,
+    )
+    ): Container(width: 0.0, height: 0.0)
+    ]
+    ,
+    )
+    ,
+    );
   }
 }
 /*
@@ -206,7 +334,6 @@ class _CheckInQueue extends State<CheckInQueue> {
                                                 .queue[myQueue.queueKeys[index]]
                                                     [2][0]
                                                 .toString());
-                                print(myQueue.queue);
                                 checkInReference.update({
                                   myQueue.queue[myQueue.queueKeys[index]][0][0]:
                                       myQueue.queue[myQueue.queueKeys[index]][1]
@@ -320,3 +447,4 @@ class _CheckInQueue extends State<CheckInQueue> {
               ));
   }
 }*/
+*/

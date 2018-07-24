@@ -5,7 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'dart:ui' as ui;
-import 'package:qr_flutter/qr_flutter.dart';
+//import 'package:qr_flutter/qr_flutter.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'menuCamera.dart';
 import 'qrScan.dart';
@@ -604,7 +604,7 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
           new DateTime.now().day.toString());
 
   final DatabaseReference queueListener = userInfo.isBeach
-      ? FirebaseDatabase.instance.reference().child("queue/")
+      ? FirebaseDatabase.instance.reference().child("queue")
       : null;
 
   Map familyChanges;
@@ -680,10 +680,12 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   }
 
   _queueEdited(Event event) {
-   setState(() {
-       queueHandler.queue.addAll(event.snapshot.value);
-      });
 
+   setState(() {
+       queueHandler.queue[event.snapshot.key] = event.snapshot.value;
+       queueHandler.queueKeys.add(event.snapshot.key);
+       queueHandler.checked.add(false);
+      });
   }
 
   /*
@@ -1514,43 +1516,176 @@ class ChoiceCard extends State<ChoiceState> {
       //Shows an option to sign in via QR code or badge number.
       case "Sign-In":
         {
+          DatabaseReference queueReference =
+          FirebaseDatabase.instance.reference().child("queue");
+
           return new Column(
+            children: <Widget>[
+
+            Expanded(child : ListView.builder(
+              itemBuilder: (BuildContext context, int index) {
+                int tempHour = int.parse(queueHandler
+                    .queue[queueHandler.queueKeys[index]][1][0]);
+                int tempCount = 0;
+                if (tempHour > 12) {
+                  tempHour -= 12;
+                }
+                int secondHour = tempHour + 1;
+                if (secondHour > 12) {
+                  secondHour = 1;
+                }
+                return new Card(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                    ListTile(
+                      leading: Text((queueHandler.queue[queueHandler.queueKeys[index]][2][0])
+                          .toString(), style: myStyle.darkText(context),),
+                      //title: Text(tempHour.toString() + "-" + secondHour.toString(), textAlign: TextAlign.center, style: TextStyle(fontSize: 35.0)),
+                      trailing: Text
+                        (queueHandler.queue[queueHandler.queueKeys[index]
+                      ][0][0].toString
+                        () + " person(s)", style: myStyle.darkText(context)),
+                    ),
+                    !queueHandler.checked[index] ?
+                    ButtonTheme.bar(
+                        child: ButtonBar(
+                          children: <Widget>[
+                            FlatButton(
+                                onPressed: () async
+                                {
+                                  DatabaseReference checkInReference =
+                                  FirebaseDatabase
+                                      .instance
+                                      .reference()
+                                      .child("beachCheckIn/" +
+                                      new DateTime.now().year.toString() +
+                                      "/" +
+                                      new DateTime.now()
+                                          .month
+                                          .toString() +
+                                      "/" +
+                                      new DateTime.now().day.toString() +
+                                      "/" +
+                                      queueHandler
+                                          .queue[queueHandler.queueKeys[index]]
+                                      [2][0]
+                                          .toString());
+                                  checkInReference.update({
+                                    queueHandler.queue[queueHandler.queueKeys[index]][0][0].toString():
+                                    queueHandler.queue[queueHandler.queueKeys[index]][1][0]
+                                  });
+                                  DatabaseReference countReference =
+                                  FirebaseDatabase.instance.reference().child(
+                                      "beachCheckIn/" +
+                                          new DateTime.now().year.toString() +
+                                          "/" +
+                                          new DateTime.now()
+                                              .month
+                                              .toString() +
+                                          "/" +
+                                          new DateTime.now().day.toString());
+                                  DataSnapshot countSnapShot =
+                                  await countReference.once();
+
+                                  try {
+                                    tempCount = countSnapShot.value[
+                                    tempHour.toString() +
+                                        "-" +
+                                        secondHour.toString()];
+                                  } catch (e) {
+                                    tempCount = 0;
+                                  }
+                                  if (tempCount == null) {
+                                    tempCount = 0;
+                                  }
+                                  tempCount += int.parse(queueHandler
+                                      .queue[queueHandler.queueKeys[index]][0][0]);
+
+                                  await countReference.update({
+                                    tempHour.toString() +
+                                        "-" +
+                                        secondHour.toString(): tempCount
+                                  });
+                                  int tempRawCount = 0;
+                                  try {
+                                    tempRawCount = (countSnapShot.value['raw']);
+                                  } catch (e) {
+                                    tempRawCount = 0;
+                                  }
+                                  if (tempRawCount == null) {
+                                    tempRawCount = 0;
+                                  }
+                                  tempRawCount += int.parse(queueHandler
+                                      .queue[queueHandler.queueKeys[index]][0][0]);
+                                  await countReference
+                                      .update({
+                                    'raw': tempRawCount
+                                  });
+                                  setState(() {
+                                    queueHandler.checked[index] = true;
+                                  });
+                                }
+                                ,
+                                child: Text("Check-In")),
+
+                            FlatButton(
+                                onPressed: () {
+                                  showDialog(
+                                      context: context,
+                                      barrierDismissible: true,
+                                      builder: (BuildContext context) =>
+                                      new AlertDialog(
+                                        title: Text("Remove From Queue?"),
+                                        content: new Text("Are You Sure?"),
+                                        actions: <Widget>[
+                                          FlatButton(
+                                              onPressed: () async{
+                                                await queueReference
+                                                    .child(queueHandler
+                                                    .queueKeys[index])
+                                                    .remove();
+                                                setState(() {
+                                                  queueHandler.queue.remove(
+                                                      queueHandler
+                                                          .queueKeys[index]);
+                                                  queueHandler.queueKeys
+                                                      .removeAt(index);
+                                                  queueHandler.checked.removeAt(
+                                                      index);
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: Text("Remove"))
+                                        ],
+                                      ));
+                                },
+                                child: Text("Remove"))
+
+                          ]
+                          ,
+                        )
+                    ): Container(width: 0.0, height: 0.0)
+                  ]
+                    ,
+                  )
+                  ,
+                );
+              }, itemCount: queueHandler.queueKeys.length,)),
+            FloatingActionButton(
+              backgroundColor: Colors.lightBlue,
+              child: Icon(Icons.add, size: 35.0, color: Colors.white,),
+              elevation: 6.0,
+              onPressed: (){},
+            )],
+          );
+          /*List<Widget> queue = new List.generate(queueHandler.queue.length,
+                  (int i) => new CheckInQueue(queueHandler, i));
+          return ListView(
+            children: queue,
+          );*/
+          /*return new Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-              new Row(children: <Widget>[
-                new Expanded(
-                    /*child: new IconButton(
-                        icon: new Icon(Icons.camera_alt),
-                        iconSize: 70.0,
-                        color: Colors.lightBlue,
-                        onPressed: () {
-                          Navigator
-                              .of(context, rootNavigator: true)
-                              .pushNamed("/screen8");
-                        })),*/
-                    child: new IconButton(
-                        icon: new Icon(Icons.list),
-                        iconSize: 70.0,
-                        color: Colors.lightBlue,
-                        onPressed: () {
-                          Navigator
-                              .of(context, rootNavigator: true)
-                              .pushNamed("/screen11");
-                        })),
-                new Expanded(
-                    child: new FlatButton(
-                        onPressed: () {
-                          Navigator
-                              .of(context, rootNavigator: true)
-                              .pushNamed("/screen9");
-                        },
-                        child: new Text("Badge #",
-                            style: new TextStyle(
-                                fontFamily: 'Roboto',
-                                fontSize: myStyle.fontSize * 1.3,
-                                color: Colors.lightBlue)))),
-              ]),
-              new Align(
+              /*new Align(
                   alignment: Alignment.bottomCenter,
                   child: new FlatButton(
                       onPressed: () {
@@ -1576,7 +1711,7 @@ class ChoiceCard extends State<ChoiceState> {
                               fontSize: myStyle.fontSize * .75,
                               color: Colors.lightBlue)))),
             ],
-          );
+          );*/*/
         }
         break;
       default:
