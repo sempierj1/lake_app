@@ -33,7 +33,7 @@ final TextEditingController _controller2 = new TextEditingController();
 final Queue queueHandler = new Queue();
 final CheckIn checkIn = new CheckIn();
 /*
-  Application to manager LPPOA Membership
+  Application to manage LPPOA Membership
   Allows users to:
   Check in to the beach
   Manage their family
