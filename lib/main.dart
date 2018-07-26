@@ -5,7 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'dart:ui' as ui;
-//import 'package:qr_flutter/qr_flutter.dart';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'menuCamera.dart';
 import 'qrScan.dart';
@@ -17,9 +17,10 @@ import 'serverFunctions.dart';
 import 'events.dart';
 import 'weather.dart';
 import 'guests.dart';
-import 'checkInQueue.dart';
 import 'queue.dart';
+import 'checkIn.dart';
 
+final ScrollController scrollController = new ScrollController();
 final MembershipTextStyle myStyle = new MembershipTextStyle();
 final AppUserInfo userInfo = new AppUserInfo();
 final ServerFunctions serverFunctions = new ServerFunctions();
@@ -30,6 +31,7 @@ final double devicePixelRatio = ui.window.devicePixelRatio;
 final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller2 = new TextEditingController();
 final Queue queueHandler = new Queue();
+final CheckIn checkIn = new CheckIn();
 /*
   Application to manager LPPOA Membership
   Allows users to:
@@ -616,11 +618,9 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
       weatherListener.onValue.listen(_editWeather);
       weatherClosureListener.onValue.listen(_editWeatherClosure);
       guestListener.onChildAdded.listen(_guestsEdited);
+    } else {
+      queueListener.onChildAdded.listen(_queueEdited);
     }
-    else
-      {
-        queueListener.onChildAdded.listen(_queueEdited);
-      }
   }
 
   final FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
@@ -680,12 +680,11 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   }
 
   _queueEdited(Event event) {
-
-   setState(() {
-       queueHandler.queue[event.snapshot.key] = event.snapshot.value;
-       queueHandler.queueKeys.add(event.snapshot.key);
-       queueHandler.checked.add(false);
-      });
+    setState(() {
+      queueHandler.queue[event.snapshot.key] = event.snapshot.value;
+      queueHandler.queueKeys.add(event.snapshot.key);
+      queueHandler.checked.add(event.snapshot.value[3][0] == "true" ? true : false);
+    });
   }
 
   /*
@@ -879,6 +878,7 @@ class ChoiceCard extends State<ChoiceState> {
   ChoiceCard({Key key, this.choice});
 
   final Choice choice;
+
   //new QrImage(  version: 3, data: userInfo.user.uid, size: widthApp / 2)
   @override
   Widget build(BuildContext context) {
@@ -896,68 +896,77 @@ class ChoiceCard extends State<ChoiceState> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Center(
-                  child: new RaisedButton(child: Text("Check-In"), onPressed: ()async {
-                    _controller.clear();
-                    showDialog(
-                        context: context,
-                        barrierDismissible: true,
-                        builder: (BuildContext context) => new AlertDialog(
-                          title:
-                          Text("Number of People"),
-                          content: new TextField(
-                            controller: _controller,
-                            decoration: new InputDecoration(
-                              hintText: '# of People',
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          actions: <Widget>[
-                            FlatButton(
-                                onPressed: () async {
-                                  await serverFunctions
-                                      .checkIn(
-                                     userInfo.user, int.parse(_controller.text), DateTime.now().hour, userInfo.badgeNumber)
-                                      .then((success) {
-                                        print(success);
-                                    if (success) {
-                                      _controller.clear();
-                                      Navigator
-                                          .of(context, rootNavigator: true)
-                                          .pop();
-                                    } else {
-                                      Navigator
-                                          .of(context, rootNavigator: true)
-                                          .pop();
-                                      showDialog(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (BuildContext context) =>
-                                        new AlertDialog(
-                                            title: new Text("Failure!"),
-                                            content: new Text(
-                                                "Check In Failed, Please Try Again"),
-                                            actions: <Widget>[
-                                              new FlatButton(
-                                                  child:
-                                                  new Text('Okay'),
-                                                  onPressed: () {
-                                                    Navigator
-                                                        .of(context,
-                                                        rootNavigator:
-                                                        true)
-                                                        .pop();
-                                                    //Navigator.of(context).pop();
-                                                  })
-                                            ]),
-                                      );
-                                    }
-                                  });
-                                },
-                                child: Text("Submit"))
-                          ],
-                        ));
-                  })
-                ),
+                    child: new RaisedButton(
+                        child: Text("Check-In"),
+                        onPressed: () async {
+                          _controller.clear();
+                          showDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              builder: (BuildContext context) =>
+                                  new AlertDialog(
+                                    title: Text("Number of People"),
+                                    content: new TextField(
+                                      controller: _controller,
+                                      keyboardType: TextInputType.number,
+                                      decoration: new InputDecoration(
+                                        hintText: '# of People',
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    actions: <Widget>[
+                                      FlatButton(
+                                          onPressed: () async {
+                                            await serverFunctions
+                                                .checkIn(
+                                                    userInfo.user,
+                                                    int.parse(_controller.text),
+                                                    DateTime.now().hour,
+                                                    userInfo.badgeNumber)
+                                                .then((success) {
+                                              print(success);
+                                              if (success) {
+                                                _controller.clear();
+                                                Navigator
+                                                    .of(context,
+                                                        rootNavigator: true)
+                                                    .pop();
+                                              } else {
+                                                Navigator
+                                                    .of(context,
+                                                        rootNavigator: true)
+                                                    .pop();
+                                                showDialog(
+                                                  context: context,
+                                                  barrierDismissible: false,
+                                                  builder: (BuildContext
+                                                          context) =>
+                                                      new AlertDialog(
+                                                          title: new Text(
+                                                              "Failure!"),
+                                                          content: new Text(
+                                                              "Check In Failed, Please Try Again"),
+                                                          actions: <Widget>[
+                                                            new FlatButton(
+                                                                child: new Text(
+                                                                    'Okay'),
+                                                                onPressed: () {
+                                                                  Navigator
+                                                                      .of(context,
+                                                                          rootNavigator:
+                                                                              true)
+                                                                      .pop();
+                                                                  //Navigator.of(context).pop();
+                                                                })
+                                                          ]),
+                                                );
+                                              }
+                                            });
+                                          },
+                                          child: Text("Submit"))
+                                    ],
+                                  ));
+                        })),
                 Container(
                     padding: const EdgeInsets.only(top: 50.0),
                     child: Center(
@@ -996,7 +1005,9 @@ class ChoiceCard extends State<ChoiceState> {
             } else if (!weatherHandler.beachOpen &&
                 !weatherHandler.weatherClosure) {
               barColor = Colors.blueAccent;
-              alertText = "Closed Until " + weatherHandler.open + (d.weekday == 7 ? "PM" : "AM");
+              alertText = "Closed Until " +
+                  weatherHandler.open +
+                  (d.weekday == 7 ? "PM" : "AM");
             } else {
               barColor = Colors.red;
               alertText = "Closed - Inclement Weather";
@@ -1164,7 +1175,6 @@ class ChoiceCard extends State<ChoiceState> {
                             'remove',
                             userInfo);
                       } else {
-
                         userInfo.saved
                             .add(eventHandler.eventsShown[index]['eventNum']);
                         eventHandler.handleEvent(index,
@@ -1332,183 +1342,187 @@ class ChoiceCard extends State<ChoiceState> {
       //Allows the manager to close the beach via button push.
       case "Manager":
         {
-          return ListView(
-              children: <Widget>[ Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
+          return ListView(children: <Widget>[
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: new Text(
+                          guestHandler.guestNumber.toString() +
+                              "\n People Today",
+                          style: new TextStyle(
+                              fontFamily: "Raleway",
+                              fontSize: 11.25 * (heightApp / 200)),
+                          textAlign: TextAlign.center),
+                    ),
+                    Expanded(
+                      child: new Text(
+                          guestHandler.familyNumbers.toString() +
+                              "\n Families Today",
+                          style: new TextStyle(
+                              fontFamily: "Raleway",
+                              fontSize: 11.25 * (heightApp / 200)),
+                          textAlign: TextAlign.center),
+                    )
+                  ],
+                ),
+                Row(children: <Widget>[
                   Expanded(
-                    child: new Text(
-                        guestHandler.guestNumber.toString() + "\n People Today",
-                        style: new TextStyle(
-                            fontFamily: "Raleway",
-                            fontSize: 11.25 * (heightApp / 200)),
-                        textAlign: TextAlign.center),
-                  ),
-                  Expanded(
-                    child: new Text(
-                        guestHandler.familyNumbers.toString() +
-                            "\n Families Today",
-                        style: new TextStyle(
-                            fontFamily: "Raleway",
-                            fontSize: 11.25 * (heightApp / 200)),
-                        textAlign: TextAlign.center),
-                  )
-                ],
-              ),
-              Row(children: <Widget>[
-                Expanded(
-                    child: IconButton(
-                      iconSize: 100.0,
-                  icon: Icon(Icons.account_circle),
-                  onPressed: () async {
-                    showDialog(
-                        context: context,
-                        barrierDismissible: true,
-                        builder: (BuildContext context) => new AlertDialog(
-                              title:
-                                  Text("Enter WildApricot Contact Number"),
-                              content: new TextField(
-                                controller: _controller,
-                                decoration: new InputDecoration(
-                                  hintText: '12345678',
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              actions: <Widget>[
-                                FlatButton(
-                                    onPressed: () async {
-                                      await serverFunctions
-                                          .updateMember(
-                                              _controller.text)
-                                          .then((success) {
-                                        if (success) {
-                                          Navigator
-                                              .of(context, rootNavigator: true)
-                                              .pop();
-                                          showDialog(
-                                            context: context,
-                                            barrierDismissible: false,
-                                            builder: (BuildContext context) =>
-                                                new AlertDialog(
-                                                    title: new Text("Success!"),
-                                                    content: new Text(
-                                                        "User updated"),
-                                                    actions: <Widget>[
-                                                      new FlatButton(
-                                                          child:
-                                                              new Text('Okay'),
-                                                          onPressed: () {
-                                                            Navigator
-                                                                .of(context,
-                                                                    rootNavigator:
-                                                                        true)
-                                                                .pop();
-                                                            //Navigator.of(context).pop();
-                                                          })
-                                                    ]),
-                                          );
-                                        } else {
-                                          Navigator
-                                              .of(context, rootNavigator: true)
-                                              .pop();
-                                          showDialog(
-                                            context: context,
-                                            barrierDismissible: false,
-                                            builder: (BuildContext context) =>
-                                                new AlertDialog(
-                                                    title: new Text("Failure!"),
-                                                    content: new Text(
-                                                        "User has not been updated"),
-                                                    actions: <Widget>[
-                                                      new FlatButton(
-                                                          child:
-                                                              new Text('Okay'),
-                                                          onPressed: () {
-                                                            Navigator
-                                                                .of(context,
-                                                                    rootNavigator:
-                                                                        true)
-                                                                .pop();
-                                                            //Navigator.of(context).pop();
-                                                          })
-                                                    ]),
-                                          );
-                                        }
-                                      });
-                                    },
-                                    child: Text("Submit"))
-                              ],
-                            ));
-                  },
-                ))
-              ]),
-              new Align(
-                heightFactor: 3.2,
-                child: FlatButton(
+                      child: IconButton(
+                    iconSize: 100.0,
+                    icon: Icon(Icons.account_circle),
                     onPressed: () async {
                       showDialog(
-                        context: context,
-                        barrierDismissible: true,
-                        builder: (BuildContext context) => new AlertDialog(
-                              title: weatherHandler.weatherClosure
-                                  ? new Text("Open the Beach?")
-                                  : new Text("Close the Beach?"),
-                              content: weatherHandler.weatherClosure
-                                  ? new Text(
-                                      "Are you sure you want to open the beach?")
-                                  : new Text(
-                                      'Are you sure you want to close the beach?'),
-                              actions: <Widget>[
-                                new FlatButton(
-                                    onPressed: () async {
-                                      showDialog(
-                                          context: context,
-                                          barrierDismissible: false,
-                                          builder: (BuildContext context) =>
-                                              new AlertDialog(
-                                                title:
-                                                    new Text("Sending Message"),
-                                                content: new Container(
-                                                  height: 200.0,
-                                                  child: new Center(
-                                                    child: new SizedBox(
-                                                      height: 50.0,
-                                                      width: 50.0,
-                                                      child:
-                                                          new CircularProgressIndicator(
-                                                        value: null,
-                                                        strokeWidth: 7.0,
+                          context: context,
+                          barrierDismissible: true,
+                          builder: (BuildContext context) => new AlertDialog(
+                                title: Text("Enter WildApricot Contact Number"),
+                                content: new TextField(
+                                  controller: _controller,
+                                  decoration: new InputDecoration(
+                                    hintText: '12345678',
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                actions: <Widget>[
+                                  FlatButton(
+                                      onPressed: () async {
+                                        await serverFunctions
+                                            .updateMember(_controller.text)
+                                            .then((success) {
+                                          if (success) {
+                                            Navigator
+                                                .of(context,
+                                                    rootNavigator: true)
+                                                .pop();
+                                            showDialog(
+                                              context: context,
+                                              barrierDismissible: false,
+                                              builder: (BuildContext context) =>
+                                                  new AlertDialog(
+                                                      title:
+                                                          new Text("Success!"),
+                                                      content: new Text(
+                                                          "User updated"),
+                                                      actions: <Widget>[
+                                                        new FlatButton(
+                                                            child: new Text(
+                                                                'Okay'),
+                                                            onPressed: () {
+                                                              Navigator
+                                                                  .of(context,
+                                                                      rootNavigator:
+                                                                          true)
+                                                                  .pop();
+                                                              //Navigator.of(context).pop();
+                                                            })
+                                                      ]),
+                                            );
+                                          } else {
+                                            Navigator
+                                                .of(context,
+                                                    rootNavigator: true)
+                                                .pop();
+                                            showDialog(
+                                              context: context,
+                                              barrierDismissible: false,
+                                              builder: (BuildContext context) =>
+                                                  new AlertDialog(
+                                                      title:
+                                                          new Text("Failure!"),
+                                                      content: new Text(
+                                                          "User has not been updated"),
+                                                      actions: <Widget>[
+                                                        new FlatButton(
+                                                            child: new Text(
+                                                                'Okay'),
+                                                            onPressed: () {
+                                                              Navigator
+                                                                  .of(context,
+                                                                      rootNavigator:
+                                                                          true)
+                                                                  .pop();
+                                                              //Navigator.of(context).pop();
+                                                            })
+                                                      ]),
+                                            );
+                                          }
+                                        });
+                                      },
+                                      child: Text("Submit"))
+                                ],
+                              ));
+                    },
+                  ))
+                ]),
+                new Align(
+                  heightFactor: 3.2,
+                  child: FlatButton(
+                      onPressed: () async {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: true,
+                          builder: (BuildContext context) => new AlertDialog(
+                                title: weatherHandler.weatherClosure
+                                    ? new Text("Open the Beach?")
+                                    : new Text("Close the Beach?"),
+                                content: weatherHandler.weatherClosure
+                                    ? new Text(
+                                        "Are you sure you want to open the beach?")
+                                    : new Text(
+                                        'Are you sure you want to close the beach?'),
+                                actions: <Widget>[
+                                  new FlatButton(
+                                      onPressed: () async {
+                                        showDialog(
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (BuildContext context) =>
+                                                new AlertDialog(
+                                                  title: new Text(
+                                                      "Sending Message"),
+                                                  content: new Container(
+                                                    height: 200.0,
+                                                    child: new Center(
+                                                      child: new SizedBox(
+                                                        height: 50.0,
+                                                        width: 50.0,
+                                                        child:
+                                                            new CircularProgressIndicator(
+                                                          value: null,
+                                                          strokeWidth: 7.0,
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
-                                                ),
-                                              ));
-                                      await serverFunctions.closeBeach(
-                                          weatherHandler.weatherClosure);
-                                      Navigator.pop(context);
-                                      Navigator.pop(context);
-                                    },
-                                    child: new Text("Confirm"))
-                              ],
-                            ),
-                      );
-                    },
-                    child: weatherHandler.weatherClosure
-                        ? new Text(
-                            "Open Beach",
-                            style: myStyle.smallFlatButton(context),
-                            textAlign: TextAlign.center,
-                          )
-                        : new Text(
-                            "Close Beach",
-                            style: myStyle.smallFlatButton(context),
-                            textAlign: TextAlign.center,
-                          )),
-              )
-            ],
-          ),]);
+                                                ));
+                                        await serverFunctions.closeBeach(
+                                            weatherHandler.weatherClosure);
+                                        Navigator.pop(context);
+                                        Navigator.pop(context);
+                                      },
+                                      child: new Text("Confirm"))
+                                ],
+                              ),
+                        );
+                      },
+                      child: weatherHandler.weatherClosure
+                          ? new Text(
+                              "Open Beach",
+                              style: myStyle.smallFlatButton(context),
+                              textAlign: TextAlign.center,
+                            )
+                          : new Text(
+                              "Close Beach",
+                              style: myStyle.smallFlatButton(context),
+                              textAlign: TextAlign.center,
+                            )),
+                )
+              ],
+            ),
+          ]);
         }
         break;
 
@@ -1517,165 +1531,214 @@ class ChoiceCard extends State<ChoiceState> {
       case "Sign-In":
         {
           DatabaseReference queueReference =
-          FirebaseDatabase.instance.reference().child("queue");
+              FirebaseDatabase.instance.reference().child("queue");
 
           return new Column(
             children: <Widget>[
-
-            Expanded(child : ListView.builder(
-              itemBuilder: (BuildContext context, int index) {
-                int tempHour = int.parse(queueHandler
-                    .queue[queueHandler.queueKeys[index]][1][0]);
-                int tempCount = 0;
-                if (tempHour > 12) {
-                  tempHour -= 12;
-                }
-                int secondHour = tempHour + 1;
-                if (secondHour > 12) {
-                  secondHour = 1;
-                }
-                return new Card(
-                  child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                    ListTile(
-                      leading: Text((queueHandler.queue[queueHandler.queueKeys[index]][2][0])
-                          .toString(), style: myStyle.darkText(context),),
-                      //title: Text(tempHour.toString() + "-" + secondHour.toString(), textAlign: TextAlign.center, style: TextStyle(fontSize: 35.0)),
-                      trailing: Text
-                        (queueHandler.queue[queueHandler.queueKeys[index]
-                      ][0][0].toString
-                        () + " person(s)", style: myStyle.darkText(context)),
+              Expanded(
+                  child: ListView.builder(
+                itemBuilder: (BuildContext context, int index) {
+                  return new Card(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        ListTile(
+                          leading: Text(
+                            (queueHandler.queue[queueHandler.queueKeys[index]]
+                                    [2][0])
+                                .toString(),
+                            style: myStyle.darkText(context),
+                          ),
+                          //title: Text(tempHour.toString() + "-" + secondHour.toString(), textAlign: TextAlign.center, style: TextStyle(fontSize: 35.0)),
+                          trailing: Text(
+                              queueHandler.queue[queueHandler.queueKeys[index]]
+                                          [0][0]
+                                      .toString() +
+                                  " person(s)",
+                              style: myStyle.darkText(context)),
+                        ),
+                        !queueHandler.checked[index]
+                            ? ButtonTheme.bar(
+                                child: ButtonBar(
+                                children: <Widget>[
+                                  FlatButton(
+                                      onPressed: () async {
+                                        checkIn.updateCount(int.parse((queueHandler.queue[queueHandler.queueKeys[index]]
+                                        [0][0]).toString()), (queueHandler.queue[queueHandler.queueKeys[index]]
+                                        [2][0]).toString(), int.parse((queueHandler.queue[queueHandler.queueKeys[index]]
+                                        [1][0]).toString()));
+                                        setState(() {
+                                          queueHandler.checked[index] = true;
+                                        });
+                                      },
+                                      child: Text("Check-In")),
+                                  FlatButton(
+                                      onPressed: () {
+                                        showDialog(
+                                            context: context,
+                                            barrierDismissible: true,
+                                            builder: (BuildContext context) =>
+                                                new AlertDialog(
+                                                  title: Text(
+                                                      "Remove From Queue?"),
+                                                  content:
+                                                      new Text("Are You Sure?"),
+                                                  actions: <Widget>[
+                                                    FlatButton(
+                                                        onPressed: () async {
+                                                          await queueReference
+                                                              .child(queueHandler
+                                                                      .queueKeys[
+                                                                  index])
+                                                              .remove();
+                                                          setState(() {
+                                                            queueHandler.queue
+                                                                .remove(queueHandler
+                                                                        .queueKeys[
+                                                                    index]);
+                                                            queueHandler
+                                                                .queueKeys
+                                                                .removeAt(
+                                                                    index);
+                                                            queueHandler.checked
+                                                                .removeAt(
+                                                                    index);
+                                                          });
+                                                          Navigator
+                                                              .pop(context);
+                                                        },
+                                                        child: Text("Remove"))
+                                                  ],
+                                                ));
+                                      },
+                                      child: Text("Remove"))
+                                ],
+                              ))
+                            : Container(width: 0.0, height: 0.0)
+                      ],
                     ),
-                    !queueHandler.checked[index] ?
-                    ButtonTheme.bar(
-                        child: ButtonBar(
-                          children: <Widget>[
-                            FlatButton(
-                                onPressed: () async
-                                {
-                                  DatabaseReference checkInReference =
-                                  FirebaseDatabase
-                                      .instance
-                                      .reference()
-                                      .child("beachCheckIn/" +
-                                      new DateTime.now().year.toString() +
-                                      "/" +
-                                      new DateTime.now()
-                                          .month
-                                          .toString() +
-                                      "/" +
-                                      new DateTime.now().day.toString() +
-                                      "/" +
-                                      queueHandler
-                                          .queue[queueHandler.queueKeys[index]]
-                                      [2][0]
-                                          .toString());
-                                  checkInReference.update({
-                                    queueHandler.queue[queueHandler.queueKeys[index]][0][0].toString():
-                                    queueHandler.queue[queueHandler.queueKeys[index]][1][0]
-                                  });
-                                  DatabaseReference countReference =
-                                  FirebaseDatabase.instance.reference().child(
-                                      "beachCheckIn/" +
-                                          new DateTime.now().year.toString() +
-                                          "/" +
-                                          new DateTime.now()
-                                              .month
-                                              .toString() +
-                                          "/" +
-                                          new DateTime.now().day.toString());
-                                  DataSnapshot countSnapShot =
-                                  await countReference.once();
+                  );
+                },
+                itemCount: queueHandler.queueKeys.length,
+                    controller: scrollController,
+              )),
+              FloatingActionButton(
+                backgroundColor: Colors.lightBlue,
+                child: Icon(
+                  Icons.add,
+                  size: 35.0,
+                  color: Colors.white,
+                ),
+                elevation: 6.0,
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (BuildContext context) => new AlertDialog(
+                              title: Text("Enter Badge Number"),
+                              content: new TextField(
+                                controller: _controller,
+                                decoration: new InputDecoration(
+                                  hintText: '1111',
+                                ),
+                                textAlign: TextAlign.center,
+                                keyboardType: TextInputType.number,
+                              ),
+                              actions: <Widget>[
+                                FlatButton(onPressed: () async {
+                                  Navigator.pop(context);
 
-                                  try {
-                                    tempCount = countSnapShot.value[
-                                    tempHour.toString() +
-                                        "-" +
-                                        secondHour.toString()];
-                                  } catch (e) {
-                                    tempCount = 0;
+                                  DatabaseReference badgeReference =
+                                      FirebaseDatabase.instance
+                                          .reference()
+                                          .child("badges/" + _controller.text);
+                                  DataSnapshot uidSnapshot =
+                                      await badgeReference.once();
+                                  if (uidSnapshot.value == null) {
+                                    showDialog(
+                                        context: context,
+                                        barrierDismissible: true,
+                                        builder: (BuildContext context) =>
+                                            new AlertDialog(
+                                              title: new Text(
+                                                  "Badge Number Not Found Please Verify Current Stickers on Badges"),
+                                              content: new TextField(
+                                                keyboardType:
+                                                    TextInputType.number,
+                                                controller: _controller2,
+                                                decoration: new InputDecoration(
+                                                  hintText: 'Number of People',
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              actions: <Widget>[
+                                                new FlatButton(
+                                                    onPressed: () async {
+                                                      serverFunctions.checkInManual("ManualEntry" + DateTime.now().hour.toString() + DateTime.now().minute.toString() + DateTime.now().second.toString(), int.parse(_controller2.text), DateTime.now().hour, int.parse(_controller.text));
+                                                      checkIn.updateCount(int.parse(_controller2.text), _controller.text, DateTime.now().hour);
+                                                      checkIn.error(_controller.text);
+                                                      _controller.clear();
+                                                      _controller2.clear();
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: Text(
+                                                      "Continue",
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: new TextStyle(
+                                                          fontSize: 15.0,
+                                                          color:
+                                                              Colors.lightBlue),
+                                                    ))
+                                              ],
+                                            ));
+                                  } else {
+                                    /*Map uid = uidSnapshot.value;
+                                    DatabaseReference userReference = FirebaseDatabase.instance.reference().child("users/" + uid.keys.toList()[0]);
+                                    await userReference.once();*/
+                                    showDialog(
+                                        context: context,
+                                        barrierDismissible: true,
+                                        builder: (BuildContext context) =>
+                                        new AlertDialog(
+                                          title: new Text(
+                                              "Number of People"),
+                                          content: new TextField(
+                                            keyboardType:
+                                            TextInputType.number,
+                                            controller: _controller2,
+                                            decoration: new InputDecoration(
+                                              hintText: '1234',
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          actions: <Widget>[
+                                            new FlatButton(
+                                                onPressed: () async {
+                                                 serverFunctions.checkInManual("ManualEntry" + DateTime.now().hour.toString() + DateTime.now().minute.toString() + DateTime.now().second.toString(), int.parse(_controller2.text), DateTime.now().hour, int.parse(_controller.text));
+                                                 checkIn.updateCount(int.parse(_controller2.text), _controller.text, DateTime.now().hour);
+                                                 checkIn.error(_controller.text);
+                                                 _controller.clear();
+                                                  _controller2.clear();
+                                                  Navigator.pop(context);
+                                                },
+                                                child: Text(
+                                                  "Continue",
+                                                  textAlign:
+                                                  TextAlign.center,
+                                                  style: new TextStyle(
+                                                      fontSize: 15.0,
+                                                      color:
+                                                      Colors.lightBlue),
+                                                ))
+                                          ],
+                                        ));
                                   }
-                                  if (tempCount == null) {
-                                    tempCount = 0;
-                                  }
-                                  tempCount += int.parse(queueHandler
-                                      .queue[queueHandler.queueKeys[index]][0][0]);
-
-                                  await countReference.update({
-                                    tempHour.toString() +
-                                        "-" +
-                                        secondHour.toString(): tempCount
-                                  });
-                                  int tempRawCount = 0;
-                                  try {
-                                    tempRawCount = (countSnapShot.value['raw']);
-                                  } catch (e) {
-                                    tempRawCount = 0;
-                                  }
-                                  if (tempRawCount == null) {
-                                    tempRawCount = 0;
-                                  }
-                                  tempRawCount += int.parse(queueHandler
-                                      .queue[queueHandler.queueKeys[index]][0][0]);
-                                  await countReference
-                                      .update({
-                                    'raw': tempRawCount
-                                  });
-                                  setState(() {
-                                    queueHandler.checked[index] = true;
-                                  });
-                                }
-                                ,
-                                child: Text("Check-In")),
-
-                            FlatButton(
-                                onPressed: () {
-                                  showDialog(
-                                      context: context,
-                                      barrierDismissible: true,
-                                      builder: (BuildContext context) =>
-                                      new AlertDialog(
-                                        title: Text("Remove From Queue?"),
-                                        content: new Text("Are You Sure?"),
-                                        actions: <Widget>[
-                                          FlatButton(
-                                              onPressed: () async{
-                                                await queueReference
-                                                    .child(queueHandler
-                                                    .queueKeys[index])
-                                                    .remove();
-                                                setState(() {
-                                                  queueHandler.queue.remove(
-                                                      queueHandler
-                                                          .queueKeys[index]);
-                                                  queueHandler.queueKeys
-                                                      .removeAt(index);
-                                                  queueHandler.checked.removeAt(
-                                                      index);
-                                                });
-                                                Navigator.pop(context);
-                                              },
-                                              child: Text("Remove"))
-                                        ],
-                                      ));
-                                },
-                                child: Text("Remove"))
-
-                          ]
-                          ,
-                        )
-                    ): Container(width: 0.0, height: 0.0)
-                  ]
-                    ,
-                  )
-                  ,
-                );
-              }, itemCount: queueHandler.queueKeys.length,)),
-            FloatingActionButton(
-              backgroundColor: Colors.lightBlue,
-              child: Icon(Icons.add, size: 35.0, color: Colors.white,),
-              elevation: 6.0,
-              onPressed: (){},
-            )],
+                                }, child: Text("Continue"),)
+                              ]));
+                },
+              )
+            ],
           );
           /*List<Widget> queue = new List.generate(queueHandler.queue.length,
                   (int i) => new CheckInQueue(queueHandler, i));
@@ -1712,6 +1775,7 @@ class ChoiceCard extends State<ChoiceState> {
                               color: Colors.lightBlue)))),
             ],
           );*/*/
+
         }
         break;
       default:
