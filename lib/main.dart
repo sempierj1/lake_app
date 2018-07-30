@@ -906,9 +906,16 @@ class ChoiceCard extends State<ChoiceState> {
             child: new Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                Container(
+                    padding: EdgeInsets.only(top: heightApp / 10, bottom: 20.0),
+                    child: Center(
+                        child: new Text(userInfo.badgeNumber.toString(),
+                            style: new TextStyle(
+                                fontFamily: "Raleway",
+                                fontSize: myStyle.fontSize * 3)))),
                 Center(
-                    child: new RaisedButton(
-                        child: Text("Check-In"),
+                    child: new FlatButton(
+                        child: Text("Check-In", style: myStyle.smallFlatButton(context),),
                         onPressed: () async {
                           _controller.clear();
                           showDialog(
@@ -980,13 +987,7 @@ class ChoiceCard extends State<ChoiceState> {
                                 ],
                               ));
                         })),
-                Container(
-                    padding: const EdgeInsets.only(top: 50.0),
-                    child: Center(
-                        child: new Text(userInfo.badgeNumber.toString(),
-                            style: new TextStyle(
-                                fontFamily: "Raleway",
-                                fontSize: myStyle.fontSize * 3))))
+
               ],
             ),
           );
