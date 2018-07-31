@@ -9,6 +9,14 @@ class MembershipTextStyle {
         .copyWith(fontFamily: 'Roboto', fontSize: 20.0);
   }
 
+  TextStyle darkText(BuildContext context) {
+    return Theme
+        .of(context)
+        .textTheme
+        .display1
+        .copyWith(fontFamily: 'Roboto', fontSize: 20.0, color: Colors.black);
+  }
+
   TextStyle eventText(BuildContext context) {
     return Theme
         .of(context)
