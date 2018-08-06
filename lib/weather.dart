@@ -10,6 +10,7 @@ class Weather {
   List hours;
   String open;
   String close;
+  String openAgain;
   String weatherDescriptionFixed = "";
   bool finished;
 
@@ -31,13 +32,10 @@ class Weather {
 
     DateTime d = new DateTime.now();
 
-    close = hours[d.weekday == 7 ? 0 : d.weekday].toString().split("-")[1].substring(0, 2);
+    close = hours[d.weekday].toString().split("-")[1].substring(0, 2);
     close = (int.parse(close) - 12).toString();
-
-    if(d.hour > int.parse(close))
-      {
-        open = hours[d.weekday == 7 ? 1 : d.weekday == 6 ? 0 : d.weekday + 1].toString().substring(0, 2);
-      }
+    open = hours[d.weekday].toString().substring(0,2);
+    openAgain = hours[d.weekday == 7 ? 1: d.weekday + 1].toString().substring(0,2);
 
     for (final i in weatherDescription) {
       if (weatherDescriptionFixed != "") {

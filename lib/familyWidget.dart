@@ -10,9 +10,9 @@ class FamilyWidget extends StatelessWidget {
   final AppUserInfo userInfo;
   final MembershipTextStyle myStyle = new MembershipTextStyle();
   final TextEditingController _controller = new TextEditingController();
-  final ServerFunctions serverFunctions = new ServerFunctions();
+  final ServerFunctions serverFunctions;
 
-  FamilyWidget(this.index, BuildContext c, this.userInfo);
+  FamilyWidget(this.index, BuildContext c, this.userInfo, this.serverFunctions);
 
   @override
   Widget build(BuildContext context) {
