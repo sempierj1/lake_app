@@ -23,7 +23,7 @@ import 'checkIn.dart';
 final ScrollController scrollController = new ScrollController();
 final MembershipTextStyle myStyle = new MembershipTextStyle();
 final AppUserInfo userInfo = new AppUserInfo();
-final ServerFunctions serverFunctions = new ServerFunctions();
+final ServerFunctions serverFunctions = new ServerFunctions(userInfo);
 final Events eventHandler = new Events();
 final Weather weatherHandler = new Weather();
 final Guest guestHandler = new Guest();
@@ -686,8 +686,8 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   _queueEdited(Event event) {
     setState(() {
       queueHandler.queue[event.snapshot.key] = event.snapshot.value;
-      queueHandler.queueKeys.add(event.snapshot.key);
-      queueHandler.checked.add(
+      queueHandler.queueKeys.insert(0, event.snapshot.key);
+      queueHandler.checked.insert(0,
           event.snapshot.value[3][0] == "true" ? true : false);
     });
   }
@@ -1019,9 +1019,15 @@ class ChoiceCard extends State<ChoiceState> {
             } else if (!weatherHandler.beachOpen &&
                 !weatherHandler.weatherClosure) {
               barColor = Colors.blueAccent;
-              alertText = "Closed Until " +
-                  weatherHandler.open +
-                  (d.weekday == 7 ? "PM" : "AM");
+              if(DateTime.now().hour > int.parse(weatherHandler.close) + 12)
+                {
+                  alertText = "Closed Until " + weatherHandler.openAgain + (d.weekday == 6 ? "PM" : "AM");
+                }
+                else {
+                alertText = "Closed Until " +
+                    weatherHandler.open +
+                    (d.weekday == 7 ? "PM" : "AM");
+              }
             } else {
               barColor = Colors.red;
               alertText = "Closed - Inclement Weather";
@@ -1264,7 +1270,7 @@ class ChoiceCard extends State<ChoiceState> {
       case "Profile":
         {
           List<Widget> children = new List.generate(userInfo.family.length,
-                  (int i) => new FamilyWidget(i, context, userInfo));
+                  (int i) => new FamilyWidget(i, context, userInfo, serverFunctions));
           return new ListView(
             children: <Widget>[
               new Row(
