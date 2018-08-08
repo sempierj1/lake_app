@@ -1,5 +1,8 @@
 import 'package:firebase_database/firebase_database.dart';
 
+//Class that handles user check in via the sign-in control device
+//Handles database updates for user count as users are checked in
+
 class CheckIn {
 
   DatabaseReference checkInReference;
@@ -14,7 +17,18 @@ class CheckIn {
   DatabaseReference errors =
       FirebaseDatabase.instance.reference().child("errors");
 
+  /*Gets existing values from Firebase Database and increments them by the number of users
+  being checked in.
+
+  @param num, badge, hour
+
+  num - number of people checking in
+  badge - badge number of users checking in
+  hour - time (hour) of the day the check in is performed
+   */
   updateCount(int num, String badge, int hour) async {
+
+    //Gets time frame of check in to use in form of (tempHour-secondHour)
     int tempCount = 0;
     int tempHour = hour;
     int secondHour;
@@ -30,6 +44,10 @@ class CheckIn {
 
     DataSnapshot countSnapShot = await countReference.once();
 
+    //Attempts to get existing count for current timeframe.
+    //If no count is found 0 is used
+    //Once a count is set it is incremented by the number of people checking in and updated in the database
+
     try {
       tempCount = countSnapShot
           .value[tempHour.toString() + "-" + secondHour.toString()];
@@ -40,9 +58,14 @@ class CheckIn {
       tempCount = 0;
     }
     tempCount += num;
-
     await countReference
         .update({tempHour.toString() + "-" + secondHour.toString(): tempCount});
+
+
+    //Attempts to get existing count for the day.
+    //If no count is found 0 is used
+    //Once a count is set it is incremented by the number of people checking in and updated in the database
+
     int tempRawCount = 0;
     try {
       tempRawCount = (countSnapShot.value['raw']);
