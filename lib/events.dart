@@ -1,6 +1,9 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'userInfo.dart';
 
+//Handles events list for application
+//Updates events list as needed based on user input
+
 class Events {
   DatabaseReference mainReference;
   DataSnapshot eventSnapshot;
@@ -23,6 +26,8 @@ class Events {
   ];
   String chosen = "General";
 
+  //Gets list of events from the database
+
   getEvents() async {
     mainReference = FirebaseDatabase.instance.reference().child("events");
     eventSnapshot = await mainReference.once();
@@ -30,6 +35,9 @@ class Events {
     eventsShown = events;
     sortEvents();
   }
+
+  //Sorts the events by date and time chronologically
+  //Creates a different list based on event type
 
   sortEvents() {
     int month = new DateTime.now().month;
@@ -48,6 +56,8 @@ class Events {
         events[i]['startTime'] = "";
         events[i]['time'] = "";
       }
+
+      //Adds event to proper list based on tag
       if (int.parse(events[i]['eventDate'].toString().split("-")[0]) > month) {
         current.add(events[i]);
         switch (events[i]['tag']) {
@@ -86,6 +96,7 @@ class Events {
     }
   }
 
+  //Creates list of saved / favorited events
   getSaved(List saved) {
     if(events!=null) {
       for (int i = 0; i < events.length; i++) {
@@ -96,6 +107,7 @@ class Events {
     }
   }
 
+  //Changes events shown based on dropdown input
   setChosen(String v) {
     chosen = v;
     switch (v) {
@@ -120,6 +132,7 @@ class Events {
     }
   }
 
+  //Adds an event to a users favorite events in the database
   handleEvent(int index, Map event, String type, AppUserInfo userInfo) async {
     DatabaseReference mainReference = FirebaseDatabase.instance
         .reference()
