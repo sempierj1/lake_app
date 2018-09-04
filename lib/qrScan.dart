@@ -1,4 +1,4 @@
-import 'dart:async';
+/*import 'dart:async';
 
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
@@ -461,4 +461,4 @@ class _CheckInWidget extends State<CheckInWidget> {
           : new Container(height: 0.0)
     ]);
   }
-}
+}*/

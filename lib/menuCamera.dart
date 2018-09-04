@@ -1,4 +1,4 @@
-import 'package:camera/camera.dart';
+/*import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
@@ -238,3 +238,4 @@ cropImage(BuildContext context, String n, String uid) async {
                 ))));
   } catch (e) {}
 }
+*/

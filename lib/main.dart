@@ -7,8 +7,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'dart:ui' as ui;
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'menuCamera.dart';
-import 'qrScan.dart';
+//import 'menuCamera.dart';
+//import 'qrScan.dart';
 import 'badgeNumber.dart';
 import 'membershipTextStyles.dart';
 import 'userInfo.dart';
@@ -64,9 +64,9 @@ void runCheck() async {
         '/screen3': (BuildContext context) => new Login(),
         '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen6': (BuildContext context) => new LoadingState(),
-        '/screen7': (BuildContext context) => new CameraState(),
-        '/screen8': (BuildContext context) => new QrScanner(),
-        '/screen9': (BuildContext context) => new BadgeNumber(),
+        //'/screen7': (BuildContext context) => new CameraState(),
+        //'/screen8': (BuildContext context) => new QrScanner(),
+        //'/screen9': (BuildContext context) => new BadgeNumber(),
         //'/screen10': (BuildContext context) => new CheckInQueue(),
         //'/screen11': (BuildContext context) => new LoadingQueueState()
       },
@@ -80,9 +80,9 @@ void runCheck() async {
         '/screen3': (BuildContext context) => new Login(),
         '/screen5': (BuildContext context) => new TabbedAppBarMenu(),
         '/screen6': (BuildContext context) => new LoadingState(),
-        '/screen7': (BuildContext context) => new CameraState(),
-        '/screen8': (BuildContext context) => new QrScanner(),
-        '/screen9': (BuildContext context) => new BadgeNumber(),
+        //'/screen7': (BuildContext context) => new CameraState(),
+        //'/screen8': (BuildContext context) => new QrScanner(),
+        //'/screen9': (BuildContext context) => new BadgeNumber(),
         //'/screen10': (BuildContext context) => new CheckInQueue(),
         //'/screen11': (BuildContext context) => new LoadingQueueState()
       },
@@ -887,6 +887,8 @@ class ChoiceCard extends State<ChoiceState> {
   //new QrImage(  version: 3, data: userInfo.user.uid, size: widthApp / 2)
   @override
   Widget build(BuildContext context) {
+    double widthApp;
+    double heightApp;
     //Gets width and height of screen, used for sizing or certain components.
     widthApp = MediaQuery
         .of(context)
@@ -1013,25 +1015,34 @@ class ChoiceCard extends State<ChoiceState> {
             String weatherImg;
             Color barColor;
             String alertText;
-            if (weatherHandler.beachOpen && !weatherHandler.weatherClosure) {
-              barColor = Colors.green;
-              alertText = "Open Until " + weatherHandler.close + "PM";
-            } else if (!weatherHandler.beachOpen &&
-                !weatherHandler.weatherClosure) {
-              barColor = Colors.blueAccent;
-              if(DateTime.now().hour > int.parse(weatherHandler.close) + 12)
-                {
-                  alertText = "Closed Until " + weatherHandler.openAgain + (d.weekday == 6 ? "PM" : "AM");
+            if(!weatherHandler.offSeason) {
+              if (weatherHandler.beachOpen && !weatherHandler.weatherClosure) {
+                barColor = Colors.green;
+                alertText = "Open Until " + weatherHandler.close + "PM";
+              } else if (!weatherHandler.beachOpen &&
+                  !weatherHandler.weatherClosure) {
+                barColor = Colors.blueAccent;
+                if (DateTime
+                    .now()
+                    .hour > int.parse(weatherHandler.close) + 12) {
+                  alertText = "Closed Until " + weatherHandler.openAgain +
+                      (d.weekday == 6 ? "PM" : "AM");
                 }
                 else {
-                alertText = "Closed Until " +
-                    weatherHandler.open +
-                    (d.weekday == 7 ? "PM" : "AM");
+                  alertText = "Closed Until " +
+                      weatherHandler.open +
+                      (d.weekday == 7 ? "PM" : "AM");
+                }
+              } else {
+                barColor = Colors.red;
+                alertText = "Closed - Inclement Weather";
               }
-            } else {
-              barColor = Colors.red;
-              alertText = "Closed - Inclement Weather";
             }
+            else
+              {
+                barColor = Colors.blueAccent;
+                alertText = "Closed - Off Season";
+              }
 
             switch (weatherHandler.weather['icon'].toString()) {
               case "03n":

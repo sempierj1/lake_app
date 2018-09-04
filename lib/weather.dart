@@ -5,6 +5,7 @@ class Weather {
   DataSnapshot statusSnapshot;
   bool beachOpen;
   bool weatherClosure;
+  bool offSeason;
   Map weather;
   List weatherDescription;
   List hours;
@@ -21,7 +22,9 @@ class Weather {
     mainReference = FirebaseDatabase.instance.reference().child("weatherDelay");
     statusSnapshot = await mainReference.once();
     weatherClosure = statusSnapshot.value.toString() == "true" ? true : false;
-
+    mainReference = FirebaseDatabase.instance.reference().child("offSeason");
+    statusSnapshot = await mainReference.once();
+    offSeason = statusSnapshot.value.toString() == "true" ? true : false;
     mainReference = FirebaseDatabase.instance.reference().child("weather");
     statusSnapshot = await mainReference.once();
     weather = statusSnapshot.value;
