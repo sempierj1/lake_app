@@ -1740,17 +1740,43 @@ class ChoiceCard extends State<ChoiceState> {
                                                   DateTime
                                                       .now()
                                                       .hour,
-                                                  int.parse(_controller.text));
-                                              checkIn.updateCount(
-                                                  int.parse(_controller2.text),
-                                                  _controller.text, DateTime
-                                                  .now()
-                                                  .hour);
-                                              checkIn.error(_controller.text);
-                                              _controller.clear();
-                                              _controller2.clear();
-                                              Navigator.pop(context);
-                                              Navigator.pop(context);
+                                                  int.parse(_controller.text)).then((result){
+                                                  if(!result){
+                                                    showDialog(
+                                                      context: context,
+                                                      barrierDismissible: true,
+                                                      builder: (BuildContext context) =>
+                                                      new AlertDialog(
+                                                          title: new Text(
+                                                              'Invalid Entry'),
+                                                          content: new Text(
+                                                              'Number of Guests can not be greater than 10'),
+                                                          actions: <Widget>[
+                                                            new FlatButton(
+                                                                child: new Text('Continue'),
+                                                                onPressed: () {
+                                                                  Navigator.pop(context);
+                                                                })
+                                                          ]),
+                                                    );
+                                                  }
+                                                  else {
+                                                    checkIn.updateCount(
+                                                        int.parse(
+                                                            _controller2.text),
+                                                        _controller.text,
+                                                        DateTime
+                                                            .now()
+                                                            .hour);
+                                                    checkIn.error(
+                                                        _controller.text);
+                                                    _controller.clear();
+                                                    _controller2.clear();
+                                                    Navigator.pop(context);
+                                                    Navigator.pop(context);
+                                                  }
+                                              });
+
                                             },
                                             child: Text(
                                               "Continue",
@@ -1801,17 +1827,41 @@ class ChoiceCard extends State<ChoiceState> {
                                                   DateTime
                                                       .now()
                                                       .hour,
-                                                  int.parse(_controller.text));
-                                              checkIn.updateCount(
-                                                  int.parse(_controller2.text),
-                                                  _controller.text, DateTime
-                                                  .now()
-                                                  .hour);
-                                              checkIn.error(_controller.text);
-                                              _controller.clear();
-                                              _controller2.clear();
-                                              Navigator.pop(context);
-                                              Navigator.pop(context);
+                                                  int.parse(_controller.text)).then((result){
+                                                if(!result){
+                                                  showDialog(
+                                                    context: context,
+                                                    barrierDismissible: true,
+                                                    builder: (BuildContext context) =>
+                                                    new AlertDialog(
+                                                        title: new Text(
+                                                            'Invalid Entry'),
+                                                        content: new Text(
+                                                            'Number of Guests can not be greater than 10'),
+                                                        actions: <Widget>[
+                                                          new FlatButton(
+                                                              child: new Text('Continue'),
+                                                              onPressed: () {
+                                                                Navigator.pop(context);
+                                                              })
+                                                        ]),
+                                                  );
+                                                }
+                                                else
+                                                  {
+                                                    checkIn.updateCount(
+                                                        int.parse(_controller2.text),
+                                                        _controller.text, DateTime
+                                                        .now()
+                                                        .hour);
+                                                    checkIn.error(_controller.text);
+                                                    _controller.clear();
+                                                    _controller2.clear();
+                                                    Navigator.pop(context);
+                                                    Navigator.pop(context);
+                                                  }
+                                              });
+
                                             },
                                             child: Text(
                                               "Continue",
