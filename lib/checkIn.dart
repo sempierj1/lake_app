@@ -4,7 +4,6 @@ import 'package:firebase_database/firebase_database.dart';
 //Handles database updates for user count as users are checked in
 
 class CheckIn {
-
   DatabaseReference checkInReference;
   DatabaseReference countReference = FirebaseDatabase.instance
       .reference()
@@ -27,20 +26,17 @@ class CheckIn {
   hour - time (hour) of the day the check in is performed
    */
   updateCount(int num, String badge, int hour) async {
-
     //Gets time frame of check in to use in form of (tempHour-secondHour)
     int tempCount = 0;
     int tempHour = hour;
     int secondHour;
-    if(tempHour > 12)
-      {
-        tempHour -= 12;
-      }
-      secondHour = tempHour + 1;
-    if(secondHour > 12)
-      {
-        secondHour = 1;
-      }
+    if (tempHour > 12) {
+      tempHour -= 12;
+    }
+    secondHour = tempHour + 1;
+    if (secondHour > 12) {
+      secondHour = 1;
+    }
 
     DataSnapshot countSnapShot = await countReference.once();
 
@@ -60,7 +56,6 @@ class CheckIn {
     tempCount += num;
     await countReference
         .update({tempHour.toString() + "-" + secondHour.toString(): tempCount});
-
 
     //Attempts to get existing count for the day.
     //If no count is found 0 is used

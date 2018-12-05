@@ -37,8 +37,9 @@ class Weather {
 
     close = hours[d.weekday].toString().split("-")[1].substring(0, 2);
     close = (int.parse(close) - 12).toString();
-    open = hours[d.weekday].toString().substring(0,2);
-    openAgain = hours[d.weekday == 7 ? 1: d.weekday + 1].toString().substring(0,2);
+    open = hours[d.weekday].toString().substring(0, 2);
+    openAgain =
+        hours[d.weekday == 7 ? 1 : d.weekday + 1].toString().substring(0, 2);
 
     for (final i in weatherDescription) {
       if (weatherDescriptionFixed != "") {

@@ -5,7 +5,6 @@ import 'userInfo.dart';
 import 'serverFunctions.dart';
 
 class FamilyWidget extends StatelessWidget {
-
   final int index;
   final AppUserInfo userInfo;
   final MembershipTextStyle myStyle = new MembershipTextStyle();
@@ -62,8 +61,7 @@ class FamilyWidget extends StatelessWidget {
                                                       index, userInfo.user.uid)
                                                   .then((FirebaseUser user) {
                                                 if (user != null) {
-                                                  Navigator
-                                                      .of(context,
+                                                  Navigator.of(context,
                                                           rootNavigator: true)
                                                       .pop();
                                                   showDialog(
@@ -85,8 +83,8 @@ class FamilyWidget extends StatelessWidget {
                                                                       'Okay'),
                                                                   onPressed:
                                                                       () {
-                                                                    Navigator
-                                                                        .of(context,
+                                                                    Navigator.of(
+                                                                            context,
                                                                             rootNavigator:
                                                                                 true)
                                                                         .pop();
@@ -94,7 +92,6 @@ class FamilyWidget extends StatelessWidget {
                                                                   })
                                                             ]),
                                                   );
-
                                                 } else {
                                                   showDialog(
                                                     context: context,
@@ -112,8 +109,8 @@ class FamilyWidget extends StatelessWidget {
                                                                       'Try Again'),
                                                                   onPressed:
                                                                       () {
-                                                                    Navigator
-                                                                        .of(context,
+                                                                    Navigator.of(
+                                                                            context,
                                                                             rootNavigator:
                                                                                 true)
                                                                         .pop();
@@ -144,8 +141,7 @@ class FamilyWidget extends StatelessWidget {
                                                   .deleteUser(index)
                                                   .then((value) {
                                                 if (value) {
-                                                  Navigator
-                                                      .of(context,
+                                                  Navigator.of(context,
                                                           rootNavigator: true)
                                                       .pop();
                                                   showDialog(
@@ -167,15 +163,14 @@ class FamilyWidget extends StatelessWidget {
                                                                         "Okay"),
                                                                     onPressed:
                                                                         () {
-                                                                      Navigator
-                                                                          .of(context,
+                                                                      Navigator.of(
+                                                                              context,
                                                                               rootNavigator: true)
                                                                           .pop();
                                                                     })
                                                               ]));
                                                 } else {
-                                                  Navigator
-                                                      .of(context,
+                                                  Navigator.of(context,
                                                           rootNavigator: true)
                                                       .pop();
                                                   showDialog(
@@ -197,8 +192,8 @@ class FamilyWidget extends StatelessWidget {
                                                                         "Okay"),
                                                                     onPressed:
                                                                         () {
-                                                                      Navigator
-                                                                          .of(context,
+                                                                      Navigator.of(
+                                                                              context,
                                                                               rootNavigator: true)
                                                                           .pop();
                                                                     })

@@ -17,11 +17,9 @@ class Guest {
             date.day.toString());
     guestSnapshot = await mainReference.once();
     int numGuests = 0;
-    try{
+    try {
       numGuests = guestSnapshot.value['raw'];
-    }
-    catch (e)
-    {
+    } catch (e) {
       numGuests = 0;
     }
     /*Map numGuests = guestSnapshot.value;
@@ -69,10 +67,9 @@ class Guest {
       numGuests.forEach(count);
       guestNumber = guestCount - others;
       */
-      guestNumber = numGuests;
-      return guestNumber;
-    }
-
+    guestNumber = numGuests;
+    return guestNumber;
+  }
 
   getFamily() async {
     mainReference = FirebaseDatabase.instance.reference().child(
@@ -117,13 +114,11 @@ class Guest {
         others++;
       }
     }
-    if(numGuests != null) {
+    if (numGuests != null) {
       familyNumbers = numGuests.length - others;
+    } else {
+      familyNumbers = 0;
     }
-    else
-      {
-        familyNumbers = 0;
-      }
     return familyNumbers;
   }
 }

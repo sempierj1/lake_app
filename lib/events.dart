@@ -98,7 +98,7 @@ class Events {
 
   //Creates list of saved / favorited events
   getSaved(List saved) {
-    if(events!=null) {
+    if (events != null) {
       for (int i = 0; i < events.length; i++) {
         if (saved.contains(i)) {
           favorites.add(events[i]);
@@ -158,8 +158,8 @@ class Events {
       newEvents = eventsSnap.replaceAll(event['eventNum'].toString() + "/", "");
       mainReference.update({"events": newEvents});
     }
-    favorites.sort((a, b) => int
-        .parse(a['eventDate'].toString().replaceAll("-", ""))
-        .compareTo(int.parse(b['eventDate'].toString().replaceAll("-", ""))));
+    favorites.sort((a, b) =>
+        int.parse(a['eventDate'].toString().replaceAll("-", "")).compareTo(
+            int.parse(b['eventDate'].toString().replaceAll("-", ""))));
   }
 }

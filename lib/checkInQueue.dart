@@ -1,4 +1,4 @@
-import 'dart:async';
+/*import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -7,7 +7,7 @@ import 'queue.dart';
 import 'membershipTextStyles.dart';
 
 final MembershipTextStyle myStyle = new MembershipTextStyle();
-
+*/
 /*class CheckInQueue extends StatelessWidget {
 
   final Queue myQueue;
