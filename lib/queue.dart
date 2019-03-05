@@ -1,5 +1,8 @@
 import 'package:firebase_database/firebase_database.dart';
 
+/*Handles Check-In Queue
+* Queue is a Map of Badge Numbers and User amounts*/
+
 class Queue {
   Map queue = new Map();
   DatabaseReference queueReference =
@@ -10,6 +13,7 @@ class Queue {
 
   Queue();
 
+  /*Returns the current queue from the database*/
   getQueue() async {
     queueSnapShot = await queueReference.once();
     try {
