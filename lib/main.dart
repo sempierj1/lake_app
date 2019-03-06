@@ -32,6 +32,7 @@ final TextEditingController _controller = new TextEditingController();
 final TextEditingController _controller2 = new TextEditingController();
 final Queue queueHandler = new Queue();
 final CheckIn checkIn = new CheckIn();
+
 /*
   Application to manage LPPOA Membership
   Allows users to:
@@ -579,6 +580,8 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   /*
   Database listeners are set to update information shown on the various tabs in real time.
    */
+  TabController controller;
+  Choice _choice;
 
   DateTime date = new DateTime.now();
   final DatabaseReference listenerReference = userInfo.isBeach
@@ -634,6 +637,11 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   @override
   void initState() {
     super.initState();
+
+    controller = new TabController(length: userInfo.isManager == "true" ? 5 : userInfo.isBeach ? 1 : 4, vsync: this);
+    controller.addListener(_select);
+    _choice = userInfo.isManager == "true" ? choicesManager[0] : userInfo.isBeach ? choicesBeach[0] : choices[0];
+
     _firebaseMessaging.requestNotificationPermissions(
         const IosNotificationSettings(sound: true, badge: true, alert: true));
     _firebaseMessaging.onIosSettingsRegistered
@@ -667,7 +675,17 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
           );
         });
   }
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
 
+  void _select(){
+    setState((){
+      _choice = userInfo.isManager == "true" ? choicesManager[controller.index] : userInfo.isBeach ? choicesBeach[controller.index] : choices[controller.index];
+    });
+  }
   int changeCheck = 0;
 
   /*
@@ -763,42 +781,48 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new DefaultTabController(
+
         length: userInfo.isManager == "true"
             ? choicesManager.length
             : userInfo.isBeach ? choicesBeach.length : choices.length,
         child: new Scaffold(
           appBar: new AppBar(
             centerTitle: true,
-            title: new Text(
-              'Lake Parsippany',
-              textAlign: TextAlign.center,
-              style: myStyle.whiteText(context),
-            ),
-            bottom: new TabBar(
+            title: Text(
+        _choice.title
+        ,
+        textAlign: TextAlign.center,
+        style: myStyle.whiteText(context),),),
+            bottomNavigationBar: new TabBar(
+              controller: controller,
               //isScrollable: true,
               tabs: userInfo.isManager == "true"
                   ? choicesManager.map((Choice choice) {
                 return new Tab(
-                  text: choice.title,
+                  //text: choice.title,
                   icon: new Icon(choice.icon),
+
                 );
               }).toList()
                   : userInfo.isBeach
                   ? choicesBeach.map((Choice choice) {
                 return new Tab(
-                  text: choice.title,
+                  //text: choice.title,
                   icon: new Icon(choice.icon),
                 );
               }).toList()
                   : choices.map((Choice choice) {
                 return new Tab(
-                  text: choice.title,
+                 // text: choice.title,
                   icon: new Icon(choice.icon),
                 );
               }).toList(),
+              labelColor: Colors.blue,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: Colors.transparent,
             ),
-          ),
           body: new TabBarView(
+            controller: controller,
             children: userInfo.isManager == "true"
                 ? choicesManager.map((Choice choice) {
               return new Padding(
