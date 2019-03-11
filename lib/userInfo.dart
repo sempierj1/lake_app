@@ -93,7 +93,7 @@ class AppUserInfo {
         await setFirstRun();
         await storeInfo(u.trim(), p);
       }
-    } catch (e) {}
+    } catch (e) {print(e);}
 
     return user;
   }
