@@ -7,9 +7,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'dart:ui' as ui;
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+
 //import 'menuCamera.dart';
 //import 'qrScan.dart';
-import 'badgeNumber.dart';
+//import 'badgeNumber.dart';
 import 'membershipTextStyles.dart';
 import 'userInfo.dart';
 import 'familyWidget.dart';
@@ -581,8 +582,10 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   Database listeners are set to update information shown on the various tabs in real time.
    */
   TabController controller;
+  List<Choice> userChoices = userInfo.isManager == "true"
+      ? choicesManager
+      : userInfo.isBeach ? choicesBeach : choices;
   Choice _choice;
-
   DateTime date = new DateTime.now();
   final DatabaseReference listenerReference = userInfo.isBeach
       ? null
@@ -637,10 +640,10 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   @override
   void initState() {
     super.initState();
-
-    controller = new TabController(length: userInfo.isManager == "true" ? 5 : userInfo.isBeach ? 1 : 4, vsync: this);
+    _choice = userChoices[0];
+    controller = new TabController(length: userChoices.length, vsync: this);
     controller.addListener(_select);
-    _choice = userInfo.isManager == "true" ? choicesManager[0] : userInfo.isBeach ? choicesBeach[0] : choices[0];
+
 
     _firebaseMessaging.requestNotificationPermissions(
         const IosNotificationSettings(sound: true, badge: true, alert: true));
@@ -657,13 +660,14 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
         onLaunch: (Map<String, dynamic> message) {},
         onResume: (Map<String, dynamic> message) {},
         onMessage: (Map<String, dynamic> message) {
+          //print(message['data']);
           showDialog(
             context: context,
             barrierDismissible: false,
             builder: (BuildContext context) =>
             new AlertDialog(
                 title: new Text("Beach Status Update"),
-                content: new Text(message['body'].toString()),
+                content: new Text(message['data']['body'].toString()),
                 actions: <Widget>[
                   new FlatButton(
                       child: new Text('Okay'),
@@ -675,17 +679,19 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
           );
         });
   }
+
   @override
   void dispose() {
     controller.dispose();
     super.dispose();
   }
 
-  void _select(){
-    setState((){
-      _choice = userInfo.isManager == "true" ? choicesManager[controller.index] : userInfo.isBeach ? choicesBeach[controller.index] : choices[controller.index];
+  void _select() {
+    setState(() {
+      _choice = userChoices[controller.index];
     });
   }
+
   int changeCheck = 0;
 
   /*
@@ -780,73 +786,74 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      home: new DefaultTabController(
+      home: //new DefaultTabController(
 
-        length: userInfo.isManager == "true"
-            ? choicesManager.length
-            : userInfo.isBeach ? choicesBeach.length : choices.length,
-        child: new Scaffold(
-          appBar: new AppBar(
-            centerTitle: true,
-            title: Text(
-        _choice.title
-        ,
-        textAlign: TextAlign.center,
-        style: myStyle.whiteText(context),),),
-            bottomNavigationBar: new TabBar(
-              controller: controller,
-              //isScrollable: true,
-              tabs: userInfo.isManager == "true"
-                  ? choicesManager.map((Choice choice) {
-                return new Tab(
-                  //text: choice.title,
-                  icon: new Icon(choice.icon),
+      //length: userInfo.isManager == "true"
+      //    ? choicesManager.length
+      //   : userInfo.isBeach ? choicesBeach.length : choices.length,
+      //child:
+      new Scaffold(
+        appBar: new AppBar(
+          centerTitle: true,
+          title: Text("Lake Parsippany"
+            //_choice.title
+            ,
+            textAlign: TextAlign.center,
+            style: myStyle.whiteText(context),),),
+        bottomNavigationBar: new TabBar(
+          controller: controller,
+          //isScrollable: true,
+          tabs: userInfo.isManager == "true"
+              ? choicesManager.map((Choice choice) {
+            return new Tab(
+              //text: choice.title,
+              icon: new Icon(choice.icon),
 
-                );
-              }).toList()
-                  : userInfo.isBeach
-                  ? choicesBeach.map((Choice choice) {
-                return new Tab(
-                  //text: choice.title,
-                  icon: new Icon(choice.icon),
-                );
-              }).toList()
-                  : choices.map((Choice choice) {
-                return new Tab(
-                 // text: choice.title,
-                  icon: new Icon(choice.icon),
-                );
-              }).toList(),
-              labelColor: Colors.blue,
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: Colors.transparent,
-            ),
-          body: new TabBarView(
-            controller: controller,
-            children: userInfo.isManager == "true"
-                ? choicesManager.map((Choice choice) {
-              return new Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: new ChoiceState(choice: choice),
-              );
-            }).toList()
-                : userInfo.isBeach
-                ? choicesBeach.map((Choice choice) {
-              return new Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: new ChoiceState(choice: choice),
-              );
-            }).toList()
-                : choices.map((Choice choice) {
-              return new Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: new ChoiceState(choice: choice),
-              );
-            }).toList(),
-          ),
+            );
+          }).toList()
+              : userInfo.isBeach
+              ? choicesBeach.map((Choice choice) {
+            return new Tab(
+              //text: choice.title,
+              icon: new Icon(choice.icon),
+            );
+          }).toList()
+              : choices.map((Choice choice) {
+            return new Tab(
+              // text: choice.title,
+              icon: new Icon(choice.icon),
+            );
+          }).toList(),
+          labelColor: Colors.blue,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: Colors.transparent,
+        ),
+        body: new TabBarView(
+          controller: controller,
+          children: userInfo.isManager == "true"
+              ? choicesManager.map((Choice choice) {
+            return new Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: new ChoiceState(choice: choice),
+            );
+          }).toList()
+              : userInfo.isBeach
+              ? choicesBeach.map((Choice choice) {
+            return new Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: new ChoiceState(choice: choice),
+            );
+          }).toList()
+              : choices.map((Choice choice) {
+            return new Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: new ChoiceState(choice: choice),
+            );
+          }).toList(),
         ),
       ),
     );
+    //);
   }
 }
 
@@ -941,7 +948,8 @@ class ChoiceCard extends State<ChoiceState> {
                                 fontSize: myStyle.fontSize * 3)))),
                 Center(
                     child: new FlatButton(
-                        child: Text("Check-In", style: myStyle.smallFlatButton(context),),
+                        child: Text(
+                          "Check-In", style: myStyle.smallFlatButton(context),),
                         onPressed: () async {
                           _controller.clear();
                           showDialog(
@@ -977,6 +985,28 @@ class ChoiceCard extends State<ChoiceState> {
                                                 .of(context,
                                                 rootNavigator: true)
                                                 .pop();
+                                            showDialog(
+                                                context: context,
+                                                barrierDismissible: false,
+                                                builder: (BuildContext
+                                                context) =>
+                                                new AlertDialog(
+                                                    title: new Text(
+                                                        "Success!"),
+                                                    content: new Text(
+                                                        "You Are Now Checked-In"),
+                                                    actions: <Widget>[
+                                                      new FlatButton(
+                                                          child: new Text(
+                                                              'Okay'),
+                                                          onPressed: () {
+                                                            Navigator
+                                                                .of(context,
+                                                                rootNavigator:
+                                                                true)
+                                                                .pop();
+                                                          })
+                                                    ]));
                                           } else {
                                             Navigator
                                                 .of(context,
@@ -1039,7 +1069,7 @@ class ChoiceCard extends State<ChoiceState> {
             String weatherImg;
             Color barColor;
             String alertText;
-            if(!weatherHandler.offSeason) {
+            if (!weatherHandler.offSeason) {
               if (weatherHandler.beachOpen && !weatherHandler.weatherClosure) {
                 barColor = Colors.green;
                 alertText = "Open Until " + weatherHandler.close + "PM";
@@ -1062,11 +1092,10 @@ class ChoiceCard extends State<ChoiceState> {
                 alertText = "Closed - Inclement Weather";
               }
             }
-            else
-              {
-                barColor = Colors.blueAccent;
-                alertText = "Closed - Off Season";
-              }
+            else {
+              barColor = Colors.blueAccent;
+              alertText = "Closed - Off Season";
+            }
 
             switch (weatherHandler.weather['icon'].toString()) {
               case "03n":
@@ -1305,7 +1334,8 @@ class ChoiceCard extends State<ChoiceState> {
       case "Profile":
         {
           List<Widget> children = new List.generate(userInfo.family.length,
-                  (int i) => new FamilyWidget(i, context, userInfo, serverFunctions));
+                  (int i) =>
+              new FamilyWidget(i, context, userInfo, serverFunctions));
           return new ListView(
             children: <Widget>[
               new Row(
@@ -1764,43 +1794,46 @@ class ChoiceCard extends State<ChoiceState> {
                                                   DateTime
                                                       .now()
                                                       .hour,
-                                                  int.parse(_controller.text)).then((result){
-                                                  if(!result){
-                                                    showDialog(
-                                                      context: context,
-                                                      barrierDismissible: true,
-                                                      builder: (BuildContext context) =>
-                                                      new AlertDialog(
-                                                          title: new Text(
-                                                              'Invalid Entry'),
-                                                          content: new Text(
-                                                              'Number of Guests can not be greater than 10'),
-                                                          actions: <Widget>[
-                                                            new FlatButton(
-                                                                child: new Text('Continue'),
-                                                                onPressed: () {
-                                                                  Navigator.pop(context);
-                                                                })
-                                                          ]),
-                                                    );
-                                                  }
-                                                  else {
-                                                    checkIn.updateCount(
-                                                        int.parse(
-                                                            _controller2.text),
-                                                        _controller.text,
-                                                        DateTime
-                                                            .now()
-                                                            .hour);
-                                                    checkIn.error(
-                                                        _controller.text);
-                                                    _controller.clear();
-                                                    _controller2.clear();
-                                                    Navigator.pop(context);
-                                                    Navigator.pop(context);
-                                                  }
+                                                  int.parse(_controller.text))
+                                                  .then((result) {
+                                                if (!result) {
+                                                  showDialog(
+                                                    context: context,
+                                                    barrierDismissible: true,
+                                                    builder: (
+                                                        BuildContext context) =>
+                                                    new AlertDialog(
+                                                        title: new Text(
+                                                            'Invalid Entry'),
+                                                        content: new Text(
+                                                            'Number of Guests can not be greater than 10'),
+                                                        actions: <Widget>[
+                                                          new FlatButton(
+                                                              child: new Text(
+                                                                  'Continue'),
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                    context);
+                                                              })
+                                                        ]),
+                                                  );
+                                                }
+                                                else {
+                                                  checkIn.updateCount(
+                                                      int.parse(
+                                                          _controller2.text),
+                                                      _controller.text,
+                                                      DateTime
+                                                          .now()
+                                                          .hour);
+                                                  checkIn.error(
+                                                      _controller.text);
+                                                  _controller.clear();
+                                                  _controller2.clear();
+                                                  Navigator.pop(context);
+                                                  Navigator.pop(context);
+                                                }
                                               });
-
                                             },
                                             child: Text(
                                               "Continue",
@@ -1851,12 +1884,14 @@ class ChoiceCard extends State<ChoiceState> {
                                                   DateTime
                                                       .now()
                                                       .hour,
-                                                  int.parse(_controller.text)).then((result){
-                                                if(!result){
+                                                  int.parse(_controller.text))
+                                                  .then((result) {
+                                                if (!result) {
                                                   showDialog(
                                                     context: context,
                                                     barrierDismissible: true,
-                                                    builder: (BuildContext context) =>
+                                                    builder: (
+                                                        BuildContext context) =>
                                                     new AlertDialog(
                                                         title: new Text(
                                                             'Invalid Entry'),
@@ -1864,28 +1899,30 @@ class ChoiceCard extends State<ChoiceState> {
                                                             'Number of Guests can not be greater than 10'),
                                                         actions: <Widget>[
                                                           new FlatButton(
-                                                              child: new Text('Continue'),
+                                                              child: new Text(
+                                                                  'Continue'),
                                                               onPressed: () {
-                                                                Navigator.pop(context);
+                                                                Navigator.pop(
+                                                                    context);
                                                               })
                                                         ]),
                                                   );
                                                 }
-                                                else
-                                                  {
-                                                    checkIn.updateCount(
-                                                        int.parse(_controller2.text),
-                                                        _controller.text, DateTime
-                                                        .now()
-                                                        .hour);
-                                                    checkIn.error(_controller.text);
-                                                    _controller.clear();
-                                                    _controller2.clear();
-                                                    Navigator.pop(context);
-                                                    Navigator.pop(context);
-                                                  }
+                                                else {
+                                                  checkIn.updateCount(
+                                                      int.parse(
+                                                          _controller2.text),
+                                                      _controller.text, DateTime
+                                                      .now()
+                                                      .hour);
+                                                  checkIn.error(
+                                                      _controller.text);
+                                                  _controller.clear();
+                                                  _controller2.clear();
+                                                  Navigator.pop(context);
+                                                  Navigator.pop(context);
+                                                }
                                               });
-
                                             },
                                             child: Text(
                                               "Continue",
