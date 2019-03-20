@@ -8,7 +8,11 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:http/http.dart' as http;
 import 'family.dart';
 import 'main.dart';
+import 'package:lake_app/Functions/userFunctions.dart';
 
+/*Handles user sign in as well as user associated information such as
+* Type of user, family members and badge number
+*/
 class AppUserInfo {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   DatabaseReference mainReference;
@@ -27,6 +31,7 @@ class AppUserInfo {
   bool isBeach = false;
   bool signedIn = false;
 
+  //Signs in the user with the stored username and password
   Future handleSignInMain() async {
     final storage = new FlutterSecureStorage();
     String uName = await storage.read(key: "username");
@@ -44,6 +49,7 @@ class AppUserInfo {
     }
   }
 
+  //Signs in the user with the given username and password
   Future<FirebaseUser> handleSignIn(String u, String p) async {
     try {
       user = await _auth.signInWithEmailAndPassword(
@@ -60,29 +66,11 @@ class AppUserInfo {
           snapshot = await mainReference.once();
           if (snapshot.value['firstLogin'] == "true") {
             mainReference.update({'firstLogin': "false"});
-            var url = 'https://membershipme.ddns.net/node/emailVerified';
-            await http
-                .post(url,
-                    body: {
-                      "email": u.trim(),
-                    },
-                    encoding: Encoding.getByName("utf-8"))
-                .then((response) async {
-              if (response.body.toString() != "Done") {
-                return false;
-              }
-            });
+            emailVerified(u);
           }
           Map family = snapshot.value['family'];
           if (family != null) {
-            family.forEach((key, value) async {
-              var url = 'https://membershipme.ddns.net/node/updateVerified';
-              await http
-                  .post(url,
-                      body: {"uid": value, "name": user.displayName},
-                      encoding: Encoding.getByName("utf-8"))
-                  .then((response) {});
-            });
+            updateFamily(family, user);
           }
           getVars();
         } catch (e) {}
