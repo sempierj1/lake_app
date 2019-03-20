@@ -14,7 +14,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'membershipTextStyles.dart';
 import 'userInfo.dart';
 import 'familyWidget.dart';
-import 'serverFunctions.dart';
+import 'package:lake_app/Functions/serverFunctions.dart';
 import 'events.dart';
 import 'weather.dart';
 import 'guests.dart';
