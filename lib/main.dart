@@ -5,12 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'dart:ui' as ui;
-
 import 'package:firebase_messaging/firebase_messaging.dart';
-
-//import 'menuCamera.dart';
-//import 'qrScan.dart';
-//import 'badgeNumber.dart';
 import 'membershipTextStyles.dart';
 import 'userInfo.dart';
 import 'familyWidget.dart';
@@ -585,7 +580,6 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   List<Choice> userChoices = userInfo.isManager == "true"
       ? choicesManager
       : userInfo.isBeach ? choicesBeach : choices;
-  Choice _choice;
   DateTime date = new DateTime.now();
   final DatabaseReference listenerReference = userInfo.isBeach
       ? null
@@ -640,9 +634,7 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
   @override
   void initState() {
     super.initState();
-    _choice = userChoices[0];
     controller = new TabController(length: userChoices.length, vsync: this);
-    controller.addListener(_select);
 
 
     _firebaseMessaging.requestNotificationPermissions(
@@ -686,11 +678,6 @@ class TabbedAppBarState extends State<TabbedAppBarMenu>
     super.dispose();
   }
 
-  void _select() {
-    setState(() {
-      _choice = userChoices[controller.index];
-    });
-  }
 
   int changeCheck = 0;
 
