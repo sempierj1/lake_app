@@ -1746,7 +1746,7 @@ class ChoiceCard extends State<ChoiceState> {
                                   .child("badges/" + _controller.text);
                               DataSnapshot uidSnapshot =
                               await badgeReference.once();
-                              if (uidSnapshot.value == null) {
+                              if (uidSnapshot.value == null || uidSnapshot.value['inactive'] == "True") {
                                 showDialog(
                                     context: context,
                                     barrierDismissible: true,
