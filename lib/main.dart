@@ -1731,12 +1731,13 @@ class ChoiceCard extends State<ChoiceState> {
                       new AlertDialog(
                           title: Text("Enter Badge Number"),
                           content: new TextField(
+                            autofocus: true,
+                            keyboardType: TextInputType.phone,
                             controller: _controller,
                             decoration: new InputDecoration(
                               hintText: '1111',
                             ),
                             textAlign: TextAlign.center,
-                            keyboardType: TextInputType.number,
                           ),
                           actions: <Widget>[
                             FlatButton(onPressed: () async {
@@ -1755,8 +1756,8 @@ class ChoiceCard extends State<ChoiceState> {
                                       title: new Text(
                                           "Badge Number Not Found Please Verify Current Stickers on Badges"),
                                       content: new TextField(
-                                        keyboardType:
-                                        TextInputType.number,
+                                        autofocus: true,
+                                        keyboardType: TextInputType.phone,
                                         controller: _controller2,
                                         decoration: new InputDecoration(
                                           hintText: 'Number of People',
@@ -1845,8 +1846,8 @@ class ChoiceCard extends State<ChoiceState> {
                                       title: new Text(
                                           "Number of People"),
                                       content: new TextField(
-                                        keyboardType:
-                                        TextInputType.number,
+                                        autofocus: true,
+                                        keyboardType: TextInputType.phone,
                                         controller: _controller2,
                                         decoration: new InputDecoration(
                                           hintText: '1234',
