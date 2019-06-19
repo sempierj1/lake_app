@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'membershipTextStyles.dart';
-import 'userInfo.dart';
+import 'package:lake_app/Style/membershipTextStyles.dart';
+import 'package:lake_app/Tabs/userInfo.dart';
 import 'package:lake_app/Functions/serverFunctions.dart';
 
 /*Creates scrolling list of family members with options to invite them to use the app as well as uninvite

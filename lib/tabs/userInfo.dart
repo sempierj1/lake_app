@@ -4,8 +4,8 @@ import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'family.dart';
-import 'main.dart';
+import 'package:lake_app/Widgets/family.dart';
+import '../main.dart';
 import 'package:lake_app/Functions/userFunctions.dart';
 
 /*Handles user sign in as well as user associated information such as

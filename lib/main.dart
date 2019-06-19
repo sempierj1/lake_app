@@ -6,15 +6,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'dart:ui' as ui;
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'membershipTextStyles.dart';
-import 'userInfo.dart';
-import 'familyWidget.dart';
+import 'package:lake_app/Style/membershipTextStyles.dart';
+import 'package:lake_app/Tabs/userInfo.dart';
+import 'package:lake_app/Widgets/familyWidget.dart';
 import 'package:lake_app/Functions/serverFunctions.dart';
-import 'events.dart';
-import 'weather.dart';
-import 'guests.dart';
-import 'queue.dart';
-import 'checkIn.dart';
+import 'package:lake_app/Tabs/events.dart';
+import 'package:lake_app/Tabs/weather.dart';
+import 'package:lake_app/checkin/guests.dart';
+import 'package:lake_app/checkin/queue.dart';
+import 'package:lake_app/checkin/checkIn.dart';
 
 final ScrollController scrollController = new ScrollController();
 final MembershipTextStyle myStyle = new MembershipTextStyle();
@@ -1747,7 +1747,8 @@ class ChoiceCard extends State<ChoiceState> {
                                   .child("badges/" + _controller.text);
                               DataSnapshot uidSnapshot =
                               await badgeReference.once();
-                              if (uidSnapshot.value == null || uidSnapshot.value['inactive'] == "True") {
+                              if (uidSnapshot.value == null ||
+                                  uidSnapshot.value['inactive'] == "True") {
                                 showDialog(
                                     context: context,
                                     barrierDismissible: true,
